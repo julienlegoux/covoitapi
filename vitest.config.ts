@@ -5,12 +5,13 @@ export default defineConfig({
   test: {
     environment: 'node',
     globals: true,
-    include: ['src/**/*.test.ts'],
+    include: ['src/**/*.test.ts', 'tests/**/*.test.ts'],
     exclude: ['node_modules'],
+    setupFiles: ['tests/setup.ts'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html'],
-      exclude: ['node_modules', '**/*.d.ts', '**/*.config.*'],
+      exclude: ['node_modules', '**/*.d.ts', '**/*.config.*', 'tests'],
     },
   },
   resolve: {

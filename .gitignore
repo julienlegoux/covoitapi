@@ -30,3 +30,10 @@ lerna-debug.log*
 
 # prisma
 /src/infrastructure/database/generated/
+
+# build
+/dist/
+/build/
+
+# AI
+.claude/

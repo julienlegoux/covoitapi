@@ -1,14 +1,17 @@
-import { Hono } from 'hono'
+import "reflect-metadata";
+import { serve } from "@hono/node-server";
+import { app } from "./presentation/routes/index.js";
+import { env } from "./infrastructure/config/env.config.js";
+import { logger } from "./shared/utils/logger.util.js";
+import "./infrastructure/di/container.js";
 
-const app = new Hono()
+const port = env.PORT;
 
-const welcomeStrings = [
-  'Hello Hono!',
-  'To learn more about Hono on Vercel, visit https://vercel.com/docs/frameworks/backend/hono'
-]
+logger.info(`Starting server on port ${port}`, { environment: env.NODE_ENV });
 
-app.get('/', (c) => {
-  return c.text(welcomeStrings.join('\n\n'))
-})
+serve({
+  fetch: app.fetch,
+  port,
+});
 
-export default app
+logger.info(`Server running at http://localhost:${port}`);
