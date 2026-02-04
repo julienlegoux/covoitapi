@@ -2,7 +2,7 @@ import 'reflect-metadata';
 import 'dotenv/config';
 import { withAccelerate } from '@prisma/extension-accelerate';
 import { container } from 'tsyringe';
-import { TOKENS } from '@/shared/di/tokens.js';
+import { TOKENS } from '../../lib/shared/di/tokens.js';
 import { PrismaClient } from '../database/generated/prisma/client.js';
 import { PrismaUserRepository } from '../database/repositories/prisma-user.repository.js';
 import { ArgonPasswordService } from '../services/argon-password.service.js';

@@ -1,6 +1,6 @@
 import { Resend } from 'resend';
 import { injectable } from 'tsyringe';
-import type { EmailService, SendEmailOptions } from '@/domain/services/email.service.js';
+import type { EmailService, SendEmailOptions } from '../../domain/services/email.service.js';
 
 @injectable()
 export class ResendEmailService implements EmailService {
