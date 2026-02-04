@@ -1,11 +1,11 @@
 import { inject, injectable } from "tsyringe";
-import { TOKENS } from "../../../infrastructure/di/tokens.js";
+import { UserAlreadyExistsError } from "../../../domain/errors/domain.errors.js";
 import type { UserRepository } from "../../../domain/repositories/user.repository.js";
-import type { PasswordService } from "../../../domain/services/password.service.js";
 import type { EmailService } from "../../../domain/services/email.service.js";
 import type { JwtService } from "../../../domain/services/jwt.service.js";
-import { UserAlreadyExistsError } from "../../../domain/errors/domain.errors.js";
-import type { RegisterInput, AuthResponse } from "../../dtos/auth.dto.js";
+import type { PasswordService } from "../../../domain/services/password.service.js";
+import { TOKENS } from "../../../infrastructure/di/tokens.js";
+import type { AuthResponse, RegisterInput } from "../../dtos/auth.dto.js";
 
 @injectable()
 export class RegisterUseCase {
