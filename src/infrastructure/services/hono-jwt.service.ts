@@ -1,6 +1,6 @@
 import { sign, verify } from 'hono/jwt';
 import { injectable } from 'tsyringe';
-import type { JwtPayload, JwtService } from '@/domain/services/jwt.service.js';
+import type { JwtPayload, JwtService } from '../../domain/services/jwt.service.js';
 
 @injectable()
 export class HonoJwtService implements JwtService {
