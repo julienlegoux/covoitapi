@@ -8,9 +8,6 @@ importers:
 
   .:
     dependencies:
-      '@hono/node-server':
-        specifier: ^1.19.9
-        version: 1.19.9(hono@4.11.7)
       '@prisma/adapter-pg':
         specifier: ^7.3.0
         version: 7.3.0
@@ -1377,10 +1374,6 @@ snapshots:
   '@hono/node-server@1.19.9(hono@4.11.4)':
     dependencies:
       hono: 4.11.4
-
-  '@hono/node-server@1.19.9(hono@4.11.7)':
-    dependencies:
-      hono: 4.11.7
 
   '@jridgewell/sourcemap-codec@1.5.5': {}
 
