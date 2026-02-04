@@ -3,7 +3,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "prisma generate && prisma migrate deploy && tsc",
+    "build": "prisma generate && prisma migrate deploy && tsc -p tsconfig.build.json",
     "start": "node dist/index.js",
     "test": "vitest",
     "lint": "biome lint .",

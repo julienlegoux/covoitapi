@@ -4,4 +4,6 @@ export const TOKENS = {
 	PasswordService: Symbol('PasswordService'),
 	JwtService: Symbol('JwtService'),
 	PrismaClient: Symbol('PrismaClient'),
-};
+} as const;
+
+export type TokenKeys = keyof typeof TOKENS;

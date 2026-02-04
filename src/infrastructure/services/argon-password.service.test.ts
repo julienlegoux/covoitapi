@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ArgonPasswordService } from './argon_password.service.js';
+import { ArgonPasswordService } from './argon-password.service.js';
 
 describe('ArgonPasswordService', () => {
 	const passwordService = new ArgonPasswordService();
