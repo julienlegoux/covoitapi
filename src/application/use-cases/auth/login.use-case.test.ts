@@ -5,9 +5,9 @@ import {
 	createMockPasswordService,
 	createMockUserRepository,
 } from '../../../../tests/setup.js';
-import { InvalidCredentialsError } from '../../../domain/errors/domain.errors.js';
-import { TOKENS } from '../../../lib/shared/di/tokens.js';
-import type { LoginInput } from '../../dtos/auth.dto.js';
+import { InvalidCredentialsError } from '@/domain/errors/domain.errors.js';
+import { TOKENS } from '@/shared/di/tokens.js';
+import type { LoginInput } from '@/application/dtos/auth.dto.js';
 import { LoginUseCase } from './login.use-case.js';
 
 describe('LoginUseCase', () => {

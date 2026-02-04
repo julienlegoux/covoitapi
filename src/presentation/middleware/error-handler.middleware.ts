@@ -1,8 +1,8 @@
 import type { Context, Next } from 'hono';
 import type { ContentfulStatusCode } from 'hono/utils/http-status';
 import { ZodError } from 'zod';
-import { ApplicationError } from '../../application/errors/application.errors.js';
-import { DomainError } from '../../domain/errors/domain.errors.js';
+import { ApplicationError } from '@/application/errors/application.errors.js';
+import { DomainError } from '@/domain/errors/domain.errors.js';
 import type { ErrorResponse } from '../types/error.types.js';
 
 export async function errorHandler(c: Context, next: Next): Promise<Response | void> {

@@ -1,10 +1,10 @@
 import { inject, injectable } from "tsyringe";
-import { InvalidCredentialsError } from "../../../domain/errors/domain.errors.js";
-import type { UserRepository } from "../../../domain/repositories/user.repository.js";
-import type { JwtService } from "../../../domain/services/jwt.service.js";
-import type { PasswordService } from "../../../domain/services/password.service.js";
-import { TOKENS } from "../../../lib/shared/di/tokens.js";
-import type { AuthResponse, LoginInput } from "../../dtos/auth.dto.js";
+import { InvalidCredentialsError } from "@/domain/errors/domain.errors.js";
+import type { UserRepository } from "@/domain/repositories/user.repository.js";
+import type { JwtService } from "@/domain/services/jwt.service.js";
+import type { PasswordService } from "@/domain/services/password.service.js";
+import { TOKENS } from "@/shared/di/tokens.js";
+import type { AuthResponse, LoginInput } from "@/application/dtos/auth.dto.js";
 
 @injectable()
 export class LoginUseCase {
