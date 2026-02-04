@@ -10,7 +10,7 @@
     "types": ["node"],
     "jsx": "react-jsx",
     "jsxImportSource": "hono/jsx",
-    "outDir": "./dist",
+    "outDir": "./public",
     "rootDir": ".",
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true
