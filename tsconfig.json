@@ -14,19 +14,7 @@
 		"rootDir": ".",
 		"experimentalDecorators": true,
 		"emitDecoratorMetadata": true,
-		"baseUrl": "./src",
-		"paths": {
-			"@/domain": ["domain/index.ts"],
-			"@/domain/*": ["domain/*"],
-			"@/application": ["application/index.ts"],
-			"@/application/*": ["application/*"],
-			"@/infrastructure": ["infrastructure/index.ts"],
-			"@/infrastructure/*": ["infrastructure/*"],
-			"@/presentation": ["presentation/index.ts"],
-			"@/presentation/*": ["presentation/*"],
-			"@/shared": ["lib/shared/index.ts"],
-			"@/shared/*": ["lib/shared/*"]
-		}
+		"baseUrl": "./src"
 	},
 	"include": ["src/**/*", "tests/**/*"],
 	"exclude": ["node_modules", "dist"]
