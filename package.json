@@ -3,7 +3,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "prisma generate && tsc",
+    "build": "prisma generate && prisma migrate deploy && tsc",
     "start": "node dist/index.js",
     "test": "vitest",
     "lint": "biome lint .",
@@ -11,7 +11,8 @@
     "check": "biome check --write .",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
-    "db:push": "prisma db push"
+    "db:push": "prisma db push",
+    "db:reset": "prisma migrate reset"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.3.0",
