@@ -1,11 +1,11 @@
 import { inject, injectable } from "tsyringe";
-import { TOKENS } from "../../di/tokens.js";
-import type { PrismaClient } from "../generated/prisma/client.js";
 import type {
   CreateUserData,
   UserEntity,
 } from "../../../domain/entities/user.entity.js";
 import type { UserRepository } from "../../../domain/repositories/user.repository.js";
+import { TOKENS } from "../../../lib/shared/di/tokens.js";
+import type { PrismaClient } from "../generated/prisma/client.js";
 
 @injectable()
 export class PrismaUserRepository implements UserRepository {
