@@ -1,3 +1,6 @@
+import type { Result } from '../../lib/shared/types/result.js';
+import type { EmailError } from '../../infrastructure/errors/email.errors.js';
+
 export type SendEmailOptions = {
 	to: string;
 	subject: string;
@@ -5,6 +8,6 @@ export type SendEmailOptions = {
 };
 
 export interface EmailService {
-	sendWelcomeEmail(to: string, firstName: string): Promise<void>;
-	send(options: SendEmailOptions): Promise<void>;
+	sendWelcomeEmail(to: string, firstName: string): Promise<Result<void, EmailError>>;
+	send(options: SendEmailOptions): Promise<Result<void, EmailError>>;
 }
