@@ -6,10 +6,10 @@ import {
 	createMockPasswordService,
 	createMockUserRepository,
 } from '../../../../tests/setup.js';
-import { UserAlreadyExistsError } from '../../../domain/errors/domain.errors.js';
-import { TOKENS } from '../../../infrastructure/di/tokens.js';
-import type { RegisterInput } from '../../dtos/auth.dto.js';
-import { RegisterUseCase } from './register.use_case.js';
+import { UserAlreadyExistsError } from '@/domain/errors/domain.errors.js';
+import { TOKENS } from '@/shared/di/tokens.js';
+import type { RegisterInput } from '@/application/dtos/auth.dto.js';
+import { RegisterUseCase } from './register.use-case.js';
 
 describe('RegisterUseCase', () => {
 	let registerUseCase: RegisterUseCase;

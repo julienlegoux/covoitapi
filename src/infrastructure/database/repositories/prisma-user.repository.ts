@@ -2,9 +2,9 @@ import { inject, injectable } from "tsyringe";
 import type {
   CreateUserData,
   UserEntity,
-} from "../../../domain/entities/user.entity.js";
-import type { UserRepository } from "../../../domain/repositories/user.repository.js";
-import { TOKENS } from "../../di/tokens.js";
+} from "@/domain/entities/user.entity.js";
+import type { UserRepository } from "@/domain/repositories/user.repository.js";
+import { TOKENS } from "@/shared/di/tokens.js";
 import type { PrismaClient } from "../generated/prisma/client.js";
 
 @injectable()

@@ -1,8 +1,8 @@
 import type { Context } from 'hono';
-import type { LoginInput, RegisterInput } from '../../application/dtos/auth.dto.js';
-import { LoginUseCase } from '../../application/use_cases/auth/login.use_case.js';
-import { RegisterUseCase } from '../../application/use_cases/auth/register.use_case.js';
-import { container } from '../../infrastructure/di/container.js';
+import type { LoginInput, RegisterInput } from '@/application/dtos/auth.dto.js';
+import { LoginUseCase } from '@/application/use-cases/auth/login.use-case.js';
+import { RegisterUseCase } from '@/application/use-cases/auth/register.use-case.js';
+import { container } from '@/infrastructure/di/container.js';
 import { loginSchema, registerSchema } from '../validators/auth.validator.js';
 
 export async function register(c: Context): Promise<Response> {

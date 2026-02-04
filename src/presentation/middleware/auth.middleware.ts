@@ -1,7 +1,7 @@
 import type { Context, Next } from 'hono';
-import type { JwtService } from '../../domain/services/jwt.service.js';
-import { container } from '../../infrastructure/di/container.js';
-import { TOKENS } from '../../infrastructure/di/tokens.js';
+import type { JwtService } from '@/domain/services/jwt.service.js';
+import { container } from '@/infrastructure/di/container.js';
+import { TOKENS } from '@/shared/di/tokens.js';
 
 export async function authMiddleware(c: Context, next: Next): Promise<Response | void> {
 	const token = c.req.header('x-auth-token');

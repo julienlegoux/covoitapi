@@ -1,6 +1,6 @@
 import * as argon2 from 'argon2';
 import { injectable } from 'tsyringe';
-import type { PasswordService } from '../../domain/services/password.service.js';
+import type { PasswordService } from '@/domain/services/password.service.js';
 
 @injectable()
 export class ArgonPasswordService implements PasswordService {
