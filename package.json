@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@hono/node-server": "^1.19.9",
+    "@prisma/adapter-pg": "^7.3.0",
     "@prisma/client": "^7.3.0",
     "@prisma/extension-accelerate": "^3.0.1",
     "argon2": "^0.44.0",

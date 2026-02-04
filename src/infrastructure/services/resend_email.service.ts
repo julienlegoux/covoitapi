@@ -4,14 +4,13 @@ import type {
   EmailService,
   SendEmailOptions,
 } from "../../domain/services/email.service.js";
-import { env } from "../config/env.config.js";
 
 @injectable()
 export class ResendEmailService implements EmailService {
   private readonly resend: Resend;
 
   constructor() {
-    this.resend = new Resend(env.RESEND_API_KEY);
+    this.resend = new Resend(process.env.RESEND_API_KEY);
   }
 
   async sendWelcomeEmail(to: string, firstName: string): Promise<void> {
@@ -28,7 +27,7 @@ export class ResendEmailService implements EmailService {
 
   async send(options: SendEmailOptions): Promise<void> {
     await this.resend.emails.send({
-      from: env.RESEND_FROM_EMAIL,
+      from: process.env.RESEND_FROM_EMAIL!,
       to: options.to,
       subject: options.subject,
       html: options.html,

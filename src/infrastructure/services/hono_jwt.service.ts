@@ -1,7 +1,6 @@
 import { injectable } from "tsyringe";
 import { sign, verify } from "hono/jwt";
 import type { JwtPayload, JwtService } from "../../domain/services/jwt.service.js";
-import { env } from "../config/env.config.js";
 
 @injectable()
 export class HonoJwtService implements JwtService {
@@ -9,8 +8,8 @@ export class HonoJwtService implements JwtService {
   private readonly expiresIn: string;
 
   constructor() {
-    this.secret = env.JWT_SECRET;
-    this.expiresIn = env.JWT_EXPIRES_IN;
+    this.secret = process.env.JWT_SECRET!;
+    this.expiresIn = process.env.JWT_EXPIRES_IN || "24h";
   }
 
   async sign(payload: JwtPayload): Promise<string> {

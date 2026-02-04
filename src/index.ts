@@ -1,17 +1,15 @@
 import "reflect-metadata";
+import "dotenv/config";
 import { serve } from "@hono/node-server";
 import { app } from "./presentation/routes/index.js";
-import { env } from "./infrastructure/config/env.config.js";
-import { logger } from "./shared/utils/logger.util.js";
+import { logger } from "./lib/shared/utils/logger.util.js";
 import "./infrastructure/di/container.js";
 
-const port = env.PORT;
+const port = Number(process.env.PORT);
 
-logger.info(`Starting server on port ${port}`, { environment: env.NODE_ENV });
+logger.info(`Starting server on port ${port}`, { environment: process.env.NODE_ENV });
 
 serve({
   fetch: app.fetch,
   port,
 });
-
-logger.info(`Server running at http://localhost:${port}`);

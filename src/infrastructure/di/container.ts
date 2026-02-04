@@ -7,11 +7,11 @@ import { PrismaUserRepository } from "../database/repositories/prisma_user.repos
 import { ArgonPasswordService } from "../services/argon_password.service.js";
 import { ResendEmailService } from "../services/resend_email.service.js";
 import { HonoJwtService } from "../services/hono_jwt.service.js";
-import { env } from "../config/env.config.js";
+import "dotenv/config";
 
 const prismaClient = new PrismaClient({
-  accelerateUrl: env.DATABASE_URL,
-}).$extends(withAccelerate()) as unknown as PrismaClient;
+  accelerateUrl: process.env.DATABASE_URL!,
+}).$extends(withAccelerate());
 
 container.registerInstance(TOKENS.PrismaClient, prismaClient);
 
