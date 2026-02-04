@@ -1,6 +1,8 @@
 import type { Context, Next } from 'hono';
+import type { ContentfulStatusCode } from 'hono/utils/http-status';
 import type { JwtService } from '../../domain/services/jwt.service.js';
 import { container } from '../../infrastructure/di/container.js';
+import { getHttpStatus } from '../../infrastructure/errors/error-registry.js';
 import { TOKENS } from '../../lib/shared/di/tokens.js';
 
 export async function authMiddleware(c: Context, next: Next): Promise<Response | void> {
@@ -11,7 +13,7 @@ export async function authMiddleware(c: Context, next: Next): Promise<Response |
 			{
 				success: false,
 				error: {
-					code: 'MISSING_TOKEN',
+					code: 'UNAUTHORIZED',
 					message: 'Authentication token is required',
 				},
 			},
@@ -20,21 +22,23 @@ export async function authMiddleware(c: Context, next: Next): Promise<Response |
 	}
 
 	const jwtService = container.resolve<JwtService>(TOKENS.JwtService);
-	const payload = await jwtService.verify(token);
+	const result = await jwtService.verify(token);
 
-	if (!payload) {
-		return c.json(
-			{
-				success: false,
-				error: {
-					code: 'INVALID_TOKEN',
-					message: 'Invalid or expired token',
-				},
-			},
-			401,
-		);
+	if (result.success) {
+		c.set('userId', result.value.userId);
+		await next();
+		return;
 	}
 
-	c.set('userId', payload.userId);
-	await next();
+	const httpStatus = getHttpStatus(result.error.code) as ContentfulStatusCode;
+	return c.json(
+		{
+			success: false,
+			error: {
+				code: result.error.code,
+				message: result.error.message,
+			},
+		},
+		httpStatus,
+	);
 }

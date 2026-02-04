@@ -1,37 +1,37 @@
-import "reflect-metadata";
-import { container } from "tsyringe";
-import { beforeEach } from "vitest";
+import 'reflect-metadata';
+import { container } from 'tsyringe';
+import { beforeEach, vi } from 'vitest';
 
 beforeEach(() => {
-  container.clearInstances();
+	container.clearInstances();
 });
 
 export function createMockUserRepository() {
-  return {
-    findById: vi.fn(),
-    findByEmail: vi.fn(),
-    create: vi.fn(),
-    existsByEmail: vi.fn(),
-  };
+	return {
+		findById: vi.fn(),
+		findByEmail: vi.fn(),
+		create: vi.fn(),
+		existsByEmail: vi.fn(),
+	};
 }
 
 export function createMockPasswordService() {
-  return {
-    hash: vi.fn(),
-    verify: vi.fn(),
-  };
+	return {
+		hash: vi.fn(),
+		verify: vi.fn(),
+	};
 }
 
 export function createMockEmailService() {
-  return {
-    sendWelcomeEmail: vi.fn(),
-    send: vi.fn(),
-  };
+	return {
+		sendWelcomeEmail: vi.fn(),
+		send: vi.fn(),
+	};
 }
 
 export function createMockJwtService() {
-  return {
-    sign: vi.fn(),
-    verify: vi.fn(),
-  };
+	return {
+		sign: vi.fn(),
+		verify: vi.fn(),
+	};
 }
