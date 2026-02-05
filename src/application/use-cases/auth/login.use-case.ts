@@ -11,7 +11,7 @@ import type { Result } from '../../../lib/shared/types/result.js';
 import { ok, err } from '../../../lib/shared/types/result.js';
 import type { AuthResponse, LoginInput } from '../../dtos/auth.dto.js';
 
-export type LoginError = InvalidCredentialsError | RepositoryError | PasswordError | JwtError;
+type LoginError = InvalidCredentialsError | RepositoryError | PasswordError | JwtError;
 
 @injectable()
 export class LoginUseCase {
