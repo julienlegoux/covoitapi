@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
+import type { EmailService } from '../../domain/services/email.service.js';
 import { EmailDeliveryError } from '../errors/email.errors.js';
 
 const mockSend = vi.fn();
@@ -12,7 +13,7 @@ vi.mock('resend', () => ({
 }));
 
 describe('ResendEmailService', () => {
-	let emailService: any;
+	let emailService: EmailService;
 	const originalEnv = process.env;
 
 	beforeEach(async () => {

@@ -9,8 +9,13 @@ import { ArgonPasswordService } from '../services/argon-password.service.js';
 import { HonoJwtService } from '../services/hono-jwt.service.js';
 import { ResendEmailService } from '../services/resend-email.service.js';
 
+const databaseUrl = process.env.DATABASE_URL;
+if (!databaseUrl) {
+	throw new Error('DATABASE_URL environment variable is required');
+}
+
 const prismaClient = new PrismaClient({
-	accelerateUrl: process.env.DATABASE_URL!,
+	accelerateUrl: databaseUrl,
 }).$extends(withAccelerate());
 
 container.registerInstance(TOKENS.PrismaClient, prismaClient);

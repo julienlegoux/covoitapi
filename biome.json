@@ -1,5 +1,5 @@
 {
-	"$schema": "https://biomejs.dev/schemas/2.3.13/schema.json",
+	"$schema": "https://biomejs.dev/schemas/2.3.14/schema.json",
 	"files": {
 		"includes": [
 			"**/src/**/*.ts",
@@ -48,6 +48,9 @@
 		"lineWidth": 100
 	},
 	"javascript": {
+		"parser": {
+			"unsafeParameterDecoratorsEnabled": true
+		},
 		"formatter": {
 			"quoteStyle": "single",
 			"semicolons": "always",
@@ -61,7 +64,28 @@
 			"linter": {
 				"rules": {
 					"style": {
+						"noDefaultExport": "off",
+						"noNonNullAssertion": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": ["**/src/index.ts"],
+			"linter": {
+				"rules": {
+					"style": {
 						"noDefaultExport": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": ["**/logger.ts", "**/logger.util.ts"],
+			"linter": {
+				"rules": {
+					"suspicious": {
+						"noConsole": "off"
 					}
 				}
 			}

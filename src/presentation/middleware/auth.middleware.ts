@@ -5,7 +5,7 @@ import { container } from '../../infrastructure/di/container.js';
 import { getHttpStatus } from '../../infrastructure/errors/error-registry.js';
 import { TOKENS } from '../../lib/shared/di/tokens.js';
 
-export async function authMiddleware(c: Context, next: Next): Promise<Response | void> {
+export async function authMiddleware(c: Context, next: Next): Promise<Response | undefined> {
 	const token = c.req.header('x-auth-token');
 
 	if (!token) {

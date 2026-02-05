@@ -7,7 +7,7 @@ import {
 } from '../../../../tests/setup.js';
 import { InvalidCredentialsError } from '../../../domain/errors/domain.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
-import { ok, err } from '../../../lib/shared/types/result.js';
+import { ok } from '../../../lib/shared/types/result.js';
 import type { LoginInput } from '../../dtos/auth.dto.js';
 import { LoginUseCase } from './login.use-case.js';
 

@@ -101,7 +101,7 @@ describe('HonoJwtService', () => {
 			expect(signResult.success).toBe(true);
 			if (!signResult.success) return;
 
-			const tamperedToken = signResult.value.slice(0, -5) + 'xxxxx';
+			const tamperedToken = `${signResult.value.slice(0, -5)}xxxxx`;
 
 			const result = await jwtService.verify(tamperedToken);
 

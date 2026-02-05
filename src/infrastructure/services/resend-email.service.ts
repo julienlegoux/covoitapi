@@ -26,9 +26,14 @@ export class ResendEmailService implements EmailService {
 	}
 
 	async send(options: SendEmailOptions): Promise<Result<void, EmailDeliveryError>> {
+		const fromEmail = process.env.RESEND_FROM_EMAIL;
+		if (!fromEmail) {
+			return err(new EmailDeliveryError(options.to, new Error('RESEND_FROM_EMAIL not configured')));
+		}
+
 		try {
 			await this.resend.emails.send({
-				from: process.env.RESEND_FROM_EMAIL!,
+				from: fromEmail,
 				to: options.to,
 				subject: options.subject,
 				html: options.html,

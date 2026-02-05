@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import type { Context, Next } from 'hono';
-import { ZodError, z } from 'zod';
+import { type ZodError, z } from 'zod';
 import { errorHandler } from './error-handler.middleware.js';
 import { DomainError, UserAlreadyExistsError, InvalidCredentialsError, UserNotFoundError } from '../../domain/errors/domain.errors.js';
 import { ApplicationError, ValidationError, NotFoundError } from '../../application/errors/application.errors.js';
@@ -241,7 +241,7 @@ describe('errorHandler middleware', () => {
 
 			await errorHandler(ctx as unknown as Context, next);
 
-			const [response, status] = ctx._getJsonCall();
+			const [, status] = ctx._getJsonCall();
 			expect(status).toBe(500);
 		});
 

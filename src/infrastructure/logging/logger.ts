@@ -33,7 +33,7 @@ class PrettyFormatter implements LogFormatter {
 
 		const timestamp = dim + entry.timestamp + reset;
 		const level = color + entry.level.toUpperCase().padEnd(5) + reset;
-		const reqId = entry.requestId ? dim + `[${entry.requestId.slice(0, 8)}]` + reset : '';
+		const reqId = entry.requestId ? `${dim}[${entry.requestId.slice(0, 8)}]${reset}` : '';
 
 		let output = `${timestamp} ${level} ${reqId} ${entry.message}`;
 

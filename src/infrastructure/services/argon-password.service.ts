@@ -9,7 +9,7 @@ import { HashingError, HashVerificationError } from '../errors/password.errors.j
 export class ArgonPasswordService implements PasswordService {
 	async hash(password: string): Promise<Result<string, HashingError>> {
 		try {
-			const hashed = await argon2.hash(password);
+			const hashed: string = await argon2.hash(password);
 			return ok(hashed);
 		} catch (e) {
 			return err(new HashingError(e));
@@ -18,7 +18,7 @@ export class ArgonPasswordService implements PasswordService {
 
 	async verify(password: string, hash: string): Promise<Result<boolean, HashVerificationError>> {
 		try {
-			const valid = await argon2.verify(hash, password);
+			const valid: boolean = await argon2.verify(hash, password);
 			return ok(valid);
 		} catch (e) {
 			return err(new HashVerificationError(e));
