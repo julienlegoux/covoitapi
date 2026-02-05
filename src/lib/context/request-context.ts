@@ -1,5 +1,8 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
 import { randomUUID } from 'node:crypto';
+import type { Result } from '../shared/types/result.js';
+import { ok, err } from '../shared/types/result.js';
+import { ContextNotFoundError } from '../../infrastructure/errors/context.errors.js';
 
 export interface RequestContext {
 	requestId: string;
@@ -25,6 +28,11 @@ export function createContext(partial?: Partial<RequestContext>): RequestContext
 
 export function getContext(): RequestContext | undefined {
 	return asyncLocalStorage.getStore();
+}
+
+export function getContextSafe(): Result<RequestContext, ContextNotFoundError> {
+	const ctx = asyncLocalStorage.getStore();
+	return ctx ? ok(ctx) : err(new ContextNotFoundError());
 }
 
 export function getRequestId(): string | undefined {

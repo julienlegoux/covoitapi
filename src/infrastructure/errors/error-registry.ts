@@ -40,9 +40,34 @@ export const ErrorCodes = {
 		httpStatus: 500,
 		category: 'infrastructure',
 	},
+	CONNECTION_ERROR: {
+		code: 'CONNECTION_ERROR',
+		httpStatus: 500,
+		category: 'infrastructure',
+	},
 	EXTERNAL_SERVICE_ERROR: {
 		code: 'EXTERNAL_SERVICE_ERROR',
 		httpStatus: 502,
+		category: 'infrastructure',
+	},
+	EMAIL_DELIVERY_FAILED: {
+		code: 'EMAIL_DELIVERY_FAILED',
+		httpStatus: 502,
+		category: 'infrastructure',
+	},
+	EMAIL_CONFIG_ERROR: {
+		code: 'EMAIL_CONFIG_ERROR',
+		httpStatus: 500,
+		category: 'infrastructure',
+	},
+	HASHING_FAILED: {
+		code: 'HASHING_FAILED',
+		httpStatus: 500,
+		category: 'infrastructure',
+	},
+	HASH_VERIFICATION_FAILED: {
+		code: 'HASH_VERIFICATION_FAILED',
+		httpStatus: 500,
 		category: 'infrastructure',
 	},
 
@@ -67,6 +92,16 @@ export const ErrorCodes = {
 		httpStatus: 401,
 		category: 'auth',
 	},
+	TOKEN_MALFORMED: {
+		code: 'TOKEN_MALFORMED',
+		httpStatus: 400,
+		category: 'auth',
+	},
+	TOKEN_SIGNING_FAILED: {
+		code: 'TOKEN_SIGNING_FAILED',
+		httpStatus: 500,
+		category: 'infrastructure',
+	},
 
 	// System Errors
 	INTERNAL_ERROR: {
@@ -77,6 +112,11 @@ export const ErrorCodes = {
 	SERVICE_UNAVAILABLE: {
 		code: 'SERVICE_UNAVAILABLE',
 		httpStatus: 503,
+		category: 'system',
+	},
+	CONTEXT_NOT_FOUND: {
+		code: 'CONTEXT_NOT_FOUND',
+		httpStatus: 500,
 		category: 'system',
 	},
 } as const satisfies Record<string, ErrorDefinition>;

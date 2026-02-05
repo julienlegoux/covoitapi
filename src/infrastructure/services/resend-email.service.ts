@@ -1,6 +1,9 @@
 import { Resend } from 'resend';
 import { injectable } from 'tsyringe';
 import type { EmailService, SendEmailOptions } from '../../domain/services/email.service.js';
+import type { Result } from '../../lib/shared/types/result.js';
+import { ok, err } from '../../lib/shared/types/result.js';
+import { EmailDeliveryError } from '../errors/email.errors.js';
 
 @injectable()
 export class ResendEmailService implements EmailService {
@@ -10,8 +13,8 @@ export class ResendEmailService implements EmailService {
 		this.resend = new Resend(process.env.RESEND_API_KEY);
 	}
 
-	async sendWelcomeEmail(to: string, firstName: string): Promise<void> {
-		await this.send({
+	async sendWelcomeEmail(to: string, firstName: string): Promise<Result<void, EmailDeliveryError>> {
+		return this.send({
 			to,
 			subject: 'Welcome to Carpooling!',
 			html: `
@@ -22,12 +25,17 @@ export class ResendEmailService implements EmailService {
 		});
 	}
 
-	async send(options: SendEmailOptions): Promise<void> {
-		await this.resend.emails.send({
-			from: process.env.RESEND_FROM_EMAIL!,
-			to: options.to,
-			subject: options.subject,
-			html: options.html,
-		});
+	async send(options: SendEmailOptions): Promise<Result<void, EmailDeliveryError>> {
+		try {
+			await this.resend.emails.send({
+				from: process.env.RESEND_FROM_EMAIL!,
+				to: options.to,
+				subject: options.subject,
+				html: options.html,
+			});
+			return ok(undefined);
+		} catch (e) {
+			return err(new EmailDeliveryError(options.to, e));
+		}
 	}
 }

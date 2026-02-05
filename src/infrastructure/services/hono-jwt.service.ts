@@ -1,6 +1,14 @@
 import { sign, verify } from 'hono/jwt';
 import { injectable } from 'tsyringe';
 import type { JwtPayload, JwtService } from '../../domain/services/jwt.service.js';
+import type { Result } from '../../lib/shared/types/result.js';
+import { ok, err } from '../../lib/shared/types/result.js';
+import {
+	TokenExpiredError,
+	TokenInvalidError,
+	TokenMalformedError,
+	TokenSigningError,
+} from '../errors/jwt.errors.js';
 
 @injectable()
 export class HonoJwtService implements JwtService {
@@ -12,17 +20,31 @@ export class HonoJwtService implements JwtService {
 		this.expiresIn = process.env.JWT_EXPIRES_IN || '24h';
 	}
 
-	async sign(payload: JwtPayload): Promise<string> {
-		const exp = this.calculateExpiration();
-		return sign({ ...payload, exp }, this.secret, 'HS256');
+	async sign(payload: JwtPayload): Promise<Result<string, TokenSigningError>> {
+		try {
+			const exp = this.calculateExpiration();
+			const token = await sign({ ...payload, exp }, this.secret, 'HS256');
+			return ok(token);
+		} catch (e) {
+			return err(new TokenSigningError(e));
+		}
 	}
 
-	async verify(token: string): Promise<JwtPayload | null> {
+	async verify(token: string): Promise<Result<JwtPayload, TokenExpiredError | TokenInvalidError | TokenMalformedError>> {
 		try {
 			const decoded = await verify(token, this.secret, 'HS256');
-			return { userId: decoded.userId as string };
-		} catch {
-			return null;
+			return ok({ userId: decoded.userId as string });
+		} catch (e) {
+			const error = e instanceof Error ? e : new Error(String(e));
+			const message = error.message.toLowerCase();
+
+			if (message.includes('expired')) {
+				return err(new TokenExpiredError(e));
+			}
+			if (message.includes('malformed') || message.includes('invalid token')) {
+				return err(new TokenMalformedError(e));
+			}
+			return err(new TokenInvalidError(e));
 		}
 	}
 

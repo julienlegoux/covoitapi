@@ -1,5 +1,5 @@
 import { container } from 'tsyringe';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import {
 	createMockJwtService,
 	createMockPasswordService,
@@ -7,6 +7,7 @@ import {
 } from '../../../../tests/setup.js';
 import { InvalidCredentialsError } from '../../../domain/errors/domain.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
+import { ok, err } from '../../../lib/shared/types/result.js';
 import type { LoginInput } from '../../dtos/auth.dto.js';
 import { LoginUseCase } from './login.use-case.js';
 
@@ -45,14 +46,17 @@ describe('LoginUseCase', () => {
 	});
 
 	it('should login successfully with valid credentials', async () => {
-		mockUserRepository.findByEmail.mockResolvedValue(existingUser);
-		mockPasswordService.verify.mockResolvedValue(true);
-		mockJwtService.sign.mockResolvedValue('jwt-token');
+		mockUserRepository.findByEmail.mockResolvedValue(ok(existingUser));
+		mockPasswordService.verify.mockResolvedValue(ok(true));
+		mockJwtService.sign.mockResolvedValue(ok('jwt-token'));
 
 		const result = await loginUseCase.execute(validInput);
 
-		expect(result.userId).toBe('user-123');
-		expect(result.token).toBe('jwt-token');
+		expect(result.success).toBe(true);
+		if (result.success) {
+			expect(result.value.userId).toBe('user-123');
+			expect(result.value.token).toBe('jwt-token');
+		}
 		expect(mockUserRepository.findByEmail).toHaveBeenCalledWith(validInput.email);
 		expect(mockPasswordService.verify).toHaveBeenCalledWith(
 			validInput.password,
@@ -61,19 +65,29 @@ describe('LoginUseCase', () => {
 		expect(mockJwtService.sign).toHaveBeenCalledWith({ userId: 'user-123' });
 	});
 
-	it('should throw InvalidCredentialsError when user not found', async () => {
-		mockUserRepository.findByEmail.mockResolvedValue(null);
+	it('should return InvalidCredentialsError when user not found', async () => {
+		mockUserRepository.findByEmail.mockResolvedValue(ok(null));
 
-		await expect(loginUseCase.execute(validInput)).rejects.toThrow(InvalidCredentialsError);
+		const result = await loginUseCase.execute(validInput);
+
+		expect(result.success).toBe(false);
+		if (!result.success) {
+			expect(result.error).toBeInstanceOf(InvalidCredentialsError);
+		}
 		expect(mockPasswordService.verify).not.toHaveBeenCalled();
 		expect(mockJwtService.sign).not.toHaveBeenCalled();
 	});
 
-	it('should throw InvalidCredentialsError when password is wrong', async () => {
-		mockUserRepository.findByEmail.mockResolvedValue(existingUser);
-		mockPasswordService.verify.mockResolvedValue(false);
+	it('should return InvalidCredentialsError when password is wrong', async () => {
+		mockUserRepository.findByEmail.mockResolvedValue(ok(existingUser));
+		mockPasswordService.verify.mockResolvedValue(ok(false));
 
-		await expect(loginUseCase.execute(validInput)).rejects.toThrow(InvalidCredentialsError);
+		const result = await loginUseCase.execute(validInput);
+
+		expect(result.success).toBe(false);
+		if (!result.success) {
+			expect(result.error).toBeInstanceOf(InvalidCredentialsError);
+		}
 		expect(mockJwtService.sign).not.toHaveBeenCalled();
 	});
 });
