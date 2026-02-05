@@ -1,5 +1,5 @@
 import { container } from 'tsyringe';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import {
 	createMockEmailService,
 	createMockJwtService,
@@ -8,6 +8,7 @@ import {
 } from '../../../../tests/setup.js';
 import { UserAlreadyExistsError } from '../../../domain/errors/domain.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
+import { ok } from '../../../lib/shared/types/result.js';
 import type { RegisterInput } from '../../dtos/auth.dto.js';
 import { RegisterUseCase } from './register.use-case.js';
 
@@ -53,16 +54,19 @@ describe('RegisterUseCase', () => {
 			updatedAt: new Date(),
 		};
 
-		mockUserRepository.existsByEmail.mockResolvedValue(false);
-		mockPasswordService.hash.mockResolvedValue('hashed-password');
-		mockUserRepository.create.mockResolvedValue(createdUser);
-		mockEmailService.sendWelcomeEmail.mockResolvedValue(undefined);
-		mockJwtService.sign.mockResolvedValue('jwt-token');
+		mockUserRepository.existsByEmail.mockResolvedValue(ok(false));
+		mockPasswordService.hash.mockResolvedValue(ok('hashed-password'));
+		mockUserRepository.create.mockResolvedValue(ok(createdUser));
+		mockEmailService.sendWelcomeEmail.mockResolvedValue(ok(undefined));
+		mockJwtService.sign.mockResolvedValue(ok('jwt-token'));
 
 		const result = await registerUseCase.execute(validInput);
 
-		expect(result.userId).toBe('user-123');
-		expect(result.token).toBe('jwt-token');
+		expect(result.success).toBe(true);
+		if (result.success) {
+			expect(result.value.userId).toBe('user-123');
+			expect(result.value.token).toBe('jwt-token');
+		}
 		expect(mockUserRepository.existsByEmail).toHaveBeenCalledWith(validInput.email);
 		expect(mockPasswordService.hash).toHaveBeenCalledWith(validInput.password);
 		expect(mockUserRepository.create).toHaveBeenCalledWith({
@@ -79,10 +83,15 @@ describe('RegisterUseCase', () => {
 		expect(mockJwtService.sign).toHaveBeenCalledWith({ userId: 'user-123' });
 	});
 
-	it('should throw UserAlreadyExistsError when email is taken', async () => {
-		mockUserRepository.existsByEmail.mockResolvedValue(true);
+	it('should return UserAlreadyExistsError when email is taken', async () => {
+		mockUserRepository.existsByEmail.mockResolvedValue(ok(true));
 
-		await expect(registerUseCase.execute(validInput)).rejects.toThrow(UserAlreadyExistsError);
+		const result = await registerUseCase.execute(validInput);
+
+		expect(result.success).toBe(false);
+		if (!result.success) {
+			expect(result.error).toBeInstanceOf(UserAlreadyExistsError);
+		}
 		expect(mockUserRepository.create).not.toHaveBeenCalled();
 		expect(mockEmailService.sendWelcomeEmail).not.toHaveBeenCalled();
 	});
