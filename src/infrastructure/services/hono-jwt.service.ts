@@ -16,7 +16,11 @@ export class HonoJwtService implements JwtService {
 	private readonly expiresIn: string;
 
 	constructor() {
-		this.secret = process.env.JWT_SECRET!;
+		const secret = process.env.JWT_SECRET;
+		if (!secret) {
+			throw new Error('JWT_SECRET environment variable is required');
+		}
+		this.secret = secret;
 		this.expiresIn = process.env.JWT_EXPIRES_IN || '24h';
 	}
 

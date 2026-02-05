@@ -3,9 +3,10 @@ import type { ContentfulStatusCode } from 'hono/utils/http-status';
 import { ZodError } from 'zod';
 import { ApplicationError } from '../../application/errors/application.errors.js';
 import { DomainError } from '../../domain/errors/domain.errors.js';
+import { logger } from '../../lib/shared/utils/logger.util.js';
 import type { ErrorResponse } from '../types/error.types.js';
 
-export async function errorHandler(c: Context, next: Next): Promise<Response | void> {
+export async function errorHandler(c: Context, next: Next): Promise<Response | undefined> {
 	try {
 		await next();
 	} catch (error) {
@@ -55,7 +56,7 @@ function buildErrorResponse(error: unknown): ErrorResponse {
 		};
 	}
 
-	console.error('Unexpected error:', error);
+	logger.error('Unexpected error', { error });
 	return {
 		success: false,
 		error: {
