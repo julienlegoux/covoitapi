@@ -1,21 +1,19 @@
 export type ApiResponse<T = unknown> = {
-  success: boolean;
-  data?: T;
-  error?: {
-    code: string;
-    message: string;
-    details?: Record<string, string[]>;
-  };
+	success: boolean;
+	data?: T;
+	error?: {
+		code: string;
+		message: string;
+		details?: Record<string, string[]>;
+	};
 };
 
-export type Result<T, E = Error> =
-  | { success: true; value: T }
-  | { success: false; error: E };
+export type Result<T, E = Error> = { success: true; value: T } | { success: false; error: E };
 
 export function ok<T>(value: T): Result<T, never> {
-  return { success: true, value };
+	return { success: true, value };
 }
 
 export function err<E>(error: E): Result<never, E> {
-  return { success: false, error };
+	return { success: false, error };
 }

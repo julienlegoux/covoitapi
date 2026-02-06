@@ -1,8 +1,11 @@
+import type { Result } from '../../lib/shared/types/result.js';
+import type { JwtError } from '../../infrastructure/errors/jwt.errors.js';
+
 export type JwtPayload = {
-  userId: string;
+	userId: string;
 };
 
 export interface JwtService {
-  sign(payload: JwtPayload): Promise<string>;
-  verify(token: string): Promise<JwtPayload | null>;
+	sign(payload: JwtPayload): Promise<Result<string, JwtError>>;
+	verify(token: string): Promise<Result<JwtPayload, JwtError>>;
 }
