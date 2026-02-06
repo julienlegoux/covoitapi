@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Analyse UML — API REST Covoiturage</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.0/mermaid.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface-2: #232733;
+    --border: #2e3344;
+    --text: #e4e6ef;
+    --text-dim: #8b90a5;
+    --accent: #6c8cff;
+    --accent-2: #a78bfa;
+    --accent-3: #34d399;
+    --warn: #fbbf24;
+    --danger: #f87171;
+    --pink: #f472b6;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  .hero {
+    padding: 80px 40px 60px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, #0f1117 0%, #1a1040 50%, #0f1117 100%);
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(ellipse at 30% 50%, rgba(108,140,255,0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 70% 50%, rgba(167,139,250,0.06) 0%, transparent 50%);
+    animation: drift 20s ease-in-out infinite;
+  }
+
+  @keyframes drift {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(-30px, 20px); }
+  }
+
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 3.2rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2), var(--pink));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    position: relative;
+    margin-bottom: 12px;
+  }
+
+  .hero .subtitle {
+    font-size: 1.1rem;
+    color: var(--text-dim);
+    position: relative;
+    font-weight: 400;
+  }
+
+  .hero .badges {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 24px;
+    position: relative;
+    flex-wrap: wrap;
+  }
+
+  .badge {
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.5px;
+  }
+
+  .badge.hono { background: rgba(108,140,255,0.15); color: var(--accent); border: 1px solid rgba(108,140,255,0.3); }
+  .badge.prisma { background: rgba(167,139,250,0.15); color: var(--accent-2); border: 1px solid rgba(167,139,250,0.3); }
+  .badge.neon { background: rgba(52,211,153,0.15); color: var(--accent-3); border: 1px solid rgba(52,211,153,0.3); }
+  .badge.clean { background: rgba(244,114,182,0.15); color: var(--pink); border: 1px solid rgba(244,114,182,0.3); }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 32px;
+  }
+
+  nav.toc {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(15,17,23,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 0;
+  }
+
+  nav.toc .container {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  nav.toc a {
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 0.82rem;
+    font-weight: 500;
+    padding: 6px 14px;
+    border-radius: 8px;
+    white-space: nowrap;
+    transition: all 0.2s;
+  }
+
+  nav.toc a:hover {
+    background: var(--surface);
+    color: var(--text);
+  }
+
+  section {
+    padding: 60px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  section:last-child { border-bottom: none; }
+
+  h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+
+  h2 .num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--accent);
+    display: block;
+    margin-bottom: 4px;
+    font-weight: 500;
+  }
+
+  h3 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--accent-2);
+    margin: 32px 0 12px;
+  }
+
+  .section-desc {
+    color: var(--text-dim);
+    margin-bottom: 32px;
+    font-size: 0.95rem;
+    max-width: 700px;
+  }
+
+  .diagram-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    margin: 24px 0;
+    overflow-x: auto;
+  }
+
+  .diagram-card .mermaid {
+    display: flex;
+    justify-content: center;
+  }
+
+  .diagram-card .mermaid svg {
+    max-width: 100%;
+  }
+
+  .entity-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+    margin: 24px 0;
+  }
+
+  .entity-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .entity-card:hover {
+    border-color: var(--accent);
+  }
+
+  .entity-card .header {
+    padding: 14px 20px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .entity-card .header .icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+  }
+
+  .entity-card .fields {
+    padding: 12px 20px;
+  }
+
+  .field {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 5px 0;
+    font-size: 0.85rem;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .field .type {
+    color: var(--accent-2);
+    min-width: 80px;
+    font-size: 0.78rem;
+  }
+
+  .field .name { color: var(--text); }
+
+  .field .pk {
+    font-size: 0.65rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(251,191,36,0.15);
+    color: var(--warn);
+    font-weight: 600;
+  }
+
+  .field .fk {
+    font-size: 0.65rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(108,140,255,0.15);
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  .routes-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 24px 0;
+    font-size: 0.88rem;
+  }
+
+  .routes-table th {
+    text-align: left;
+    padding: 12px 16px;
+    font-weight: 600;
+    color: var(--text-dim);
+    border-bottom: 2px solid var(--border);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .routes-table td {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+  }
+
+  .routes-table tr:hover td { background: rgba(108,140,255,0.04); }
+
+  .method {
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.72rem;
+    letter-spacing: 0.5px;
+  }
+
+  .method.get { background: rgba(52,211,153,0.15); color: var(--accent-3); }
+  .method.post { background: rgba(108,140,255,0.15); color: var(--accent); }
+  .method.put { background: rgba(251,191,36,0.15); color: var(--warn); }
+  .method.patch { background: rgba(167,139,250,0.15); color: var(--accent-2); }
+  .method.delete { background: rgba(248,113,113,0.15); color: var(--danger); }
+
+  .arch-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+    margin: 24px 0;
+  }
+
+  .arch-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+  }
+
+  .arch-card h4 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .arch-card p {
+    font-size: 0.83rem;
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+
+  .arch-card code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    background: var(--surface-2);
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: var(--accent-3);
+  }
+
+  .folder-tree {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    line-height: 1.9;
+    color: var(--text-dim);
+    overflow-x: auto;
+  }
+
+  .folder-tree .dir { color: var(--accent); }
+  .folder-tree .file { color: var(--text); }
+  .folder-tree .comment { color: #555a70; }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <h1>API REST Covoiturage</h1>
+  <p class="subtitle">Analyse UML complète — Entités, Use Cases, Séquences & Classes</p>
+  <div class="badges">
+    <span class="badge hono">Hono</span>
+    <span class="badge prisma">Prisma ORM</span>
+    <span class="badge neon">Neon PostgreSQL</span>
+    <span class="badge clean">Clean Architecture</span>
+  </div>
+</div>
+
+<nav class="toc">
+  <div class="container">
+    <a href="#entities">Entités</a>
+    <a href="#usecase">Use Cases</a>
+    <a href="#class">Diagramme de Classes</a>
+    <a href="#sequence">Séquences</a>
+    <a href="#erd">ERD / MCD</a>
+    <a href="#routes">Routes API</a>
+    <a href="#archi">Architecture</a>
+  </div>
+</nav>
+
+<!-- ===================== ENTITÉS ===================== -->
+<section id="entities">
+<div class="container">
+  <h2><span class="num">01</span>Entités du Domaine</h2>
+  <p class="section-desc">Les entités métier extraites du cahier des charges, avec leurs attributs et relations.</p>
+
+  <div class="entity-grid">
+
+    <div class="entity-card">
+      <div class="header">
+        <div class="icon" style="background:rgba(108,140,255,0.15);color:var(--accent);">U</div>
+        User (Personne)
+      </div>
+      <div class="fields">
+        <div class="field"><span class="type">Int</span><span class="name">id</span><span class="pk">PK</span></div>
+        <div class="field"><span class="type">String</span><span class="name">login</span></div>
+        <div class="field"><span class="type">String</span><span class="name">password</span></div>
+        <div class="field"><span class="type">String</span><span class="name">prenom</span></div>
+        <div class="field"><span class="type">String</span><span class="name">nom</span></div>
+        <div class="field"><span class="type">String</span><span class="name">telephone</span></div>
+        <div class="field"><span class="type">String</span><span class="name">email</span></div>
+        <div class="field"><span class="type">String?</span><span class="name">ville</span></div>
+        <div class="field"><span class="type">String?</span><span class="name">role</span></div>
+      </div>
+    </div>
+
+    <div class="entity-card">
+      <div class="header">
+        <div class="icon" style="background:rgba(52,211,153,0.15);color:var(--accent-3);">R</div>
+        Route (Trajet)
+      </div>
+      <div class="fields">
+        <div class="field"><span class="type">Int</span><span class="name">id</span><span class="pk">PK</span></div>
+        <div class="field"><span class="type">String</span><span class="name">villeDepart</span></div>
+        <div class="field"><span class="type">String</span><span class="name">villeArrivee</span></div>
+        <div class="field"><span class="type">DateTime</span><span class="name">dateDepart</span></div>
+        <div class="field"><span class="type">Int</span><span class="name">kms</span></div>
+        <div class="field"><span class="type">Int</span><span class="name">placesDisponibles</span></div>
+        <div class="field"><span class="type">Int</span><span class="name">conducteurId</span><span class="fk">FK</span></div>
+      </div>
+    </div>
+
+    <div class="entity-card">
+      <div class="header">
+        <div class="icon" style="background:rgba(244,114,182,0.15);color:var(--pink);">I</div>
+        Inscription (Réservation)
+      </div>
+      <div class="fields">
+        <div class="field"><span class="type">Int</span><span class="name">id</span><span class="pk">PK</span></div>
+        <div class="field"><span class="type">Int</span><span class="name">userId</span><span class="fk">FK</span></div>
+        <div class="field"><span class="type">Int</span><span class="name">routeId</span><span class="fk">FK</span></div>
+        <div class="field"><span class="type">DateTime</span><span class="name">createdAt</span></div>
+      </div>
+    </div>
+
+    <div class="entity-card">
+      <div class="header">
+        <div class="icon" style="background:rgba(251,191,36,0.15);color:var(--warn);">C</div>
+        Car (Voiture)
+      </div>
+      <div class="fields">
+        <div class="field"><span class="type">Int</span><span class="name">id</span><span class="pk">PK</span></div>
+        <div class="field"><span class="type">String</span><span class="name">modele</span></div>
+        <div class="field"><span class="type">Int</span><span class="name">places</span></div>
+        <div class="field"><span class="type">String</span><span class="name">immatriculation</span></div>
+        <div class="field"><span class="type">Int</span><span class="name">brandId</span><span class="fk">FK</span></div>
+        <div class="field"><span class="type">Int</span><span class="name">userId</span><span class="fk">FK</span></div>
+      </div>
+    </div>
+
+    <div class="entity-card">
+      <div class="header">
+        <div class="icon" style="background:rgba(167,139,250,0.15);color:var(--accent-2);">B</div>
+        Brand (Marque)
+      </div>
+      <div class="fields">
+        <div class="field"><span class="type">Int</span><span class="name">id</span><span class="pk">PK</span></div>
+        <div class="field"><span class="type">String</span><span class="name">nom</span></div>
+      </div>
+    </div>
+
+    <div class="entity-card">
+      <div class="header">
+        <div class="icon" style="background:rgba(248,113,113,0.15);color:var(--danger);">V</div>
+        City (Ville)
+      </div>
+      <div class="fields">
+        <div class="field"><span class="type">Int</span><span class="name">id</span><span class="pk">PK</span></div>
+        <div class="field"><span class="type">String</span><span class="name">ville</span></div>
+        <div class="field"><span class="type">String</span><span class="name">codePostal</span></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</section>
+
+<!-- ===================== USE CASES ===================== -->
+<section id="usecase">
+<div class="container">
+  <h2><span class="num">02</span>Diagrammes de Cas d'Utilisation</h2>
+  <p class="section-desc">Les cas d'utilisation identifiés dans le cahier des charges, avec les acteurs élève et administrateur.</p>
+
+  <h3>Use Case — Authentification & Inscription</h3>
+  <div class="diagram-card">
+    <div class="mermaid">
+graph LR
+    Eleve((👤 Élève))
+    Admin((👤 Admin))
+
+    UC1[🔐 Authentification]
+    UC2[📝 Register]
+    UC3[✅ Confirmation Registration]
+
+    Eleve --> UC1
+    Eleve --> UC2
+    Admin --> UC1
+    UC1 -.extend.-> UC2
+    UC2 -.include.-> UC3
+    </div>
+  </div>
+
+  <h3>Use Case — Accueil (Utilisateur Authentifié)</h3>
+  <div class="diagram-card">
+    <div class="mermaid">
+graph LR
+    Eleve((👤 Élève))
+
+    UC0[🔐 Authentification]
+    UC1[🏠 Accueil]
+    UC2[📋 Liste des Trajets]
+    UC3[🔍 Rechercher un Trajet]
+    UC4[📢 Publier un Trajet]
+    UC5[🗂️ Liste de mes Trajets]
+    UC6[👤 Informations de mon compte]
+
+    Eleve --> UC1
+    UC1 -.include.-> UC0
+    UC1 -.include.-> UC2
+    UC1 -.extend.-> UC3
+    UC1 -.extend.-> UC4
+    UC1 -.extend.-> UC5
+    UC1 -.extend.-> UC6
+    </div>
+  </div>
+
+  <h3>Use Case — Détail & Réservation d'un Trajet</h3>
+  <div class="diagram-card">
+    <div class="mermaid">
+graph LR
+    Eleve((👤 Élève))
+
+    UC1[📋 Liste des Trajets]
+    UC2[🔎 Détail d'un Trajet]
+    UC3[🎫 Réserver une Place]
+    UC4[📧 Envoyer Email au Conducteur]
+
+    Eleve --> UC1
+    UC1 -.extend.-> UC2
+    UC2 -.extend.-> UC3
+    UC2 -.extend.-> UC4
+    </div>
+  </div>
+
+  <h3>Use Case — Gestion des Trajets (Conducteur)</h3>
+  <div class="diagram-card">
+    <div class="mermaid">
+graph LR
+    Eleve((👤 Élève))
+
+    UC1[🗂️ Liste de mes Trajets]
+    UC2[👁️ Consulter une Réservation]
+    UC3[❌ Supprimer une Réservation]
+    UC4[📢 Publier un Trajet]
+    UC5[➕ Créer un Trajet]
+    UC6[🗑️ Supprimer un Trajet]
+    UC7[📧 Email aux Passagers]
+
+    Eleve --> UC1
+    Eleve --> UC4
+    UC1 -.extend.-> UC2
+    UC1 -.extend.-> UC3
+    UC4 -.extend.-> UC5
+    UC4 -.extend.-> UC6
+    UC6 -.extend.-> UC7
+    </div>
+  </div>
+
+  <h3>Use Case — Mon Compte</h3>
+  <div class="diagram-card">
+    <div class="mermaid">
+graph LR
+    Eleve((👤 Élève))
+
+    UC1[👤 Informations de mon compte]
+    UC2[✏️ Modifier mon compte]
+
+    Eleve --> UC1
+    UC1 -.extend.-> UC2
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ===================== CLASS DIAGRAM ===================== -->
+<section id="class">
+<div class="container">
+  <h2><span class="num">03</span>Diagramme de Classes</h2>
+  <p class="section-desc">Relations entre les classes du domaine métier avec multiplicités.</p>
+
+  <div class="diagram-card">
+    <div class="mermaid">
+classDiagram
+    class User {
+        +Int id
+        +String login
+        +String password
+        +String prenom
+        +String nom
+        +String telephone
+        +String email
+        +String ville
+        +String role
+        +register(login, password) User
+        +login(login, password) Token
+        +updateProfile() User
+    }
+
+    class Route {
+        +Int id
+        +String villeDepart
+        +String villeArrivee
+        +DateTime dateDepart
+        +Int kms
+        +Int placesDisponibles
+        +Int conducteurId
+        +create() Route
+        +delete() void
+        +search(villeD, villeA, date) Route[]
+    }
+
+    class Inscription {
+        +Int id
+        +Int userId
+        +Int routeId
+        +DateTime createdAt
+        +create() Inscription
+        +delete() void
+        +checkAvailability() Boolean
+    }
+
+    class Car {
+        +Int id
+        +String modele
+        +Int places
+        +String immatriculation
+        +Int brandId
+        +Int userId
+        +create() Car
+        +update() Car
+        +delete() void
+    }
+
+    class Brand {
+        +Int id
+        +String nom
+        +create() Brand
+        +delete() void
+    }
+
+    class City {
+        +Int id
+        +String ville
+        +String codePostal
+        +create() City
+        +delete() void
+    }
+
+    User "1" --> "*" Route : conduit
+    User "1" --> "*" Inscription : réserve
+    Route "1" --> "*" Inscription : contient
+    User "1" --> "0..1" Car : possède
+    Car "*" --> "1" Brand : est de marque
+    Route "*" --> "1" City : villeDepart
+    Route "*" --> "1" City : villeArrivee
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ===================== SEQUENCE DIAGRAMS ===================== -->
+<section id="sequence">
+<div class="container">
+  <h2><span class="num">04</span>Diagrammes de Séquence</h2>
+  <p class="section-desc">Flux d'interactions détaillés pour chaque cas d'utilisation principal.</p>
+
+  <h3>Séquence — Authentification (Login)</h3>
+  <div class="diagram-card">
+    <div class="mermaid">
+sequenceDiagram
+    actor E as Élève
+    participant App as Application Mobile
+    participant API as API REST (Hono)
+    participant DB as Neon PostgreSQL
+
+    E->>App: Saisit email + password
+    App->>API: POST /login {login, password}
+    API->>DB: SELECT user WHERE login = ?
+    DB-->>API: User trouvé
+    alt Password correct
+        API->>API: Génère token (JWT)
+        API-->>App: 200 {token, userId}
+        App-->>E: Redirection Accueil
+    else Password incorrect
+        API-->>App: 401 {error: "Identifiants incorrects"}
+        App-->>E: Affiche message d'erreur
+    end
+    </div>
+  </div>
+
+  <h3>Séquence — Inscription (Register)</h3>
+  <div class="diagram-card">
+    <div class="mermaid">
+sequenceDiagram
+    actor E as Élève
+    participant App as Application Mobile
+    participant API as API REST (Hono)
+    participant DB as Neon PostgreSQL
+
+    E->>App: Saisit login, password, confirmPassword
+    App->>API: POST /register {login, password, confirmPassword}
+    alt Passwords ne correspondent pas
+        API-->>App: 400 {error: "Mots de passe différents"}
+        App-->>E: Affiche erreur
+    else Passwords identiques
+        API->>DB: INSERT INTO users
+        DB-->>API: User créé
+        API->>API: Génère token
+        API-->>App: 201 {token, userId}
+        App-->>E: Redirection Accueil
+    end
+    </div>
+  </div>
+
+  <h3>Séquence — Liste des Trajets</h3>
+  <div class="diagram-card">
+    <div class="mermaid">
+sequenceDiagram
+    actor E as Élève
+    participant App as Application Mobile
+    participant API as API REST (Hono)
+    participant DB as Neon PostgreSQL
+
+    E->>App: Accède à l'Accueil
+    App->>API: GET /listRoutes (x-auth-token: token)
+    API->>API: Vérifie token
+    alt Token valide
+        API->>DB: SELECT * FROM routes + JOIN users
+        DB-->>API: Liste des trajets
+        API-->>App: 200 [{trajet1}, {trajet2}, ...]
+        App-->>E: Affiche liste des trajets
+    else Token invalide
+        API-->>App: 403 {error: "Non autorisé"}
+    end
+    </div>
+  </div>
+
+  <h3>Séquence — Détail Trajet + Info Conducteur</h3>
+  <div class="diagram-card">
+    <div class="mermaid">
+sequenceDiagram
+    actor E as Élève
+    participant App as Application Mobile
+    participant API as API REST (Hono)
+    participant DB as Neon PostgreSQL
+
+    E->>App: Clic sur un trajet
+    App->>API: GET /route/{id} (x-auth-token)
+    API->>DB: SELECT route WHERE id = ?
+    DB-->>API: Détail du trajet
+    API->>DB: SELECT person WHERE id = conducteurId
+    DB-->>API: Info conducteur
+    API-->>App: 200 {trajet + conducteur + voiture}
+    App-->>E: Affiche détail du trajet
+    </div>
+  </div>
+
+  <h3>Séquence — Réserver une Place</h3>
+  <div class="diagram-card">
+    <div class="mermaid">
+sequenceDiagram
+    actor E as Élève
+    participant App as Application Mobile
+    participant API as API REST (Hono)
+    participant DB as Neon PostgreSQL
+
+    E->>App: Clic "Réserver"
+    App->>API: POST /inscription {idpers, idtrajet}
+    API->>DB: COUNT inscriptions WHERE routeId = ?
+    DB-->>API: Nombre de réservations
+    API->>DB: SELECT places FROM routes WHERE id = ?
+    DB-->>API: Nombre de places
+
+    alt Places disponibles
+        API->>DB: INSERT INTO inscriptions
+        DB-->>API: OK
+        API-->>App: 200 {message: "OK"}
+        App-->>E: "Réservation effectuée"
+    else Plus de place
+        API-->>App: 400 {message: "NOK - Plus de place"}
+        App-->>E: "Réservation impossible"
+    end
+    </div>
+  </div>
+
+  <h3>Séquence — Rechercher un Trajet</h3>
+  <div class="diagram-card">
+    <div class="mermaid">
+sequenceDiagram
+    actor E as Élève
+    participant App as Application Mobile
+    participant API as API REST (Hono)
+    participant DB as Neon PostgreSQL
+
+    E->>App: Saisit villeDepart, villeArrivée, date
+    App->>API: GET /findRoute?villeD=X&villeA=Y&dateT=Z
+    API->>DB: SELECT FROM routes WHERE villeD AND villeA AND date
+    DB-->>API: Résultats
+    API-->>App: 200 [{trajet1}, {trajet2}, ...]
+    App-->>E: Affiche résultats de recherche
+    </div>
+  </div>
+
+  <h3>Séquence — Publier un Trajet</h3>
+  <div class="diagram-card">
+    <div class="mermaid">
+sequenceDiagram
+    actor E as Conducteur
+    participant App as Application Mobile
+    participant API as API REST (Hono)
+    participant DB as Neon PostgreSQL
+
+    E->>App: Saisit villeD, villeA, date, heure, kms
+    App->>API: POST /route {kms, idpers, dateT, villeD, villeA}
+    API->>DB: INSERT INTO routes
+    DB-->>API: Trajet créé
+    API-->>App: 201 {trajet}
+    App-->>E: Redirection vers "Mes Trajets"
+    </div>
+  </div>
+
+  <h3>Séquence — Supprimer un Trajet (Conducteur)</h3>
+  <div class="diagram-card">
+    <div class="mermaid">
+sequenceDiagram
+    actor E as Conducteur
+    participant App as Application Mobile
+    participant API as API REST (Hono)
+    participant DB as Neon PostgreSQL
+    participant Brevo as API Brevo (Email)
+
+    E->>App: Clic "Supprimer le trajet"
+    App->>API: DELETE /route/{id}
+    API->>DB: SELECT passagers FROM inscriptions WHERE routeId
+    DB-->>API: Liste passagers
+    API->>DB: DELETE FROM inscriptions WHERE routeId
+    DB-->>API: OK
+    API->>DB: DELETE FROM routes WHERE id
+    DB-->>API: OK
+    API->>Brevo: Envoi emails annulation aux passagers
+    Brevo-->>API: OK
+    API-->>App: 200 {message: "OK"}
+    App-->>E: Redirection vers Mes Trajets
+    </div>
+  </div>
+
+</div>
+</section>
+
+<!-- ===================== ERD ===================== -->
+<section id="erd">
+<div class="container">
+  <h2><span class="num">05</span>ERD — Modèle Conceptuel de Données</h2>
+  <p class="section-desc">Schéma entité-relation avec cardinalités pour la base Neon PostgreSQL.</p>
+
+  <div class="diagram-card">
+    <div class="mermaid">
+erDiagram
+    USER {
+        int id PK
+        string login UK
+        string password
+        string prenom
+        string nom
+        string telephone
+        string email
+        string ville
+        string role
+    }
+
+    ROUTE {
+        int id PK
+        string ville_depart
+        string ville_arrivee
+        datetime date_depart
+        int kms
+        int places_disponibles
+        int conducteur_id FK
+    }
+
+    INSCRIPTION {
+        int id PK
+        int user_id FK
+        int route_id FK
+        datetime created_at
+    }
+
+    CAR {
+        int id PK
+        string modele
+        int places
+        string immatriculation
+        int brand_id FK
+        int user_id FK
+    }
+
+    BRAND {
+        int id PK
+        string nom UK
+    }
+
+    CITY {
+        int id PK
+        string ville
+        string code_postal
+    }
+
+    USER ||--o{ ROUTE : "conduit (1,n)"
+    USER ||--o{ INSCRIPTION : "réserve (0,n)"
+    ROUTE ||--o{ INSCRIPTION : "a (0,n)"
+    USER ||--o| CAR : "possède (0,1)"
+    CAR }o--|| BRAND : "marque (1,1)"
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ===================== ROUTES ===================== -->
+<section id="routes">
+<div class="container">
+  <h2><span class="num">06</span>Routes de l'API REST</h2>
+  <p class="section-desc">Ensemble des endpoints extraits du cahier des charges.</p>
+
+  <div class="diagram-card" style="padding:16px;">
+    <table class="routes-table">
+      <thead>
+        <tr><th>Méthode</th><th>Route</th><th>Paramètres</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><span class="method post">POST</span></td><td>/register</td><td>login, password</td><td>Inscription utilisateur</td></tr>
+        <tr><td><span class="method post">POST</span></td><td>/login</td><td>login, password</td><td>Authentification → token</td></tr>
+        <tr><td><span class="method get">GET</span></td><td>/listRoutes</td><td>—</td><td>Liste de tous les trajets</td></tr>
+        <tr><td><span class="method get">GET</span></td><td>/route/:id</td><td>id</td><td>Détail d'un trajet</td></tr>
+        <tr><td><span class="method get">GET</span></td><td>/findRoute</td><td>villeD, villeA, dateT</td><td>Rechercher un trajet</td></tr>
+        <tr><td><span class="method post">POST</span></td><td>/route</td><td>kms, idpers, dateT, villeD, villeA</td><td>Publier un trajet</td></tr>
+        <tr><td><span class="method delete">DELETE</span></td><td>/route/:id</td><td>id</td><td>Supprimer un trajet</td></tr>
+        <tr><td><span class="method get">GET</span></td><td>/listInscriptions</td><td>—</td><td>Liste des réservations</td></tr>
+        <tr><td><span class="method get">GET</span></td><td>/listInscriptionsUsers/:idpers</td><td>idpers</td><td>Réservations d'un utilisateur</td></tr>
+        <tr><td><span class="method get">GET</span></td><td>/listPassengersDriver/:idtrajet</td><td>idtrajet</td><td>Passagers d'un trajet (conducteur)</td></tr>
+        <tr><td><span class="method post">POST</span></td><td>/inscription</td><td>idpers, idtrajet</td><td>Réserver une place</td></tr>
+        <tr><td><span class="method delete">DELETE</span></td><td>/inscription/:id</td><td>id</td><td>Supprimer une réservation</td></tr>
+        <tr><td><span class="method get">GET</span></td><td>/listPersons</td><td>—</td><td>Liste des utilisateurs</td></tr>
+        <tr><td><span class="method get">GET</span></td><td>/person/:id</td><td>id</td><td>Détail d'un utilisateur</td></tr>
+        <tr><td><span class="method post">POST</span></td><td>/person</td><td>prenom, nom, tel, email, ville, voiture</td><td>Créer un utilisateur</td></tr>
+        <tr><td><span class="method put">PUT</span></td><td>/person/:idpers</td><td>prenom, nom, tel, email</td><td>Modifier profil complet</td></tr>
+        <tr><td><span class="method patch">PATCH</span></td><td>/person/:idpers</td><td>tel, email, marque</td><td>Modifier profil partiel</td></tr>
+        <tr><td><span class="method delete">DELETE</span></td><td>/person/:id</td><td>id</td><td>Supprimer un utilisateur</td></tr>
+        <tr><td><span class="method get">GET</span></td><td>/listBrands</td><td>—</td><td>Liste des marques</td></tr>
+        <tr><td><span class="method post">POST</span></td><td>/brand</td><td>nom</td><td>Ajouter une marque</td></tr>
+        <tr><td><span class="method delete">DELETE</span></td><td>/brand/:id</td><td>id</td><td>Supprimer une marque</td></tr>
+        <tr><td><span class="method get">GET</span></td><td>/listePostalsCodes</td><td>—</td><td>Liste des villes/CP</td></tr>
+        <tr><td><span class="method post">POST</span></td><td>/city</td><td>ville, cp</td><td>Ajouter une ville</td></tr>
+        <tr><td><span class="method delete">DELETE</span></td><td>/city/:id</td><td>id</td><td>Supprimer une ville</td></tr>
+        <tr><td><span class="method get">GET</span></td><td>/listCars</td><td>—</td><td>Liste des voitures</td></tr>
+        <tr><td><span class="method post">POST</span></td><td>/car</td><td>modele, place, marqueId, immatriculation</td><td>Ajouter une voiture</td></tr>
+        <tr><td><span class="method put">PUT</span></td><td>/car</td><td>modele, place, marqueId, immatriculation</td><td>Modifier voiture (complet)</td></tr>
+        <tr><td><span class="method patch">PATCH</span></td><td>/car</td><td>modele, place, marqueId, immatriculation</td><td>Modifier voiture (partiel)</td></tr>
+        <tr><td><span class="method delete">DELETE</span></td><td>/car/:id</td><td>id</td><td>Supprimer une voiture</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+</section>
+
+<!-- ===================== ARCHITECTURE ===================== -->
+<section id="archi">
+<div class="container">
+  <h2><span class="num">07</span>Architecture Clean — Hono + Prisma + Neon</h2>
+  <p class="section-desc">Organisation du projet en couches (Clean Architecture + SOLID).</p>
+
+  <div class="arch-grid">
+    <div class="arch-card">
+      <h4>📦 Domain Layer</h4>
+      <p>Entités métier pures, interfaces de repositories, et cas d'utilisation. Aucune dépendance externe. Contient <code>entities/</code>, <code>repositories/</code> (interfaces), <code>use-cases/</code>.</p>
+    </div>
+    <div class="arch-card">
+      <h4>🔌 Infrastructure Layer</h4>
+      <p>Implémentation des repositories avec Prisma + Neon PostgreSQL. Contient <code>prisma/</code> (schema, migrations), <code>repositories/</code> (implémentations concrètes).</p>
+    </div>
+    <div class="arch-card">
+      <h4>🌐 Presentation Layer</h4>
+      <p>Routes Hono, controllers, middlewares (auth JWT via <code>x-auth-token</code>), validation des entrées. Contient <code>routes/</code>, <code>controllers/</code>, <code>middlewares/</code>.</p>
+    </div>
+    <div class="arch-card">
+      <h4>⚙️ Application Layer</h4>
+      <p>Orchestration des use cases, DTOs, mappers. Fait le pont entre la présentation et le domaine. Contient <code>services/</code>, <code>dtos/</code>, <code>mappers/</code>.</p>
+    </div>
+  </div>
+
+  <h3>Structure de Fichiers</h3>
+  <div class="folder-tree">
+<span class="dir">src/</span>
+├── <span class="dir">domain/</span>                    <span class="comment"># Couche métier pure</span>
+│   ├── <span class="dir">entities/</span>
+│   │   ├── <span class="file">User.ts</span>
+│   │   ├── <span class="file">Route.ts</span>
+│   │   ├── <span class="file">Inscription.ts</span>
+│   │   ├── <span class="file">Car.ts</span>
+│   │   ├── <span class="file">Brand.ts</span>
+│   │   └── <span class="file">City.ts</span>
+│   ├── <span class="dir">repositories/</span>          <span class="comment"># Interfaces (contrats)</span>
+│   │   ├── <span class="file">IUserRepository.ts</span>
+│   │   ├── <span class="file">IRouteRepository.ts</span>
+│   │   ├── <span class="file">IInscriptionRepository.ts</span>
+│   │   ├── <span class="file">ICarRepository.ts</span>
+│   │   ├── <span class="file">IBrandRepository.ts</span>
+│   │   └── <span class="file">ICityRepository.ts</span>
+│   └── <span class="dir">use-cases/</span>
+│       ├── <span class="file">RegisterUseCase.ts</span>
+│       ├── <span class="file">LoginUseCase.ts</span>
+│       ├── <span class="file">CreateRouteUseCase.ts</span>
+│       ├── <span class="file">SearchRouteUseCase.ts</span>
+│       ├── <span class="file">BookRouteUseCase.ts</span>
+│       ├── <span class="file">CancelBookingUseCase.ts</span>
+│       └── <span class="file">UpdateProfileUseCase.ts</span>
+│
+├── <span class="dir">infrastructure/</span>            <span class="comment"># Implémentations concrètes</span>
+│   ├── <span class="dir">prisma/</span>
+│   │   ├── <span class="file">schema.prisma</span>
+│   │   └── <span class="dir">migrations/</span>
+│   └── <span class="dir">repositories/</span>
+│       ├── <span class="file">PrismaUserRepository.ts</span>
+│       ├── <span class="file">PrismaRouteRepository.ts</span>
+│       ├── <span class="file">PrismaInscriptionRepository.ts</span>
+│       ├── <span class="file">PrismaCarRepository.ts</span>
+│       ├── <span class="file">PrismaBrandRepository.ts</span>
+│       └── <span class="file">PrismaCityRepository.ts</span>
+│
+├── <span class="dir">application/</span>               <span class="comment"># Services & DTOs</span>
+│   ├── <span class="dir">dtos/</span>
+│   ├── <span class="dir">mappers/</span>
+│   └── <span class="dir">services/</span>
+│
+├── <span class="dir">presentation/</span>              <span class="comment"># Hono routes & middlewares</span>
+│   ├── <span class="dir">routes/</span>
+│   │   ├── <span class="file">auth.routes.ts</span>
+│   │   ├── <span class="file">route.routes.ts</span>
+│   │   ├── <span class="file">inscription.routes.ts</span>
+│   │   ├── <span class="file">person.routes.ts</span>
+│   │   ├── <span class="file">brand.routes.ts</span>
+│   │   ├── <span class="file">city.routes.ts</span>
+│   │   └── <span class="file">car.routes.ts</span>
+│   ├── <span class="dir">controllers/</span>
+│   └── <span class="dir">middlewares/</span>
+│       └── <span class="file">authMiddleware.ts</span>  <span class="comment"># Vérifie x-auth-token (JWT)</span>
+│
+├── <span class="file">index.ts</span>                   <span class="comment"># Point d'entrée Hono</span>
+└── <span class="file">container.ts</span>               <span class="comment"># Injection de dépendances</span>
+
+<span class="dir">prisma/</span>
+└── <span class="file">schema.prisma</span>              <span class="comment"># Schéma BDD Neon PostgreSQL</span>
+
+<span class="file">package.json</span>
+<span class="file">tsconfig.json</span>
+<span class="file">.env</span>                            <span class="comment"># DATABASE_URL, JWT_SECRET</span>
+  </div>
+
+  <h3>Principes SOLID appliqués</h3>
+  <div class="arch-grid">
+    <div class="arch-card">
+      <h4>S — Single Responsibility</h4>
+      <p>Chaque use case a une seule responsabilité. <code>BookRouteUseCase</code> ne fait que la réservation.</p>
+    </div>
+    <div class="arch-card">
+      <h4>O — Open/Closed</h4>
+      <p>Les repositories sont ouverts à l'extension (nouvelles implémentations) sans modifier le domaine.</p>
+    </div>
+    <div class="arch-card">
+      <h4>L — Liskov Substitution</h4>
+      <p><code>PrismaUserRepository</code> est substituable à <code>IUserRepository</code> sans casser le comportement.</p>
+    </div>
+    <div class="arch-card">
+      <h4>I — Interface Segregation</h4>
+      <p>Interfaces spécifiques par entité plutôt qu'un seul <code>IRepository</code> générique.</p>
+    </div>
+    <div class="arch-card">
+      <h4>D — Dependency Inversion</h4>
+      <p>Le domaine dépend d'abstractions (interfaces), pas de Prisma directement. Injection via <code>container.ts</code>.</p>
+    </div>
+  </div>
+</div>
+</section>
+
+<div style="padding:40px;text-align:center;color:var(--text-dim);font-size:0.82rem;">
+  Analyse UML — API REST Covoiturage GRETA • Hono + Prisma + Neon PostgreSQL • Clean Architecture + SOLID
+</div>
+
+<script>
+mermaid.initialize({
+  startOnLoad: true,
+  theme: 'dark',
+  themeVariables: {
+    darkMode: true,
+    background: '#1a1d27',
+    primaryColor: '#6c8cff',
+    primaryTextColor: '#e4e6ef',
+    primaryBorderColor: '#3b4263',
+    lineColor: '#8b90a5',
+    secondaryColor: '#232733',
+    tertiaryColor: '#2e3344',
+    fontFamily: 'DM Sans, sans-serif',
+    fontSize: '14px'
+  },
+  flowchart: { curve: 'basis', padding: 20 },
+  sequence: { mirrorActors: false, messageAlign: 'center' }
+});
+</script>
+</body>
+</html>
