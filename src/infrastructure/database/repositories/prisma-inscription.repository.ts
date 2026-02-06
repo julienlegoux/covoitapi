@@ -25,6 +25,18 @@ export class PrismaInscriptionRepository implements InscriptionRepository {
 		}
 	}
 
+	async findById(id: string): Promise<Result<InscriptionEntity | null, DatabaseError>> {
+		try {
+			const inscription = await this.prisma.inscription.findUnique({
+				where: { id },
+				include: { user: true, route: true },
+			});
+			return ok(inscription as unknown as InscriptionEntity | null);
+		} catch (e) {
+			return err(new DatabaseError('Failed to find inscription by id', e));
+		}
+	}
+
 	async findByUserId(userId: string): Promise<Result<InscriptionEntity[], DatabaseError>> {
 		try {
 			const inscriptions = await this.prisma.inscription.findMany({

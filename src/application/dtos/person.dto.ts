@@ -4,8 +4,6 @@ export type CreatePersonInput = {
 	email: string;
 	phone: string;
 	password: string;
-	ville?: string;
-	voiture?: string;
 };
 
 export type UpdatePersonInput = {

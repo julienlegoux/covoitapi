@@ -32,8 +32,6 @@ export async function createPerson(c: Context): Promise<Response> {
 		phone: validated.tel,
 		email: validated.email,
 		password: validated.password,
-		ville: validated.ville,
-		voiture: validated.voiture,
 	};
 
 	const useCase = container.resolve(CreatePersonUseCase);

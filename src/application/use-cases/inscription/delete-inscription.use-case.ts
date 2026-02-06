@@ -16,7 +16,15 @@ export class DeleteInscriptionUseCase {
 	) {}
 
 	async execute(id: string): Promise<Result<void, DeleteInscriptionError>> {
-		// We attempt deletion directly; Prisma will throw if not found
+		const findResult = await this.inscriptionRepository.findById(id);
+		if (!findResult.success) {
+			return findResult;
+		}
+
+		if (!findResult.value) {
+			return err(new InscriptionNotFoundError(id));
+		}
+
 		return this.inscriptionRepository.delete(id);
 	}
 }
