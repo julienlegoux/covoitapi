@@ -1,5 +1,5 @@
 import { inject, injectable } from 'tsyringe';
-import type { CreateUserData, UserEntity } from '../../../domain/entities/user.entity.js';
+import type { CreateUserData, UpdateUserData, UserEntity } from '../../../domain/entities/user.entity.js';
 import type { UserRepository } from '../../../domain/repositories/user.repository.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import type { Result } from '../../../lib/shared/types/result.js';
@@ -13,6 +13,15 @@ export class PrismaUserRepository implements UserRepository {
 		@inject(TOKENS.PrismaClient)
 		private readonly prisma: PrismaClient,
 	) {}
+
+	async findAll(): Promise<Result<UserEntity[], DatabaseError>> {
+		try {
+			const users = await this.prisma.user.findMany();
+			return ok(users);
+		} catch (e) {
+			return err(new DatabaseError('Failed to find all users', e));
+		}
+	}
 
 	async findById(id: string): Promise<Result<UserEntity | null, DatabaseError>> {
 		try {
@@ -50,6 +59,29 @@ export class PrismaUserRepository implements UserRepository {
 			return ok(user);
 		} catch (e) {
 			return err(new DatabaseError('Failed to create user', e));
+		}
+	}
+
+	async update(id: string, data: UpdateUserData): Promise<Result<UserEntity, DatabaseError>> {
+		try {
+			const user = await this.prisma.user.update({
+				where: { id },
+				data,
+			});
+			return ok(user);
+		} catch (e) {
+			return err(new DatabaseError('Failed to update user', e));
+		}
+	}
+
+	async delete(id: string): Promise<Result<void, DatabaseError>> {
+		try {
+			await this.prisma.user.delete({
+				where: { id },
+			});
+			return ok(undefined);
+		} catch (e) {
+			return err(new DatabaseError('Failed to delete user', e));
 		}
 	}
 

@@ -17,5 +17,122 @@ model User {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
+  driver       Driver?
+  inscriptions Inscription[]
+
   @@map("users")
+}
+
+model Driver {
+  id            String @id @default(uuid())
+  driverLicense String @unique @map("driver_license")
+  userId        String @unique @map("user_id")
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  routes Route[]
+
+  @@map("drivers")
+}
+
+model Route {
+  id        String   @id @default(uuid())
+  dateRoute DateTime @map("date_route")
+  kms       Int
+  seats     Int
+  driverId  String   @map("driver_id")
+  carId     String   @map("car_id")
+
+  driver       Driver        @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  car          Car           @relation(fields: [carId], references: [id], onDelete: Restrict)
+  inscriptions Inscription[]
+  cities       CityRoute[]
+
+  @@map("routes")
+}
+
+model Inscription {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now()) @map("created_at")
+  userId    String   @map("user_id")
+  routeId   String   @map("route_id")
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  route Route @relation(fields: [routeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, routeId])
+  @@map("inscriptions")
+}
+
+model City {
+  id       String @id @default(uuid())
+  cityName String @map("city_name")
+  zipcode  String
+
+  routes CityRoute[]
+
+  @@map("cities")
+}
+
+model CityRoute {
+  routeId String @map("route_id")
+  cityId  String @map("city_id")
+
+  route Route @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  city  City  @relation(fields: [cityId], references: [id], onDelete: Cascade)
+
+  @@id([routeId, cityId])
+  @@map("city_routes")
+}
+
+model Car {
+  id      String @id @default(uuid())
+  immat   String @unique
+  modelId String @map("model_id")
+
+  model  Model   @relation(fields: [modelId], references: [id], onDelete: Restrict)
+  routes Route[]
+
+  @@map("cars")
+}
+
+model Model {
+  id      String @id @default(uuid())
+  name    String
+  brandId String @map("brand_id")
+
+  brand  Brand        @relation(fields: [brandId], references: [id], onDelete: Restrict)
+  cars   Car[]
+  colors ColorModel[]
+
+  @@map("models")
+}
+
+model Brand {
+  id   String @id @default(uuid())
+  name String
+
+  models Model[]
+
+  @@map("brands")
+}
+
+model Color {
+  id   String @id @default(uuid())
+  name String
+  hex  String
+
+  models ColorModel[]
+
+  @@map("colors")
+}
+
+model ColorModel {
+  colorId String @map("color_id")
+  modelId String @map("model_id")
+
+  color Color @relation(fields: [colorId], references: [id], onDelete: Cascade)
+  model Model @relation(fields: [modelId], references: [id], onDelete: Cascade)
+
+  @@id([colorId, modelId])
+  @@map("color_models")
 }
