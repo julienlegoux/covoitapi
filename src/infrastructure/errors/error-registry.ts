@@ -21,6 +21,51 @@ export const ErrorCodes = {
 		httpStatus: 404,
 		category: 'domain',
 	},
+	BRAND_NOT_FOUND: {
+		code: 'BRAND_NOT_FOUND',
+		httpStatus: 404,
+		category: 'domain',
+	},
+	CITY_NOT_FOUND: {
+		code: 'CITY_NOT_FOUND',
+		httpStatus: 404,
+		category: 'domain',
+	},
+	CAR_NOT_FOUND: {
+		code: 'CAR_NOT_FOUND',
+		httpStatus: 404,
+		category: 'domain',
+	},
+	CAR_ALREADY_EXISTS: {
+		code: 'CAR_ALREADY_EXISTS',
+		httpStatus: 409,
+		category: 'domain',
+	},
+	DRIVER_NOT_FOUND: {
+		code: 'DRIVER_NOT_FOUND',
+		httpStatus: 404,
+		category: 'domain',
+	},
+	ROUTE_NOT_FOUND: {
+		code: 'ROUTE_NOT_FOUND',
+		httpStatus: 404,
+		category: 'domain',
+	},
+	INSCRIPTION_NOT_FOUND: {
+		code: 'INSCRIPTION_NOT_FOUND',
+		httpStatus: 404,
+		category: 'domain',
+	},
+	ALREADY_INSCRIBED: {
+		code: 'ALREADY_INSCRIBED',
+		httpStatus: 409,
+		category: 'domain',
+	},
+	NO_SEATS_AVAILABLE: {
+		code: 'NO_SEATS_AVAILABLE',
+		httpStatus: 400,
+		category: 'domain',
+	},
 
 	// Application Errors - Input/validation issues
 	VALIDATION_ERROR: {

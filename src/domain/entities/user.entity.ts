@@ -10,3 +10,5 @@ export type UserEntity = {
 };
 
 export type CreateUserData = Omit<UserEntity, 'id' | 'createdAt' | 'updatedAt'>;
+
+export type UpdateUserData = Partial<Pick<UserEntity, 'firstName' | 'lastName' | 'email' | 'phone'>>;
