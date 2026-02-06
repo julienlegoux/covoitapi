@@ -1,16 +1,21 @@
-import "reflect-metadata";
-import { container } from "tsyringe";
-import { withAccelerate } from "@prisma/extension-accelerate";
-import { TOKENS } from "./tokens.js";
-import { PrismaClient } from "../database/generated/prisma/client.js";
-import { PrismaUserRepository } from "../database/repositories/prisma_user.repository.js";
-import { ArgonPasswordService } from "../services/argon_password.service.js";
-import { ResendEmailService } from "../services/resend_email.service.js";
-import { HonoJwtService } from "../services/hono_jwt.service.js";
-import "dotenv/config";
+import 'reflect-metadata';
+import 'dotenv/config';
+import { withAccelerate } from '@prisma/extension-accelerate';
+import { container } from 'tsyringe';
+import { TOKENS } from '../../lib/shared/di/tokens.js';
+import { PrismaClient } from '../database/generated/prisma/client.js';
+import { PrismaUserRepository } from '../database/repositories/prisma-user.repository.js';
+import { ArgonPasswordService } from '../services/argon-password.service.js';
+import { HonoJwtService } from '../services/hono-jwt.service.js';
+import { ResendEmailService } from '../services/resend-email.service.js';
+
+const databaseUrl = process.env.DATABASE_URL;
+if (!databaseUrl) {
+	throw new Error('DATABASE_URL environment variable is required');
+}
 
 const prismaClient = new PrismaClient({
-  accelerateUrl: process.env.DATABASE_URL!,
+	accelerateUrl: databaseUrl,
 }).$extends(withAccelerate());
 
 container.registerInstance(TOKENS.PrismaClient, prismaClient);

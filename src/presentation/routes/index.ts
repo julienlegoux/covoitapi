@@ -1,15 +1,15 @@
-import { Hono } from "hono";
-import { authRoutes } from "./auth.routes.js";
-import { errorHandler } from "../middleware/error_handler.middleware.js";
+import { Hono } from 'hono';
+import { errorHandler } from '../middleware/error-handler.middleware.js';
+import { authRoutes } from './auth.routes.js';
 
 const app = new Hono();
 
-app.use("*", errorHandler);
+app.use('*', errorHandler);
 
-app.route("/auth", authRoutes);
+app.route('/auth', authRoutes);
 
-app.get("/health", (c) => {
-  return c.json({ status: "ok", timestamp: new Date().toISOString() });
+app.get('/health', (c) => {
+	return c.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
 export { app };
