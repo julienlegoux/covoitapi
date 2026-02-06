@@ -6,8 +6,6 @@ export const createPersonSchema = z.object({
 	tel: z.string().min(1, 'Phone is required'),
 	email: z.email('Invalid email format'),
 	password: z.string().min(8, 'Password must be at least 8 characters'),
-	ville: z.string().optional(),
-	voiture: z.string().optional(),
 });
 
 export const updatePersonSchema = z.object({

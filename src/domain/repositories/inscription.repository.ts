@@ -4,6 +4,7 @@ import type { CreateInscriptionData, InscriptionEntity } from '../entities/inscr
 
 export interface InscriptionRepository {
 	findAll(): Promise<Result<InscriptionEntity[], RepositoryError>>;
+	findById(id: string): Promise<Result<InscriptionEntity | null, RepositoryError>>;
 	findByUserId(userId: string): Promise<Result<InscriptionEntity[], RepositoryError>>;
 	findByRouteId(routeId: string): Promise<Result<InscriptionEntity[], RepositoryError>>;
 	create(data: CreateInscriptionData): Promise<Result<InscriptionEntity, RepositoryError>>;

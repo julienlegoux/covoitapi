@@ -24,7 +24,6 @@ export class CreateRouteUseCase {
 	) {}
 
 	async execute(input: CreateRouteInput): Promise<Result<RouteEntity, CreateRouteError>> {
-		// Find driver for this user
 		const driverResult = await this.driverRepository.findByUserId(input.idpers);
 		if (!driverResult.success) {
 			return driverResult;
@@ -34,54 +33,41 @@ export class CreateRouteUseCase {
 			return err(new DriverNotFoundError(input.idpers));
 		}
 
-		// Find or create departure city
-		const departureCityResult = await this.cityRepository.findByCityName(input.villeD);
-		if (!departureCityResult.success) {
-			return departureCityResult;
+		const departureCityIdResult = await this.findOrCreateCity(input.villeD);
+		if (!departureCityIdResult.success) {
+			return departureCityIdResult;
 		}
 
-		let departureCityId: string;
-		if (departureCityResult.value) {
-			departureCityId = departureCityResult.value.id;
-		} else {
-			const createDepartureResult = await this.cityRepository.create({
-				cityName: input.villeD,
-				zipcode: '',
-			});
-			if (!createDepartureResult.success) {
-				return createDepartureResult;
-			}
-			departureCityId = createDepartureResult.value.id;
+		const arrivalCityIdResult = await this.findOrCreateCity(input.villeA);
+		if (!arrivalCityIdResult.success) {
+			return arrivalCityIdResult;
 		}
 
-		// Find or create arrival city
-		const arrivalCityResult = await this.cityRepository.findByCityName(input.villeA);
-		if (!arrivalCityResult.success) {
-			return arrivalCityResult;
-		}
-
-		let arrivalCityId: string;
-		if (arrivalCityResult.value) {
-			arrivalCityId = arrivalCityResult.value.id;
-		} else {
-			const createArrivalResult = await this.cityRepository.create({
-				cityName: input.villeA,
-				zipcode: '',
-			});
-			if (!createArrivalResult.success) {
-				return createArrivalResult;
-			}
-			arrivalCityId = createArrivalResult.value.id;
-		}
-
-		// Create the route with city links via nested writes
 		return this.routeRepository.create({
 			dateRoute: new Date(input.dateT),
 			kms: input.kms,
 			seats: input.seats,
 			driverId: driverResult.value.id,
 			carId: input.carId,
-			cityIds: [departureCityId, arrivalCityId],
+			cityIds: [departureCityIdResult.value, arrivalCityIdResult.value],
 		});
+	}
+
+	private async findOrCreateCity(cityName: string): Promise<Result<string, RepositoryError>> {
+		const findResult = await this.cityRepository.findByCityName(cityName);
+		if (!findResult.success) {
+			return findResult;
+		}
+
+		if (findResult.value) {
+			return { success: true, value: findResult.value.id };
+		}
+
+		const createResult = await this.cityRepository.create({ cityName, zipcode: '' });
+		if (!createResult.success) {
+			return createResult;
+		}
+
+		return { success: true, value: createResult.value.id };
 	}
 }
