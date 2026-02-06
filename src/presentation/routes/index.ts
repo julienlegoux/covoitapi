@@ -8,7 +8,7 @@ import { inscriptionRoutes } from './inscription.routes.js';
 import { personRoutes } from './person.routes.js';
 import { routeRoutes } from './route.routes.js';
 
-const app = new Hono();
+const app = new Hono().basePath('/api');
 
 app.use('*', errorHandler);
 
