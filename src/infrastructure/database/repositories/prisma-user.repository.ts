@@ -1,5 +1,5 @@
 import { inject, injectable } from 'tsyringe';
-import type { CreateUserData, UserEntity } from '../../../domain/entities/user.entity.js';
+import type { CreateUserData, PublicUserEntity, UpdateUserData, UserEntity } from '../../../domain/entities/user.entity.js';
 import type { UserRepository } from '../../../domain/repositories/user.repository.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import type { Result } from '../../../lib/shared/types/result.js';
@@ -14,10 +14,22 @@ export class PrismaUserRepository implements UserRepository {
 		private readonly prisma: PrismaClient,
 	) {}
 
-	async findById(id: string): Promise<Result<UserEntity | null, DatabaseError>> {
+	async findAll(): Promise<Result<PublicUserEntity[], DatabaseError>> {
+		try {
+			const users = await this.prisma.user.findMany({
+				omit: { password: true },
+			});
+			return ok(users);
+		} catch (e) {
+			return err(new DatabaseError('Failed to find all users', e));
+		}
+	}
+
+	async findById(id: string): Promise<Result<PublicUserEntity | null, DatabaseError>> {
 		try {
 			const user = await this.prisma.user.findUnique({
 				where: { id },
+				omit: { password: true },
 			});
 			return ok(user);
 		} catch (e) {
@@ -36,7 +48,7 @@ export class PrismaUserRepository implements UserRepository {
 		}
 	}
 
-	async create(data: CreateUserData): Promise<Result<UserEntity, DatabaseError>> {
+	async create(data: CreateUserData): Promise<Result<PublicUserEntity, DatabaseError>> {
 		try {
 			const user = await this.prisma.user.create({
 				data: {
@@ -46,10 +58,35 @@ export class PrismaUserRepository implements UserRepository {
 					lastName: data.lastName,
 					phone: data.phone,
 				},
+				omit: { password: true },
 			});
 			return ok(user);
 		} catch (e) {
 			return err(new DatabaseError('Failed to create user', e));
+		}
+	}
+
+	async update(id: string, data: UpdateUserData): Promise<Result<PublicUserEntity, DatabaseError>> {
+		try {
+			const user = await this.prisma.user.update({
+				where: { id },
+				data,
+				omit: { password: true },
+			});
+			return ok(user);
+		} catch (e) {
+			return err(new DatabaseError('Failed to update user', e));
+		}
+	}
+
+	async delete(id: string): Promise<Result<void, DatabaseError>> {
+		try {
+			await this.prisma.user.delete({
+				where: { id },
+			});
+			return ok(undefined);
+		} catch (e) {
+			return err(new DatabaseError('Failed to delete user', e));
 		}
 	}
 
