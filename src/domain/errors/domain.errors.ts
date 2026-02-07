@@ -64,6 +64,13 @@ export class DriverNotFoundError extends DomainError {
 	}
 }
 
+export class DriverAlreadyExistsError extends DomainError {
+	constructor(userId: string) {
+		super(`A driver already exists for user "${userId}"`, 'DRIVER_ALREADY_EXISTS');
+		this.name = 'DriverAlreadyExistsError';
+	}
+}
+
 export class RouteNotFoundError extends DomainError {
 	constructor(identifier: string) {
 		super(`Route not found: ${identifier}`, 'ROUTE_NOT_FOUND');

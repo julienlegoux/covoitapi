@@ -46,6 +46,11 @@ export const ErrorCodes = {
 		httpStatus: 404,
 		category: 'domain',
 	},
+	DRIVER_ALREADY_EXISTS: {
+		code: 'DRIVER_ALREADY_EXISTS',
+		httpStatus: 409,
+		category: 'domain',
+	},
 	ROUTE_NOT_FOUND: {
 		code: 'ROUTE_NOT_FOUND',
 		httpStatus: 404,
