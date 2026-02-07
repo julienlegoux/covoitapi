@@ -9,6 +9,8 @@ export type UserEntity = {
 	updatedAt: Date;
 };
 
+export type PublicUserEntity = Omit<UserEntity, 'password'>;
+
 export type CreateUserData = Omit<UserEntity, 'id' | 'createdAt' | 'updatedAt'>;
 
 export type UpdateUserData = Partial<Pick<UserEntity, 'firstName' | 'lastName' | 'email' | 'phone'>>;

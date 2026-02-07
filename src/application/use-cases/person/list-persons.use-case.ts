@@ -1,5 +1,5 @@
 import { inject, injectable } from 'tsyringe';
-import type { UserEntity } from '../../../domain/entities/user.entity.js';
+import type { PublicUserEntity } from '../../../domain/entities/user.entity.js';
 import type { UserRepository } from '../../../domain/repositories/user.repository.js';
 import type { RepositoryError } from '../../../infrastructure/errors/repository.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
@@ -12,7 +12,7 @@ export class ListPersonsUseCase {
 		private readonly userRepository: UserRepository,
 	) {}
 
-	async execute(): Promise<Result<UserEntity[], RepositoryError>> {
+	async execute(): Promise<Result<PublicUserEntity[], RepositoryError>> {
 		return this.userRepository.findAll();
 	}
 }

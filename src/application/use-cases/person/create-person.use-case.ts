@@ -1,5 +1,5 @@
 import { inject, injectable } from 'tsyringe';
-import type { UserEntity } from '../../../domain/entities/user.entity.js';
+import type { PublicUserEntity } from '../../../domain/entities/user.entity.js';
 import { UserAlreadyExistsError } from '../../../domain/errors/domain.errors.js';
 import type { UserRepository } from '../../../domain/repositories/user.repository.js';
 import type { PasswordService } from '../../../domain/services/password.service.js';
@@ -21,7 +21,7 @@ export class CreatePersonUseCase {
 		private readonly passwordService: PasswordService,
 	) {}
 
-	async execute(input: CreatePersonInput): Promise<Result<UserEntity, CreatePersonError>> {
+	async execute(input: CreatePersonInput): Promise<Result<PublicUserEntity, CreatePersonError>> {
 		const existsResult = await this.userRepository.existsByEmail(input.email);
 		if (!existsResult.success) {
 			return existsResult;

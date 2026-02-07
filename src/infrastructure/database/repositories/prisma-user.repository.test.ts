@@ -48,6 +48,7 @@ describe('PrismaUserRepository', () => {
 			}
 			expect(mockPrisma.user.findUnique).toHaveBeenCalledWith({
 				where: { id: 'user-123' },
+				omit: { password: true },
 			});
 		});
 
@@ -149,6 +150,7 @@ describe('PrismaUserRepository', () => {
 					lastName: createData.lastName,
 					phone: createData.phone,
 				},
+				omit: { password: true },
 			});
 		});
 
