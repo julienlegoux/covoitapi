@@ -110,7 +110,7 @@ describe('errorHandler middleware', () => {
 	});
 
 	describe('DomainError handling', () => {
-		it('should return 400 for USER_ALREADY_EXISTS', async () => {
+		it('should return 409 for USER_ALREADY_EXISTS', async () => {
 			const error = new UserAlreadyExistsError('test@example.com');
 
 			const ctx = createMockContext();
@@ -119,7 +119,7 @@ describe('errorHandler middleware', () => {
 			await errorHandler(ctx as unknown as Context, next);
 
 			const [response, status] = ctx._getJsonCall();
-			expect(status).toBe(400);
+			expect(status).toBe(409);
 			expect(response.success).toBe(false);
 			expect(response.error.code).toBe('USER_ALREADY_EXISTS');
 		});
@@ -267,7 +267,9 @@ describe('errorHandler middleware', () => {
 
 			await errorHandler(ctx as unknown as Context, next);
 
-			expect(consoleErrorSpy).toHaveBeenCalledWith('Unexpected error:', error);
+			expect(consoleErrorSpy).toHaveBeenCalledWith(
+				expect.stringContaining('Unexpected error'),
+			);
 		});
 
 		it('should handle non-Error objects', async () => {

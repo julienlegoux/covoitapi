@@ -46,17 +46,9 @@ describe('HonoJwtService', () => {
 			}
 		});
 
-		it('should return TokenSigningError when secret is missing', async () => {
+		it('should throw when secret is missing', () => {
 			process.env.JWT_SECRET = '';
-			const serviceWithoutSecret = new HonoJwtService();
-			const payload = { userId: 'user-123' };
-
-			const result = await serviceWithoutSecret.sign(payload);
-
-			expect(result.success).toBe(false);
-			if (!result.success) {
-				expect(result.error).toBeInstanceOf(TokenSigningError);
-			}
+			expect(() => new HonoJwtService()).toThrow('JWT_SECRET environment variable is required');
 		});
 	});
 

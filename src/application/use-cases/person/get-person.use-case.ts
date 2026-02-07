@@ -1,5 +1,5 @@
 import { inject, injectable } from 'tsyringe';
-import type { UserEntity } from '../../../domain/entities/user.entity.js';
+import type { PublicUserEntity } from '../../../domain/entities/user.entity.js';
 import { UserNotFoundError } from '../../../domain/errors/domain.errors.js';
 import type { UserRepository } from '../../../domain/repositories/user.repository.js';
 import type { RepositoryError } from '../../../infrastructure/errors/repository.errors.js';
@@ -16,7 +16,7 @@ export class GetPersonUseCase {
 		private readonly userRepository: UserRepository,
 	) {}
 
-	async execute(id: string): Promise<Result<UserEntity, GetPersonError>> {
+	async execute(id: string): Promise<Result<PublicUserEntity, GetPersonError>> {
 		const result = await this.userRepository.findById(id);
 		if (!result.success) {
 			return result;
