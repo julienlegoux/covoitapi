@@ -3,7 +3,7 @@ import type { CreateCityInput } from '../../application/dtos/city.dto.js';
 import { CreateCityUseCase } from '../../application/use-cases/city/create-city.use-case.js';
 import { DeleteCityUseCase } from '../../application/use-cases/city/delete-city.use-case.js';
 import { ListCitiesUseCase } from '../../application/use-cases/city/list-cities.use-case.js';
-import { container } from '../../infrastructure/di/container.js';
+import { container } from '../../lib/shared/di/container.js';
 import { resultToResponse } from '../../lib/shared/utils/result-response.util.js';
 import { createCitySchema } from '../validators/city.validator.js';
 

@@ -8,7 +8,9 @@
 			"!**/node_modules",
 			"!**/dist",
 			"!**/build",
-			"!**/coverage"
+			"!**/coverage",
+			"!**/*.test.ts",
+			"!**/*.spec.ts"
 		]
 	},
 	"assist": {

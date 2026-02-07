@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import 'dotenv/config';
 import { Hono } from 'hono';
-import './infrastructure/di/container.js';
+import './lib/shared/di/container.js';
 import { logger } from './lib/shared/utils/logger.util.js';
 import { app } from './presentation/routes/index.js';
 

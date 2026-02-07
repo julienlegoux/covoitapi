@@ -4,7 +4,7 @@ import { CreateCarUseCase } from '../../application/use-cases/car/create-car.use
 import { DeleteCarUseCase } from '../../application/use-cases/car/delete-car.use-case.js';
 import { ListCarsUseCase } from '../../application/use-cases/car/list-cars.use-case.js';
 import { UpdateCarUseCase } from '../../application/use-cases/car/update-car.use-case.js';
-import { container } from '../../infrastructure/di/container.js';
+import { container } from '../../lib/shared/di/container.js';
 import { resultToResponse } from '../../lib/shared/utils/result-response.util.js';
 import { createCarSchema, updateCarSchema, patchCarSchema } from '../validators/car.validator.js';
 
