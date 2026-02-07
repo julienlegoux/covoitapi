@@ -89,7 +89,7 @@ model Car {
   immat   String @unique
   modelId String @map("model_id")
 
-  model  Model   @relation(fields: [modelId], references: [id], onDelete: Restrict)
+  model  Model   @relation(fields: [modelId], references: [id], onDelete: Cascade)
   routes Route[]
 
   @@map("cars")
@@ -100,7 +100,7 @@ model Model {
   name    String
   brandId String @map("brand_id")
 
-  brand  Brand        @relation(fields: [brandId], references: [id], onDelete: Restrict)
+  brand  Brand        @relation(fields: [brandId], references: [id], onDelete: Cascade)
   cars   Car[]
   colors ColorModel[]
 
