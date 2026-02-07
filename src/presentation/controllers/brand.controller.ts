@@ -3,7 +3,7 @@ import type { CreateBrandInput } from '../../application/dtos/brand.dto.js';
 import { CreateBrandUseCase } from '../../application/use-cases/brand/create-brand.use-case.js';
 import { DeleteBrandUseCase } from '../../application/use-cases/brand/delete-brand.use-case.js';
 import { ListBrandsUseCase } from '../../application/use-cases/brand/list-brands.use-case.js';
-import { container } from '../../infrastructure/di/container.js';
+import { container } from '../../lib/shared/di/container.js';
 import { resultToResponse } from '../../lib/shared/utils/result-response.util.js';
 import { createBrandSchema } from '../validators/brand.validator.js';
 

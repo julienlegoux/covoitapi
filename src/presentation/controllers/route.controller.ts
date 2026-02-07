@@ -5,7 +5,7 @@ import { DeleteRouteUseCase } from '../../application/use-cases/route/delete-rou
 import { FindRouteUseCase } from '../../application/use-cases/route/find-route.use-case.js';
 import { GetRouteUseCase } from '../../application/use-cases/route/get-route.use-case.js';
 import { ListRoutesUseCase } from '../../application/use-cases/route/list-routes.use-case.js';
-import { container } from '../../infrastructure/di/container.js';
+import { container } from '../../lib/shared/di/container.js';
 import { resultToResponse } from '../../lib/shared/utils/result-response.util.js';
 import { createRouteSchema } from '../validators/route.validator.js';
 
