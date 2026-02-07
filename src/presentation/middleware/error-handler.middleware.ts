@@ -74,11 +74,21 @@ function getStatusCode(error: unknown): number {
 	if (error instanceof DomainError) {
 		switch (error.code) {
 			case 'USER_ALREADY_EXISTS':
-				return 400;
+			case 'CAR_ALREADY_EXISTS':
+			case 'ALREADY_INSCRIBED':
+				return 409;
 			case 'INVALID_CREDENTIALS':
 				return 401;
 			case 'USER_NOT_FOUND':
+			case 'BRAND_NOT_FOUND':
+			case 'CITY_NOT_FOUND':
+			case 'CAR_NOT_FOUND':
+			case 'DRIVER_NOT_FOUND':
+			case 'ROUTE_NOT_FOUND':
+			case 'INSCRIPTION_NOT_FOUND':
 				return 404;
+			case 'NO_SEATS_AVAILABLE':
+				return 400;
 			default:
 				return 400;
 		}

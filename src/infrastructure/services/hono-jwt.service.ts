@@ -1,4 +1,4 @@
-import { sign, verify } from 'hono/jwt';
+import { sign as honoSign, verify as honoVerify } from 'hono/jwt';
 import { injectable } from 'tsyringe';
 import type { JwtPayload, JwtService } from '../../domain/services/jwt.service.js';
 import type { Result } from '../../lib/shared/types/result.js';
@@ -27,7 +27,7 @@ export class HonoJwtService implements JwtService {
 	async sign(payload: JwtPayload): Promise<Result<string, TokenSigningError>> {
 		try {
 			const exp = this.calculateExpiration();
-			const token = await sign({ ...payload, exp }, this.secret, 'HS256');
+			const token = await honoSign({ ...payload, exp }, this.secret, 'HS256');
 			return ok(token);
 		} catch (e) {
 			return err(new TokenSigningError(e));
@@ -36,7 +36,7 @@ export class HonoJwtService implements JwtService {
 
 	async verify(token: string): Promise<Result<JwtPayload, TokenExpiredError | TokenInvalidError | TokenMalformedError>> {
 		try {
-			const decoded = await verify(token, this.secret, 'HS256');
+			const decoded = await honoVerify(token, this.secret, 'HS256');
 			return ok({ userId: decoded.userId as string });
 		} catch (e) {
 			const error = e instanceof Error ? e : new Error(String(e));
