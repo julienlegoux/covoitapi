@@ -1,9 +1,10 @@
 export type InscriptionEntity = {
 	id: string;
+	refId: number;
 	createdAt: Date;
-	userId: string;
-	routeId: string;
+	userRefId: number;
+	routeRefId: number;
 	status: string;
 };
 
-export type CreateInscriptionData = Pick<InscriptionEntity, 'userId' | 'routeId'>;
+export type CreateInscriptionData = Pick<InscriptionEntity, 'userRefId' | 'routeRefId'>;

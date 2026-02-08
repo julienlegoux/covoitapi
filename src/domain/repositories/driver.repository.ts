@@ -3,6 +3,6 @@ import type { RepositoryError } from '../../lib/errors/repository.errors.js';
 import type { CreateDriverData, DriverEntity } from '../entities/driver.entity.js';
 
 export interface DriverRepository {
-	findByUserId(userId: string): Promise<Result<DriverEntity | null, RepositoryError>>;
+	findByUserRefId(userRefId: number): Promise<Result<DriverEntity | null, RepositoryError>>;
 	create(data: CreateDriverData): Promise<Result<DriverEntity, RepositoryError>>;
 }

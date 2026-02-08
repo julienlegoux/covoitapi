@@ -1,8 +1,9 @@
 export type DriverEntity = {
 	id: string;
+	refId: number;
 	driverLicense: string;
-	userId: string;
+	userRefId: number;
 	anonymizedAt: Date | null;
 };
 
-export type CreateDriverData = Omit<DriverEntity, 'id' | 'anonymizedAt'>;
+export type CreateDriverData = Omit<DriverEntity, 'id' | 'refId' | 'anonymizedAt'>;

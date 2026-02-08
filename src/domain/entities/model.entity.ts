@@ -1,7 +1,8 @@
 export type ModelEntity = {
 	id: string;
+	refId: number;
 	name: string;
-	brandId: string;
+	brandRefId: number;
 };
 
-export type CreateModelData = Omit<ModelEntity, 'id'>;
+export type CreateModelData = Omit<ModelEntity, 'id' | 'refId'>;

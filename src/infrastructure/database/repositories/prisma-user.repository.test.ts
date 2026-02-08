@@ -14,6 +14,12 @@ function createMockPrismaClient() {
 			delete: vi.fn(),
 			count: vi.fn(),
 		},
+		auth: {
+			findUnique: vi.fn(),
+			create: vi.fn(),
+			update: vi.fn(),
+			count: vi.fn(),
+		},
 	};
 }
 
@@ -23,13 +29,15 @@ describe('PrismaUserRepository', () => {
 
 	const mockUser = {
 		id: 'user-123',
-		email: 'test@example.com',
-		password: 'hashed-password',
+		refId: 1,
+		authRefId: 1,
 		firstName: 'John',
 		lastName: 'Doe',
 		phone: '+33612345678',
+		anonymizedAt: null,
 		createdAt: new Date(),
 		updatedAt: new Date(),
+		auth: { email: 'test@example.com' },
 	};
 
 	beforeEach(() => {
@@ -47,11 +55,11 @@ describe('PrismaUserRepository', () => {
 
 			expect(result.success).toBe(true);
 			if (result.success) {
-				expect(result.value).toEqual(mockUser);
+				expect(result.value).toEqual({ ...mockUser, email: 'test@example.com' });
 			}
 			expect(mockPrisma.user.findUnique).toHaveBeenCalledWith({
 				where: { id: 'user-123' },
-				omit: { password: true },
+				include: { auth: { select: { email: true } } },
 			});
 		});
 
@@ -79,81 +87,39 @@ describe('PrismaUserRepository', () => {
 		});
 	});
 
-	describe('findByEmail()', () => {
-		it('should return ok(user) when user exists', async () => {
-			mockPrisma.user.findUnique.mockResolvedValue(mockUser);
-
-			const result = await repository.findByEmail('test@example.com');
-
-			expect(result.success).toBe(true);
-			if (result.success) {
-				expect(result.value).toEqual(mockUser);
-			}
-			expect(mockPrisma.user.findUnique).toHaveBeenCalledWith({
-				where: { email: 'test@example.com' },
-			});
-		});
-
-		it('should return ok(null) when user not found', async () => {
-			mockPrisma.user.findUnique.mockResolvedValue(null);
-
-			const result = await repository.findByEmail('nonexistent@example.com');
-
-			expect(result.success).toBe(true);
-			if (result.success) {
-				expect(result.value).toBeNull();
-			}
-		});
-
-		it('should return err(DatabaseError) on Prisma error', async () => {
-			mockPrisma.user.findUnique.mockRejectedValue(new Error('Query failed'));
-
-			const result = await repository.findByEmail('test@example.com');
-
-			expect(result.success).toBe(false);
-			if (!result.success) {
-				expect(result.error).toBeInstanceOf(DatabaseError);
-				expect(result.error.message).toBe('Failed to find user by email');
-			}
-		});
-	});
-
 	describe('create()', () => {
 		const createData = {
-			email: 'new@example.com',
-			password: 'hashed-password',
 			firstName: 'Jane',
 			lastName: 'Smith',
 			phone: '+33698765432',
+			authRefId: 1,
 		};
 
 		it('should return ok(user) on successful creation', async () => {
-			const createdUser = { ...mockUser, ...createData, id: 'new-user-id' };
+			const createdUser = { ...mockUser, firstName: 'Jane', lastName: 'Smith', phone: '+33698765432' };
 			mockPrisma.user.create.mockResolvedValue(createdUser);
 
 			const result = await repository.create(createData);
 
 			expect(result.success).toBe(true);
 			if (result.success) {
-				expect(result.value.email).toBe('new@example.com');
 				expect(result.value.firstName).toBe('Jane');
 			}
 		});
 
 		it('should pass correct data to Prisma create', async () => {
-			mockPrisma.user.create.mockResolvedValue({ ...mockUser, ...createData });
+			mockPrisma.user.create.mockResolvedValue(mockUser);
 
 			await repository.create(createData);
 
 			expect(mockPrisma.user.create).toHaveBeenCalledWith({
 				data: {
-					email: createData.email,
-					password: createData.password,
 					firstName: createData.firstName,
 					lastName: createData.lastName,
 					phone: createData.phone,
+					authRefId: createData.authRefId,
 				},
-				omit: { password: true },
+				include: { auth: { select: { email: true } } },
 			});
 		});
 
@@ -166,74 +132,6 @@ describe('PrismaUserRepository', () => {
 			if (!result.success) {
 				expect(result.error).toBeInstanceOf(DatabaseError);
 				expect(result.error.message).toBe('Failed to create user');
-			}
-		});
-	});
-
-	describe('existsByEmail()', () => {
-		it('should return ok(true) when user exists', async () => {
-			mockPrisma.user.count.mockResolvedValue(1);
-
-			const result = await repository.existsByEmail('test@example.com');
-
-			expect(result.success).toBe(true);
-			if (result.success) {
-				expect(result.value).toBe(true);
-			}
-			expect(mockPrisma.user.count).toHaveBeenCalledWith({
-				where: { email: 'test@example.com' },
-			});
-		});
-
-		it('should return ok(false) when user does not exist', async () => {
-			mockPrisma.user.count.mockResolvedValue(0);
-
-			const result = await repository.existsByEmail('nonexistent@example.com');
-
-			expect(result.success).toBe(true);
-			if (result.success) {
-				expect(result.value).toBe(false);
-			}
-		});
-
-		it('should return err(DatabaseError) on Prisma error', async () => {
-			mockPrisma.user.count.mockRejectedValue(new Error('Database unavailable'));
-
-			const result = await repository.existsByEmail('test@example.com');
-
-			expect(result.success).toBe(false);
-			if (!result.success) {
-				expect(result.error).toBeInstanceOf(DatabaseError);
-				expect(result.error.message).toBe('Failed to check if user exists');
-			}
-		});
-	});
-
-	describe('updateRole()', () => {
-		it('should return ok(undefined) on successful role update', async () => {
-			mockPrisma.user.update.mockResolvedValue({ ...mockUser, role: 'DRIVER' });
-
-			const result = await repository.updateRole('user-123', 'DRIVER');
-
-			expect(result.success).toBe(true);
-			if (result.success) {
-				expect(result.value).toBeUndefined();
-			}
-			expect(mockPrisma.user.update).toHaveBeenCalledWith({
-				where: { id: 'user-123' },
-				data: { role: 'DRIVER' },
-			});
-		});
-
-		it('should return err(DatabaseError) on Prisma error', async () => {
-			mockPrisma.user.update.mockRejectedValue(new Error('Update failed'));
-
-			const result = await repository.updateRole('user-123', 'DRIVER');
-
-			expect(result.success).toBe(false);
-			if (!result.success) {
-				expect(result.error).toBeInstanceOf(DatabaseError);
-				expect(result.error.message).toBe('Failed to update user role');
 			}
 		});
 	});

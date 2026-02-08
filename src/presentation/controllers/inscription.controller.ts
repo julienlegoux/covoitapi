@@ -47,8 +47,8 @@ export async function createInscription(c: Context): Promise<Response> {
 	const validated = createInscriptionSchema.parse(body);
 
 	const input: CreateInscriptionInput = {
-		idpers: c.get('userId'),
-		idtrajet: validated.travelId,
+		userId: c.get('userId'),
+		travelId: validated.travelId,
 	};
 
 	const useCase = container.resolve(CreateInscriptionUseCase);

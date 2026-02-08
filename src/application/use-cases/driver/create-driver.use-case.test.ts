@@ -1,7 +1,7 @@
 import { container } from 'tsyringe';
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
-	createMockDriverData,
+	createMockAuthRepository,
 	createMockDriverRepository,
 	createMockUserRepository,
 } from '../../../../tests/setup.js';
@@ -16,28 +16,51 @@ describe('CreateDriverUseCase', () => {
 	let useCase: CreateDriverUseCase;
 	let mockDriverRepository: ReturnType<typeof createMockDriverRepository>;
 	let mockUserRepository: ReturnType<typeof createMockUserRepository>;
+	let mockAuthRepository: ReturnType<typeof createMockAuthRepository>;
 
 	const validInput: CreateDriverInput = {
 		driverLicense: 'DL-123456',
 		userId: 'user-id-1',
 	};
 
-	const mockDriver = createMockDriverData();
+	const mockUser = {
+		id: 'user-id-1',
+		refId: 1,
+		authRefId: 10,
+		firstName: 'John',
+		lastName: 'Doe',
+		phone: '0612345678',
+		email: 'test@example.com',
+		anonymizedAt: null,
+		createdAt: new Date(),
+		updatedAt: new Date(),
+	};
+
+	const mockDriver = {
+		id: 'driver-id-1',
+		refId: 1,
+		driverLicense: 'DL-123456',
+		userRefId: 1,
+		anonymizedAt: null,
+	};
 
 	beforeEach(() => {
 		mockDriverRepository = createMockDriverRepository();
 		mockUserRepository = createMockUserRepository();
+		mockAuthRepository = createMockAuthRepository();
 
 		container.registerInstance(TOKENS.DriverRepository, mockDriverRepository);
 		container.registerInstance(TOKENS.UserRepository, mockUserRepository);
+		container.registerInstance(TOKENS.AuthRepository, mockAuthRepository);
 
 		useCase = container.resolve(CreateDriverUseCase);
 	});
 
 	it('should create a driver successfully', async () => {
-		mockDriverRepository.findByUserId.mockResolvedValue(ok(null));
+		mockUserRepository.findById.mockResolvedValue(ok(mockUser));
+		mockDriverRepository.findByUserRefId.mockResolvedValue(ok(null));
 		mockDriverRepository.create.mockResolvedValue(ok(mockDriver));
-		mockUserRepository.updateRole.mockResolvedValue(ok(undefined));
+		mockAuthRepository.updateRole.mockResolvedValue(ok(undefined));
 
 		const result = await useCase.execute(validInput);
 
@@ -45,35 +68,39 @@ describe('CreateDriverUseCase', () => {
 		if (result.success) {
 			expect(result.value).toEqual(mockDriver);
 		}
-		expect(mockDriverRepository.findByUserId).toHaveBeenCalledWith(validInput.userId);
+		expect(mockUserRepository.findById).toHaveBeenCalledWith(validInput.userId);
+		expect(mockDriverRepository.findByUserRefId).toHaveBeenCalledWith(mockUser.refId);
 		expect(mockDriverRepository.create).toHaveBeenCalledWith({
 			driverLicense: validInput.driverLicense,
-			userId: validInput.userId,
+			userRefId: mockUser.refId,
 		});
 	});
 
 	it('should upgrade user role to DRIVER after successful creation', async () => {
-		mockDriverRepository.findByUserId.mockResolvedValue(ok(null));
+		mockUserRepository.findById.mockResolvedValue(ok(mockUser));
+		mockDriverRepository.findByUserRefId.mockResolvedValue(ok(null));
 		mockDriverRepository.create.mockResolvedValue(ok(mockDriver));
-		mockUserRepository.updateRole.mockResolvedValue(ok(undefined));
+		mockAuthRepository.updateRole.mockResolvedValue(ok(undefined));
 
 		await useCase.execute(validInput);
 
-		expect(mockUserRepository.updateRole).toHaveBeenCalledWith(validInput.userId, 'DRIVER');
+		expect(mockAuthRepository.updateRole).toHaveBeenCalledWith(mockUser.authRefId, 'DRIVER');
 	});
 
 	it('should not upgrade role when driver creation fails', async () => {
-		mockDriverRepository.findByUserId.mockResolvedValue(ok(null));
+		mockUserRepository.findById.mockResolvedValue(ok(mockUser));
+		mockDriverRepository.findByUserRefId.mockResolvedValue(ok(null));
 		mockDriverRepository.create.mockResolvedValue(err(new DatabaseError('DB error')));
 
 		const result = await useCase.execute(validInput);
 
 		expect(result.success).toBe(false);
-		expect(mockUserRepository.updateRole).not.toHaveBeenCalled();
+		expect(mockAuthRepository.updateRole).not.toHaveBeenCalled();
 	});
 
 	it('should return DriverAlreadyExistsError when driver already exists', async () => {
-		mockDriverRepository.findByUserId.mockResolvedValue(ok(mockDriver));
+		mockUserRepository.findById.mockResolvedValue(ok(mockUser));
+		mockDriverRepository.findByUserRefId.mockResolvedValue(ok(mockDriver));
 
 		const result = await useCase.execute(validInput);
 
@@ -82,11 +109,12 @@ describe('CreateDriverUseCase', () => {
 			expect(result.error).toBeInstanceOf(DriverAlreadyExistsError);
 		}
 		expect(mockDriverRepository.create).not.toHaveBeenCalled();
-		expect(mockUserRepository.updateRole).not.toHaveBeenCalled();
+		expect(mockAuthRepository.updateRole).not.toHaveBeenCalled();
 	});
 
-	it('should return error when findByUserId fails', async () => {
-		mockDriverRepository.findByUserId.mockResolvedValue(err(new DatabaseError('DB error')));
+	it('should return error when findByUserRefId fails', async () => {
+		mockUserRepository.findById.mockResolvedValue(ok(mockUser));
+		mockDriverRepository.findByUserRefId.mockResolvedValue(err(new DatabaseError('DB error')));
 
 		const result = await useCase.execute(validInput);
 
@@ -95,18 +123,18 @@ describe('CreateDriverUseCase', () => {
 			expect(result.error).toBeInstanceOf(DatabaseError);
 		}
 		expect(mockDriverRepository.create).not.toHaveBeenCalled();
-		expect(mockUserRepository.updateRole).not.toHaveBeenCalled();
+		expect(mockAuthRepository.updateRole).not.toHaveBeenCalled();
 	});
 
 	it('should still return success even if role update fails', async () => {
-		mockDriverRepository.findByUserId.mockResolvedValue(ok(null));
+		mockUserRepository.findById.mockResolvedValue(ok(mockUser));
+		mockDriverRepository.findByUserRefId.mockResolvedValue(ok(null));
 		mockDriverRepository.create.mockResolvedValue(ok(mockDriver));
-		mockUserRepository.updateRole.mockResolvedValue(err(new DatabaseError('Role update failed')));
+		mockAuthRepository.updateRole.mockResolvedValue(err(new DatabaseError('Role update failed')));
 
 		const result = await useCase.execute(validInput);
 
-		// Driver creation still succeeds, role update failure is non-blocking
 		expect(result.success).toBe(true);
-		expect(mockUserRepository.updateRole).toHaveBeenCalledWith(validInput.userId, 'DRIVER');
+		expect(mockAuthRepository.updateRole).toHaveBeenCalledWith(mockUser.authRefId, 'DRIVER');
 	});
 });

@@ -13,13 +13,20 @@ export function createMockUserRepository() {
 	return {
 		findAll: vi.fn(),
 		findById: vi.fn(),
-		findByEmail: vi.fn(),
+		findByAuthRefId: vi.fn(),
 		create: vi.fn(),
 		update: vi.fn(),
-		updateRole: vi.fn(),
 		delete: vi.fn(),
-		existsByEmail: vi.fn(),
 		anonymize: vi.fn(),
+	};
+}
+
+export function createMockAuthRepository() {
+	return {
+		findByEmail: vi.fn(),
+		createWithUser: vi.fn(),
+		existsByEmail: vi.fn(),
+		updateRole: vi.fn(),
 	};
 }
 
@@ -64,7 +71,7 @@ export function createMockModelRepository() {
 
 export function createMockDriverRepository() {
 	return {
-		findByUserId: vi.fn(),
+		findByUserRefId: vi.fn(),
 		create: vi.fn(),
 	};
 }
@@ -86,12 +93,12 @@ export function createMockInscriptionRepository() {
 	return {
 		findAll: vi.fn(),
 		findById: vi.fn(),
-		findByUserId: vi.fn(),
-		findByRouteId: vi.fn(),
+		findByUserRefId: vi.fn(),
+		findByRouteRefId: vi.fn(),
 		create: vi.fn(),
 		delete: vi.fn(),
 		existsByUserAndRoute: vi.fn(),
-		countByRouteId: vi.fn(),
+		countByRouteRefId: vi.fn(),
 	};
 }
 
@@ -174,6 +181,12 @@ export function createMockPrismaClient() {
 			delete: vi.fn(),
 			count: vi.fn(),
 		},
+		auth: {
+			findUnique: vi.fn(),
+			create: vi.fn(),
+			update: vi.fn(),
+			count: vi.fn(),
+		},
 	};
 }
 
@@ -247,39 +260,6 @@ export function createMockDeleteInscriptionUseCase() {
 	return { execute: vi.fn() };
 }
 
-export function createMockListPersonsUseCase() {
-	return { execute: vi.fn() };
-}
-
-export function createMockGetPersonUseCase() {
-	return { execute: vi.fn() };
-}
-
-export function createMockCreatePersonUseCase() {
-	return { execute: vi.fn() };
-}
-
-export function createMockUpdatePersonUseCase() {
-	return { execute: vi.fn() };
-}
-
-export function createMockDeletePersonUseCase() {
-	return { execute: vi.fn() };
-}
-
-// ─── User Use Case Mocks (aliases for Person mocks) ───
-
-/** @deprecated Use createMockListPersonsUseCase. Alias kept for consistency with User naming. */
-export const createMockListUsersUseCase = createMockListPersonsUseCase;
-/** @deprecated Use createMockGetPersonUseCase. Alias kept for consistency with User naming. */
-export const createMockGetUserUseCase = createMockGetPersonUseCase;
-/** @deprecated Use createMockCreatePersonUseCase. Alias kept for consistency with User naming. */
-export const createMockCreateUserUseCase = createMockCreatePersonUseCase;
-/** @deprecated Use createMockUpdatePersonUseCase. Alias kept for consistency with User naming. */
-export const createMockUpdateUserUseCase = createMockUpdatePersonUseCase;
-/** @deprecated Use createMockDeletePersonUseCase. Alias kept for consistency with User naming. */
-export const createMockDeleteUserUseCase = createMockDeletePersonUseCase;
-
 export function createMockListTravelsUseCase() {
 	return { execute: vi.fn() };
 }
@@ -343,24 +323,24 @@ export function createMockLogger() {
 
 export function createMockUserData(overrides?: Partial<{
 	id: string;
+	refId: number;
+	authRefId: number;
+	firstName: string | null;
+	lastName: string | null;
+	phone: string | null;
 	email: string;
-	password: string;
-	firstName: string | undefined;
-	lastName: string | undefined;
-	phone: string | undefined;
-	role: string;
 	anonymizedAt: Date | null;
 	createdAt: Date;
 	updatedAt: Date;
 }>) {
 	return {
 		id: overrides?.id ?? 'user-id-1',
-		email: overrides?.email ?? 'test@example.com',
-		password: overrides?.password ?? 'hashed-password',
+		refId: overrides?.refId ?? 1,
+		authRefId: overrides?.authRefId ?? 1,
 		firstName: overrides?.firstName !== undefined ? overrides.firstName : 'John',
 		lastName: overrides?.lastName !== undefined ? overrides.lastName : 'Doe',
 		phone: overrides?.phone !== undefined ? overrides.phone : '0612345678',
-		role: overrides?.role ?? 'USER',
+		email: overrides?.email ?? 'test@example.com',
 		anonymizedAt: overrides?.anonymizedAt ?? null,
 		createdAt: overrides?.createdAt ?? new Date('2025-01-01'),
 		updatedAt: overrides?.updatedAt ?? new Date('2025-01-01'),
@@ -369,49 +349,55 @@ export function createMockUserData(overrides?: Partial<{
 
 export function createMockDriverData(overrides?: Partial<{
 	id: string;
+	refId: number;
 	driverLicense: string;
-	userId: string;
+	userRefId: number;
 	anonymizedAt: Date | null;
 }>) {
 	return {
 		id: overrides?.id ?? 'driver-id-1',
+		refId: overrides?.refId ?? 1,
 		driverLicense: overrides?.driverLicense ?? 'DL-123456',
-		userId: overrides?.userId ?? 'user-id-1',
+		userRefId: overrides?.userRefId ?? 1,
 		anonymizedAt: overrides?.anonymizedAt ?? null,
 	};
 }
 
 export function createMockInscriptionData(overrides?: Partial<{
 	id: string;
+	refId: number;
 	createdAt: Date;
-	userId: string;
-	routeId: string;
+	userRefId: number;
+	routeRefId: number;
 	status: string;
 }>) {
 	return {
 		id: overrides?.id ?? 'inscription-id-1',
+		refId: overrides?.refId ?? 1,
 		createdAt: overrides?.createdAt ?? new Date('2025-01-01'),
-		userId: overrides?.userId ?? 'user-id-1',
-		routeId: overrides?.routeId ?? 'route-id-1',
+		userRefId: overrides?.userRefId ?? 1,
+		routeRefId: overrides?.routeRefId ?? 1,
 		status: overrides?.status ?? 'ACTIVE',
 	};
 }
 
 export function createMockTravelData(overrides?: Partial<{
 	id: string;
+	refId: number;
 	dateRoute: Date;
 	kms: number;
 	seats: number;
-	driverId: string;
-	carId: string;
+	driverRefId: number;
+	carRefId: number;
 }>) {
 	return {
 		id: overrides?.id ?? 'travel-id-1',
+		refId: overrides?.refId ?? 1,
 		dateRoute: overrides?.dateRoute ?? new Date('2025-06-01'),
 		kms: overrides?.kms ?? 100,
 		seats: overrides?.seats ?? 3,
-		driverId: overrides?.driverId ?? 'driver-id-1',
-		carId: overrides?.carId ?? 'car-id-1',
+		driverRefId: overrides?.driverRefId ?? 1,
+		carRefId: overrides?.carRefId ?? 1,
 	};
 }
 

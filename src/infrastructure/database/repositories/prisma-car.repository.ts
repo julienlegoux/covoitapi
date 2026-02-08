@@ -44,7 +44,7 @@ export class PrismaCarRepository implements CarRepository {
 			const car = await this.prisma.car.create({
 				data: {
 					immat: data.immat,
-					modelId: data.modelId,
+					modelRefId: data.modelRefId,
 				},
 			});
 			return ok(car);

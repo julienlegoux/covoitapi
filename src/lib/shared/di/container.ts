@@ -12,6 +12,7 @@ import { PrismaInscriptionRepository } from '../../../infrastructure/database/re
 import { PrismaModelRepository } from '../../../infrastructure/database/repositories/prisma-model.repository.js';
 import { PrismaTravelRepository } from '../../../infrastructure/database/repositories/prisma-travel.repository.js';
 import { PrismaColorRepository } from '../../../infrastructure/database/repositories/prisma-color.repository.js';
+import { PrismaAuthRepository } from '../../../infrastructure/database/repositories/prisma-auth.repository.js';
 import { PrismaUserRepository } from '../../../infrastructure/database/repositories/prisma-user.repository.js';
 import { ArgonPasswordService } from '../../../infrastructure/services/argon-password.service.js';
 import { HonoJwtService } from '../../../infrastructure/services/hono-jwt.service.js';
@@ -28,6 +29,7 @@ const prismaClient = new PrismaClient({
 
 container.registerInstance(TOKENS.PrismaClient, prismaClient);
 
+container.register(TOKENS.AuthRepository, { useClass: PrismaAuthRepository });
 container.register(TOKENS.UserRepository, { useClass: PrismaUserRepository });
 container.register(TOKENS.BrandRepository, { useClass: PrismaBrandRepository });
 container.register(TOKENS.CityRepository, { useClass: PrismaCityRepository });

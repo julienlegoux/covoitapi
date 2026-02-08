@@ -2,8 +2,8 @@ import type { Result } from '../../lib/shared/types/result.js';
 import type { RepositoryError } from '../../lib/errors/repository.errors.js';
 import type { ColorEntity } from '../entities/color.entity.js';
 
-export type CreateColorData = Omit<ColorEntity, 'id'>;
-export type UpdateColorData = Partial<Omit<ColorEntity, 'id'>>;
+export type CreateColorData = Omit<ColorEntity, 'id' | 'refId'>;
+export type UpdateColorData = Partial<Omit<ColorEntity, 'id' | 'refId'>>;
 
 export interface ColorRepository {
 	findAll(params?: { skip: number; take: number }): Promise<Result<{ data: ColorEntity[]; total: number }, RepositoryError>>;
