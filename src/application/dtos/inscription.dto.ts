@@ -1,4 +1,4 @@
 export type CreateInscriptionInput = {
-	idpers: string;
-	idtrajet: string;
+	userId: string;
+	travelId: string;
 };

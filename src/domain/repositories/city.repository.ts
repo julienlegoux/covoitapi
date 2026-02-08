@@ -1,5 +1,5 @@
 import type { Result } from '../../lib/shared/types/result.js';
-import type { RepositoryError } from '../../infrastructure/errors/repository.errors.js';
+import type { RepositoryError } from '../../lib/errors/repository.errors.js';
 import type { CityEntity, CreateCityData } from '../entities/city.entity.js';
 
 export interface CityRepository {

@@ -1,25 +1,25 @@
 import { inject, injectable } from 'tsyringe';
-import { UserAlreadyExistsError } from '../../../domain/errors/domain.errors.js';
-import type { UserRepository } from '../../../domain/repositories/user.repository.js';
+import { UserAlreadyExistsError } from '../../../lib/errors/domain.errors.js';
+import type { AuthRepository } from '../../../domain/repositories/auth.repository.js';
 import type { EmailService } from '../../../domain/services/email.service.js';
 import type { JwtService } from '../../../domain/services/jwt.service.js';
 import type { PasswordService } from '../../../domain/services/password.service.js';
-import type { RepositoryError } from '../../../infrastructure/errors/repository.errors.js';
-import type { PasswordError } from '../../../infrastructure/errors/password.errors.js';
-import type { JwtError } from '../../../infrastructure/errors/jwt.errors.js';
+import type { RepositoryError } from '../../../lib/errors/repository.errors.js';
+import type { PasswordError } from '../../../lib/errors/password.errors.js';
+import type { JwtError } from '../../../lib/errors/jwt.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import type { Result } from '../../../lib/shared/types/result.js';
 import { ok, err } from '../../../lib/shared/types/result.js';
 import type { AuthResponse, RegisterInput } from '../../dtos/auth.dto.js';
-import { logger } from '../../../infrastructure/logging/logger.js';
+import { logger } from '../../../lib/logging/logger.js';
 
 export type RegisterError = UserAlreadyExistsError | RepositoryError | PasswordError | JwtError;
 
 @injectable()
 export class RegisterUseCase {
 	constructor(
-		@inject(TOKENS.UserRepository)
-		private readonly userRepository: UserRepository,
+		@inject(TOKENS.AuthRepository)
+		private readonly authRepository: AuthRepository,
 		@inject(TOKENS.PasswordService)
 		private readonly passwordService: PasswordService,
 		@inject(TOKENS.EmailService)
@@ -29,8 +29,8 @@ export class RegisterUseCase {
 	) {}
 
 	async execute(input: RegisterInput): Promise<Result<AuthResponse, RegisterError>> {
-		// Check if user already exists
-		const existsResult = await this.userRepository.existsByEmail(input.email);
+		// Check if email already exists
+		const existsResult = await this.authRepository.existsByEmail(input.email);
 		if (!existsResult.success) {
 			return existsResult;
 		}
@@ -45,33 +45,30 @@ export class RegisterUseCase {
 			return hashResult;
 		}
 
-		// Create user
-		const createResult = await this.userRepository.create({
-			email: input.email,
-			password: hashResult.value,
-			firstName: null,
-			lastName: null,
-			phone: null,
-		});
+		// Create auth + user in transaction
+		const createResult = await this.authRepository.createWithUser(
+			{ email: input.email, password: hashResult.value },
+			{ firstName: null, lastName: null, phone: null },
+		);
 		if (!createResult.success) {
 			return createResult;
 		}
 
-		const user = createResult.value;
+		const { auth, user } = createResult.value;
 
 		// Send welcome email (don't fail registration if email fails)
-		const emailResult = await this.emailService.sendWelcomeEmail(user.email, user.firstName ?? 'there');
+		const emailResult = await this.emailService.sendWelcomeEmail(auth.email, user.firstName ?? 'there');
 		if (!emailResult.success) {
 			logger.warn('Failed to send welcome email', {
 				userId: user.id,
-				email: user.email,
+				email: auth.email,
 				errorCode: emailResult.error.code,
 				errorMessage: emailResult.error.message,
 			});
 		}
 
 		// Generate token
-		const tokenResult = await this.jwtService.sign({ userId: user.id, role: 'USER' });
+		const tokenResult = await this.jwtService.sign({ userId: user.id, role: auth.role });
 		if (!tokenResult.success) {
 			return tokenResult;
 		}

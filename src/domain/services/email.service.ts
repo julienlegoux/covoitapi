@@ -1,5 +1,5 @@
 import type { Result } from '../../lib/shared/types/result.js';
-import type { EmailError } from '../../infrastructure/errors/email.errors.js';
+import type { EmailError } from '../../lib/errors/email.errors.js';
 
 export type SendEmailOptions = {
 	to: string;

@@ -6,7 +6,7 @@ export * from './entities/route.entity.js';
 export * from './entities/inscription.entity.js';
 export * from './entities/city-travel.entity.js';
 // Errors
-export * from './errors/domain.errors.js';
+export * from '../lib/errors/domain.errors.js';
 // Repositories
 export type { UserRepository } from './repositories/user.repository.js';
 export type { TravelRepository, TravelFilters } from './repositories/travel.repository.js';

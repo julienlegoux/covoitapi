@@ -1,10 +1,10 @@
 import { container } from 'tsyringe';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { createMockColorRepository } from '../../../../tests/setup.js';
-import { ColorAlreadyExistsError } from '../../../domain/errors/domain.errors.js';
+import { ColorAlreadyExistsError } from '../../../lib/errors/domain.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import { ok, err } from '../../../lib/shared/types/result.js';
-import { DatabaseError } from '../../../infrastructure/errors/repository.errors.js';
+import { DatabaseError } from '../../../lib/errors/repository.errors.js';
 import { CreateColorUseCase } from './create-color.use-case.js';
 
 describe('CreateColorUseCase', () => {

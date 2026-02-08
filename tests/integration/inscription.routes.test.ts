@@ -6,7 +6,7 @@ import { ListRoutePassengersUseCase } from '../../src/application/use-cases/insc
 import { CreateInscriptionUseCase } from '../../src/application/use-cases/inscription/create-inscription.use-case.js';
 import { DeleteInscriptionUseCase } from '../../src/application/use-cases/inscription/delete-inscription.use-case.js';
 import { ok, err } from '../../src/lib/shared/types/result.js';
-import { InscriptionNotFoundError, RouteNotFoundError, AlreadyInscribedError, NoSeatsAvailableError } from '../../src/domain/errors/domain.errors.js';
+import { InscriptionNotFoundError, RouteNotFoundError, AlreadyInscribedError, NoSeatsAvailableError } from '../../src/lib/errors/domain.errors.js';
 import { authHeaders, registerMockJwtService, registerMockUseCase } from './helpers.js';
 
 vi.mock('../../src/infrastructure/database/generated/prisma/client.js', () => ({

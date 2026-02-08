@@ -4,7 +4,7 @@ import type { TravelFilters, TravelRepository } from '../../../domain/repositori
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import type { Result } from '../../../lib/shared/types/result.js';
 import { ok, err } from '../../../lib/shared/types/result.js';
-import { DatabaseError } from '../../errors/repository.errors.js';
+import { DatabaseError } from '../../../lib/errors/repository.errors.js';
 import type { PrismaClient } from '../generated/prisma/client.js';
 
 @injectable()
@@ -114,12 +114,12 @@ export class PrismaTravelRepository implements TravelRepository {
 					dateRoute: data.dateRoute,
 					kms: data.kms,
 					seats: data.seats,
-					driverId: data.driverId,
-					carId: data.carId,
-					cities: data.cityIds?.length
+					driverRefId: data.driverRefId,
+					carRefId: data.carRefId,
+					cities: data.cityRefIds?.length
 						? {
-								create: data.cityIds.map((cityId, index) => ({
-									cityId,
+								create: data.cityRefIds.map((cityRefId, index) => ({
+									cityRefId,
 									type: index === 0 ? 'DEPARTURE' as const : 'ARRIVAL' as const,
 								})),
 							}

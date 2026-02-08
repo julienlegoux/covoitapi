@@ -5,7 +5,7 @@ import { register, login } from './auth.controller.js';
 import { RegisterUseCase } from '../../application/use-cases/auth/register.use-case.js';
 import { LoginUseCase } from '../../application/use-cases/auth/login.use-case.js';
 import { ok, err } from '../../lib/shared/types/result.js';
-import { InvalidCredentialsError, UserAlreadyExistsError } from '../../domain/errors/domain.errors.js';
+import { InvalidCredentialsError, UserAlreadyExistsError } from '../../lib/errors/domain.errors.js';
 
 function createMockContext(jsonBody: unknown) {
 	const jsonMock = vi.fn((body, status) => ({ body, status }));

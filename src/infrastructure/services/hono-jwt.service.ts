@@ -8,7 +8,7 @@ import {
 	TokenInvalidError,
 	TokenMalformedError,
 	TokenSigningError,
-} from '../errors/jwt.errors.js';
+} from '../../lib/errors/jwt.errors.js';
 
 @injectable()
 export class HonoJwtService implements JwtService {

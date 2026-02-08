@@ -1,5 +1,5 @@
 export type CityTravelEntity = {
-	routeId: string;
-	cityId: string;
+	routeRefId: number;
+	cityRefId: number;
 	type: string;
 };

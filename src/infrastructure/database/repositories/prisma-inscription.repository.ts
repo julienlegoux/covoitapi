@@ -4,7 +4,7 @@ import type { InscriptionRepository } from '../../../domain/repositories/inscrip
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import type { Result } from '../../../lib/shared/types/result.js';
 import { ok, err } from '../../../lib/shared/types/result.js';
-import { DatabaseError } from '../../errors/repository.errors.js';
+import { DatabaseError } from '../../../lib/errors/repository.errors.js';
 import type { PrismaClient } from '../generated/prisma/client.js';
 
 @injectable()
@@ -41,27 +41,27 @@ export class PrismaInscriptionRepository implements InscriptionRepository {
 		}
 	}
 
-	async findByUserId(userId: string): Promise<Result<InscriptionEntity[], DatabaseError>> {
+	async findByUserRefId(userRefId: number): Promise<Result<InscriptionEntity[], DatabaseError>> {
 		try {
 			const inscriptions = await this.prisma.inscription.findMany({
-				where: { userId },
+				where: { userRefId },
 				include: { travel: true },
 			});
 			return ok(inscriptions as unknown as InscriptionEntity[]);
 		} catch (e) {
-			return err(new DatabaseError('Failed to find inscriptions by user id', e));
+			return err(new DatabaseError('Failed to find inscriptions by user ref id', e));
 		}
 	}
 
-	async findByRouteId(routeId: string): Promise<Result<InscriptionEntity[], DatabaseError>> {
+	async findByRouteRefId(routeRefId: number): Promise<Result<InscriptionEntity[], DatabaseError>> {
 		try {
 			const inscriptions = await this.prisma.inscription.findMany({
-				where: { routeId },
+				where: { routeRefId },
 				include: { user: true },
 			});
 			return ok(inscriptions as unknown as InscriptionEntity[]);
 		} catch (e) {
-			return err(new DatabaseError('Failed to find inscriptions by route id', e));
+			return err(new DatabaseError('Failed to find inscriptions by route ref id', e));
 		}
 	}
 
@@ -69,8 +69,8 @@ export class PrismaInscriptionRepository implements InscriptionRepository {
 		try {
 			const inscription = await this.prisma.inscription.create({
 				data: {
-					userId: data.userId,
-					routeId: data.routeId,
+					userRefId: data.userRefId,
+					routeRefId: data.routeRefId,
 				},
 			});
 			return ok(inscription);
@@ -90,10 +90,10 @@ export class PrismaInscriptionRepository implements InscriptionRepository {
 		}
 	}
 
-	async existsByUserAndRoute(userId: string, routeId: string): Promise<Result<boolean, DatabaseError>> {
+	async existsByUserAndRoute(userRefId: number, routeRefId: number): Promise<Result<boolean, DatabaseError>> {
 		try {
 			const count = await this.prisma.inscription.count({
-				where: { userId, routeId },
+				where: { userRefId, routeRefId },
 			});
 			return ok(count > 0);
 		} catch (e) {
@@ -101,10 +101,10 @@ export class PrismaInscriptionRepository implements InscriptionRepository {
 		}
 	}
 
-	async countByRouteId(routeId: string): Promise<Result<number, DatabaseError>> {
+	async countByRouteRefId(routeRefId: number): Promise<Result<number, DatabaseError>> {
 		try {
 			const count = await this.prisma.inscription.count({
-				where: { routeId },
+				where: { routeRefId },
 			});
 			return ok(count);
 		} catch (e) {

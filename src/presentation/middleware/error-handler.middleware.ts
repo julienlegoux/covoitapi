@@ -1,10 +1,10 @@
 import type { Context, Next } from 'hono';
 import type { ContentfulStatusCode } from 'hono/utils/http-status';
 import { ZodError } from 'zod';
-import { DomainError } from '../../domain/errors/domain.errors.js';
-import { getHttpStatus, isErrorCode } from '../../infrastructure/errors/error-registry.js';
-import { logger } from '../../infrastructure/logging/logger.js';
-import type { ErrorResponse } from '../types/error.types.js';
+import { DomainError } from '../../lib/errors/domain.errors.js';
+import { getHttpStatus, isErrorCode } from '../../lib/errors/error-registry.js';
+import { logger } from '../../lib/logging/logger.js';
+import type { ErrorResponse } from '../../lib/errors/error.types.js';
 
 export async function errorHandler(c: Context, next: Next): Promise<Response | undefined> {
 	try {
