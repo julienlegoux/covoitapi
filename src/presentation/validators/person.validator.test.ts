@@ -3,9 +3,9 @@ import { createPersonSchema, updatePersonSchema, patchPersonSchema } from './per
 
 describe('createPersonSchema', () => {
 	const validInput = {
-		prenom: 'John',
-		nom: 'Doe',
-		tel: '0612345678',
+		firstName: 'John',
+		lastName: 'Doe',
+		phone: '0612345678',
 		email: 'john@example.com',
 		password: 'Password1',
 	};
@@ -15,25 +15,25 @@ describe('createPersonSchema', () => {
 		expect(result.success).toBe(true);
 	});
 
-	it('should reject missing prenom', () => {
-		const { prenom, ...rest } = validInput;
+	it('should reject missing firstName', () => {
+		const { firstName, ...rest } = validInput;
 		const result = createPersonSchema.safeParse(rest);
 		expect(result.success).toBe(false);
 	});
 
-	it('should reject empty prenom', () => {
-		const result = createPersonSchema.safeParse({ ...validInput, prenom: '' });
+	it('should reject empty firstName', () => {
+		const result = createPersonSchema.safeParse({ ...validInput, firstName: '' });
 		expect(result.success).toBe(false);
 	});
 
-	it('should reject missing nom', () => {
-		const { nom, ...rest } = validInput;
+	it('should reject missing lastName', () => {
+		const { lastName, ...rest } = validInput;
 		const result = createPersonSchema.safeParse(rest);
 		expect(result.success).toBe(false);
 	});
 
-	it('should reject missing tel', () => {
-		const { tel, ...rest } = validInput;
+	it('should reject missing phone', () => {
+		const { phone, ...rest } = validInput;
 		const result = createPersonSchema.safeParse(rest);
 		expect(result.success).toBe(false);
 	});
@@ -62,9 +62,9 @@ describe('createPersonSchema', () => {
 
 describe('updatePersonSchema', () => {
 	const validInput = {
-		prenom: 'John',
-		nom: 'Doe',
-		tel: '0612345678',
+		firstName: 'John',
+		lastName: 'Doe',
+		phone: '0612345678',
 		email: 'john@example.com',
 	};
 
@@ -73,14 +73,14 @@ describe('updatePersonSchema', () => {
 		expect(result.success).toBe(true);
 	});
 
-	it('should reject missing prenom', () => {
-		const { prenom, ...rest } = validInput;
+	it('should reject missing firstName', () => {
+		const { firstName, ...rest } = validInput;
 		const result = updatePersonSchema.safeParse(rest);
 		expect(result.success).toBe(false);
 	});
 
-	it('should reject missing nom', () => {
-		const { nom, ...rest } = validInput;
+	it('should reject missing lastName', () => {
+		const { lastName, ...rest } = validInput;
 		const result = updatePersonSchema.safeParse(rest);
 		expect(result.success).toBe(false);
 	});
@@ -92,8 +92,8 @@ describe('updatePersonSchema', () => {
 });
 
 describe('patchPersonSchema', () => {
-	it('should accept partial input with only tel', () => {
-		const result = patchPersonSchema.safeParse({ tel: '0712345678' });
+	it('should accept partial input with only phone', () => {
+		const result = patchPersonSchema.safeParse({ phone: '0712345678' });
 		expect(result.success).toBe(true);
 	});
 

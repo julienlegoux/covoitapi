@@ -8,6 +8,8 @@ export interface UserRepository {
 	findByEmail(email: string): Promise<Result<UserEntity | null, RepositoryError>>;
 	create(data: CreateUserData): Promise<Result<PublicUserEntity, RepositoryError>>;
 	update(id: string, data: UpdateUserData): Promise<Result<PublicUserEntity, RepositoryError>>;
+	updateRole(id: string, role: string): Promise<Result<void, RepositoryError>>;
 	delete(id: string): Promise<Result<void, RepositoryError>>;
 	existsByEmail(email: string): Promise<Result<boolean, RepositoryError>>;
+	anonymize(id: string): Promise<Result<void, RepositoryError>>;
 }

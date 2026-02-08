@@ -14,12 +14,16 @@ export class PrismaInscriptionRepository implements InscriptionRepository {
 		private readonly prisma: PrismaClient,
 	) {}
 
-	async findAll(): Promise<Result<InscriptionEntity[], DatabaseError>> {
+	async findAll(params?: { skip: number; take: number }): Promise<Result<{ data: InscriptionEntity[]; total: number }, DatabaseError>> {
 		try {
-			const inscriptions = await this.prisma.inscription.findMany({
-				include: { user: true, route: true },
-			});
-			return ok(inscriptions as unknown as InscriptionEntity[]);
+			const [inscriptions, total] = await Promise.all([
+				this.prisma.inscription.findMany({
+					...(params && { skip: params.skip, take: params.take }),
+					include: { user: true, route: true },
+				}),
+				this.prisma.inscription.count(),
+			]);
+			return ok({ data: inscriptions as unknown as InscriptionEntity[], total });
 		} catch (e) {
 			return err(new DatabaseError('Failed to find all inscriptions', e));
 		}

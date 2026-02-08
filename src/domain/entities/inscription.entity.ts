@@ -3,6 +3,7 @@ export type InscriptionEntity = {
 	createdAt: Date;
 	userId: string;
 	routeId: string;
+	status: string;
 };
 
 export type CreateInscriptionData = Pick<InscriptionEntity, 'userId' | 'routeId'>;

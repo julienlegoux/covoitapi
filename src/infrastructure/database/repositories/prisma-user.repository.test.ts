@@ -8,7 +8,10 @@ function createMockPrismaClient() {
 	return {
 		user: {
 			findUnique: vi.fn(),
+			findMany: vi.fn(),
 			create: vi.fn(),
+			update: vi.fn(),
+			delete: vi.fn(),
 			count: vi.fn(),
 		},
 	};
@@ -202,6 +205,35 @@ describe('PrismaUserRepository', () => {
 			if (!result.success) {
 				expect(result.error).toBeInstanceOf(DatabaseError);
 				expect(result.error.message).toBe('Failed to check if user exists');
+			}
+		});
+	});
+
+	describe('updateRole()', () => {
+		it('should return ok(undefined) on successful role update', async () => {
+			mockPrisma.user.update.mockResolvedValue({ ...mockUser, role: 'DRIVER' });
+
+			const result = await repository.updateRole('user-123', 'DRIVER');
+
+			expect(result.success).toBe(true);
+			if (result.success) {
+				expect(result.value).toBeUndefined();
+			}
+			expect(mockPrisma.user.update).toHaveBeenCalledWith({
+				where: { id: 'user-123' },
+				data: { role: 'DRIVER' },
+			});
+		});
+
+		it('should return err(DatabaseError) on Prisma error', async () => {
+			mockPrisma.user.update.mockRejectedValue(new Error('Update failed'));
+
+			const result = await repository.updateRole('user-123', 'DRIVER');
+
+			expect(result.success).toBe(false);
+			if (!result.success) {
+				expect(result.error).toBeInstanceOf(DatabaseError);
+				expect(result.error.message).toBe('Failed to update user role');
 			}
 		});
 	});

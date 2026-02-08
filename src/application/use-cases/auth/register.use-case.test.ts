@@ -23,9 +23,6 @@ describe('RegisterUseCase', () => {
 		email: 'test@example.com',
 		password: 'Password123!',
 		confirmPassword: 'Password123!',
-		firstName: 'John',
-		lastName: 'Doe',
-		phone: '0612345678',
 	};
 
 	beforeEach(() => {
@@ -47,9 +44,7 @@ describe('RegisterUseCase', () => {
 			id: 'user-123',
 			email: validInput.email,
 			password: 'hashed-password',
-			firstName: validInput.firstName,
-			lastName: validInput.lastName,
-			phone: validInput.phone,
+			role: 'USER',
 			createdAt: new Date(),
 			updatedAt: new Date(),
 		};
@@ -72,15 +67,13 @@ describe('RegisterUseCase', () => {
 		expect(mockUserRepository.create).toHaveBeenCalledWith({
 			email: validInput.email,
 			password: 'hashed-password',
-			firstName: validInput.firstName,
-			lastName: validInput.lastName,
-			phone: validInput.phone,
+			role: 'USER',
 		});
 		expect(mockEmailService.sendWelcomeEmail).toHaveBeenCalledWith(
 			validInput.email,
-			validInput.firstName,
+			'there',
 		);
-		expect(mockJwtService.sign).toHaveBeenCalledWith({ userId: 'user-123' });
+		expect(mockJwtService.sign).toHaveBeenCalledWith({ userId: 'user-123', role: 'USER' });
 	});
 
 	it('should return UserAlreadyExistsError when email is taken', async () => {

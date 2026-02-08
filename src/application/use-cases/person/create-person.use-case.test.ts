@@ -5,10 +5,10 @@ import { UserAlreadyExistsError } from '../../../domain/errors/domain.errors.js'
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import { ok, err } from '../../../lib/shared/types/result.js';
 import { DatabaseError } from '../../../infrastructure/errors/repository.errors.js';
-import { CreatePersonUseCase } from './create-person.use-case.js';
+import { CreateUserUseCase } from '../user/create-user.use-case.js';
 
-describe('CreatePersonUseCase', () => {
-	let useCase: CreatePersonUseCase;
+describe('CreateUserUseCase', () => {
+	let useCase: CreateUserUseCase;
 	let mockUserRepository: ReturnType<typeof createMockUserRepository>;
 	let mockPasswordService: ReturnType<typeof createMockPasswordService>;
 
@@ -19,10 +19,10 @@ describe('CreatePersonUseCase', () => {
 		mockPasswordService = createMockPasswordService();
 		container.registerInstance(TOKENS.UserRepository, mockUserRepository);
 		container.registerInstance(TOKENS.PasswordService, mockPasswordService);
-		useCase = container.resolve(CreatePersonUseCase);
+		useCase = container.resolve(CreateUserUseCase);
 	});
 
-	it('should create person successfully', async () => {
+	it('should create user successfully', async () => {
 		const createdUser = { id: 'u1', ...validInput, password: 'hashed', createdAt: new Date(), updatedAt: new Date() };
 		mockUserRepository.existsByEmail.mockResolvedValue(ok(false));
 		mockPasswordService.hash.mockResolvedValue(ok('hashed'));

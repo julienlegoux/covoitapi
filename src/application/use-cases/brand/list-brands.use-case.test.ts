@@ -16,23 +16,29 @@ describe('ListBrandsUseCase', () => {
 		useCase = container.resolve(ListBrandsUseCase);
 	});
 
-	it('should return list of brands', async () => {
+	it('should return paginated list of brands', async () => {
 		const brands = [{ id: '1', name: 'Toyota' }, { id: '2', name: 'Honda' }];
-		mockBrandRepository.findAll.mockResolvedValue(ok(brands));
+		mockBrandRepository.findAll.mockResolvedValue(ok({ data: brands, total: 2 }));
 
 		const result = await useCase.execute();
 
 		expect(result.success).toBe(true);
-		if (result.success) expect(result.value).toEqual(brands);
+		if (result.success) {
+			expect(result.value.data).toEqual(brands);
+			expect(result.value.meta).toEqual({ page: 1, limit: 20, total: 2, totalPages: 1 });
+		}
 	});
 
 	it('should return empty array when no brands', async () => {
-		mockBrandRepository.findAll.mockResolvedValue(ok([]));
+		mockBrandRepository.findAll.mockResolvedValue(ok({ data: [], total: 0 }));
 
 		const result = await useCase.execute();
 
 		expect(result.success).toBe(true);
-		if (result.success) expect(result.value).toEqual([]);
+		if (result.success) {
+			expect(result.value.data).toEqual([]);
+			expect(result.value.meta).toEqual({ page: 1, limit: 20, total: 0, totalPages: 0 });
+		}
 	});
 
 	it('should propagate repository error', async () => {
@@ -42,5 +48,25 @@ describe('ListBrandsUseCase', () => {
 
 		expect(result.success).toBe(false);
 		if (!result.success) expect(result.error).toBeInstanceOf(DatabaseError);
+	});
+
+	it('should pass pagination params to repository', async () => {
+		mockBrandRepository.findAll.mockResolvedValue(ok({ data: [], total: 0 }));
+
+		await useCase.execute({ page: 2, limit: 10 });
+
+		expect(mockBrandRepository.findAll).toHaveBeenCalledWith({ skip: 10, take: 10 });
+	});
+
+	it('should return correct meta with custom pagination', async () => {
+		const brands = [{ id: '1', name: 'Toyota' }];
+		mockBrandRepository.findAll.mockResolvedValue(ok({ data: brands, total: 25 }));
+
+		const result = await useCase.execute({ page: 3, limit: 10 });
+
+		expect(result.success).toBe(true);
+		if (result.success) {
+			expect(result.value.meta).toEqual({ page: 3, limit: 10, total: 25, totalPages: 3 });
+		}
 	});
 });

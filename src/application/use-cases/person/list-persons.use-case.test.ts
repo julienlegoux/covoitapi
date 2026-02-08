@@ -4,19 +4,19 @@ import { createMockUserRepository } from '../../../../tests/setup.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import { ok, err } from '../../../lib/shared/types/result.js';
 import { DatabaseError } from '../../../infrastructure/errors/repository.errors.js';
-import { ListPersonsUseCase } from './list-persons.use-case.js';
+import { ListUsersUseCase } from '../user/list-users.use-case.js';
 
-describe('ListPersonsUseCase', () => {
-	let useCase: ListPersonsUseCase;
+describe('ListUsersUseCase', () => {
+	let useCase: ListUsersUseCase;
 	let mockUserRepository: ReturnType<typeof createMockUserRepository>;
 
 	beforeEach(() => {
 		mockUserRepository = createMockUserRepository();
 		container.registerInstance(TOKENS.UserRepository, mockUserRepository);
-		useCase = container.resolve(ListPersonsUseCase);
+		useCase = container.resolve(ListUsersUseCase);
 	});
 
-	it('should return list of persons', async () => {
+	it('should return list of users', async () => {
 		const users = [{ id: '1', email: 'a@b.com', password: 'h', firstName: 'A', lastName: 'B', phone: '0612345678', createdAt: new Date(), updatedAt: new Date() }];
 		mockUserRepository.findAll.mockResolvedValue(ok(users));
 		const result = await useCase.execute();

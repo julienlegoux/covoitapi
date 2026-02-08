@@ -1,12 +1,3 @@
-export type RouteEntity = {
-	id: string;
-	dateRoute: Date;
-	kms: number;
-	seats: number;
-	driverId: string;
-	carId: string;
-};
-
-export type CreateRouteData = Omit<RouteEntity, 'id'> & {
-	cityIds?: string[];
-};
+// Re-export Travel types under the old Route names for backward compatibility.
+// Phase 4 will remove this file and update all consumers.
+export type { TravelEntity as RouteEntity, CreateTravelData as CreateRouteData } from './travel.entity.js';

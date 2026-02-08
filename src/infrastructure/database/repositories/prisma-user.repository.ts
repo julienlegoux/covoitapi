@@ -1,3 +1,4 @@
+import crypto from 'node:crypto';
 import { inject, injectable } from 'tsyringe';
 import type { CreateUserData, PublicUserEntity, UpdateUserData, UserEntity } from '../../../domain/entities/user.entity.js';
 import type { UserRepository } from '../../../domain/repositories/user.repository.js';
@@ -79,6 +80,18 @@ export class PrismaUserRepository implements UserRepository {
 		}
 	}
 
+	async updateRole(id: string, role: string): Promise<Result<void, DatabaseError>> {
+		try {
+			await this.prisma.user.update({
+				where: { id },
+				data: { role },
+			});
+			return ok(undefined);
+		} catch (e) {
+			return err(new DatabaseError('Failed to update user role', e));
+		}
+	}
+
 	async delete(id: string): Promise<Result<void, DatabaseError>> {
 		try {
 			await this.prisma.user.delete({
@@ -98,6 +111,43 @@ export class PrismaUserRepository implements UserRepository {
 			return ok(count > 0);
 		} catch (e) {
 			return err(new DatabaseError('Failed to check if user exists', e));
+		}
+	}
+
+	async anonymize(id: string): Promise<Result<void, DatabaseError>> {
+		try {
+			await this.prisma.$transaction(async (tx) => {
+				// 1. Anonymize user
+				await tx.user.update({
+					where: { id },
+					data: {
+						email: `deleted-${crypto.randomUUID()}@anonymized.local`,
+						firstName: null,
+						lastName: null,
+						phone: null,
+						password: crypto.randomUUID(),
+						anonymizedAt: new Date(),
+					},
+				});
+
+				// 2. Anonymize driver if exists
+				await tx.driver.updateMany({
+					where: { userId: id },
+					data: {
+						driverLicense: 'ANONYMIZED',
+						anonymizedAt: new Date(),
+					},
+				});
+
+				// 3. Mark inscriptions as ANONYMIZED
+				await tx.inscription.updateMany({
+					where: { userId: id },
+					data: { status: 'ANONYMIZED' },
+				});
+			});
+			return ok(undefined);
+		} catch (e) {
+			return err(new DatabaseError('Failed to anonymize user', e));
 		}
 	}
 }

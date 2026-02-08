@@ -1,18 +1,6 @@
-import { inject, injectable } from 'tsyringe';
-import type { PublicUserEntity } from '../../../domain/entities/user.entity.js';
-import type { UserRepository } from '../../../domain/repositories/user.repository.js';
-import type { RepositoryError } from '../../../infrastructure/errors/repository.errors.js';
-import { TOKENS } from '../../../lib/shared/di/tokens.js';
-import type { Result } from '../../../lib/shared/types/result.js';
+import { ListUsersUseCase } from '../user/list-users.use-case.js';
 
-@injectable()
-export class ListPersonsUseCase {
-	constructor(
-		@inject(TOKENS.UserRepository)
-		private readonly userRepository: UserRepository,
-	) {}
-
-	async execute(): Promise<Result<PublicUserEntity[], RepositoryError>> {
-		return this.userRepository.findAll();
-	}
-}
+/** @deprecated Use ListUsersUseCase instead. Kept for backward compatibility. */
+export const ListPersonsUseCase = ListUsersUseCase;
+/** @deprecated Use ListUsersUseCase instead. Kept for backward compatibility. */
+export type ListPersonsUseCase = ListUsersUseCase;

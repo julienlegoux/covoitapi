@@ -5,10 +5,10 @@ import { UserNotFoundError } from '../../../domain/errors/domain.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import { ok, err } from '../../../lib/shared/types/result.js';
 import { DatabaseError } from '../../../infrastructure/errors/repository.errors.js';
-import { UpdatePersonUseCase } from './update-person.use-case.js';
+import { UpdateUserUseCase } from '../user/update-user.use-case.js';
 
-describe('UpdatePersonUseCase', () => {
-	let useCase: UpdatePersonUseCase;
+describe('UpdateUserUseCase', () => {
+	let useCase: UpdateUserUseCase;
 	let mockUserRepository: ReturnType<typeof createMockUserRepository>;
 
 	const existingUser = { id: 'u1', email: 'a@b.com', password: 'h', firstName: 'A', lastName: 'B', phone: '06', createdAt: new Date(), updatedAt: new Date() };
@@ -16,10 +16,10 @@ describe('UpdatePersonUseCase', () => {
 	beforeEach(() => {
 		mockUserRepository = createMockUserRepository();
 		container.registerInstance(TOKENS.UserRepository, mockUserRepository);
-		useCase = container.resolve(UpdatePersonUseCase);
+		useCase = container.resolve(UpdateUserUseCase);
 	});
 
-	it('should update person with full input', async () => {
+	it('should update user with full input', async () => {
 		const input = { firstName: 'John', lastName: 'Doe', email: 'john@new.com', phone: '0712345678' };
 		const updated = { ...existingUser, ...input, updatedAt: new Date() };
 		mockUserRepository.findById.mockResolvedValue(ok(existingUser));
@@ -36,7 +36,7 @@ describe('UpdatePersonUseCase', () => {
 		});
 	});
 
-	it('should update person with partial input (patch)', async () => {
+	it('should update user with partial input (patch)', async () => {
 		const input = { email: 'new@example.com', phone: '0712345678' };
 		mockUserRepository.findById.mockResolvedValue(ok(existingUser));
 		mockUserRepository.update.mockResolvedValue(ok({ ...existingUser, ...input }));

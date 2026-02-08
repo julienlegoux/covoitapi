@@ -10,8 +10,13 @@ import { DeleteRouteUseCase } from '../../application/use-cases/route/delete-rou
 import { ok, err } from '../../lib/shared/types/result.js';
 import { RouteNotFoundError } from '../../domain/errors/domain.errors.js';
 
-function createMockContext(overrides?: { jsonBody?: unknown; params?: Record<string, string>; queryParams?: Record<string, string> }) {
+function createMockContext(overrides?: { jsonBody?: unknown; params?: Record<string, string>; queryParams?: Record<string, string>; userId?: string }) {
 	const jsonMock = vi.fn((body, status) => ({ body, status }));
+	const bodyMock = vi.fn((body, status) => new Response(body, { status }));
+	const contextValues: Record<string, unknown> = {};
+	if (overrides?.userId) {
+		contextValues['userId'] = overrides.userId;
+	}
 	return {
 		req: {
 			json: vi.fn().mockResolvedValue(overrides?.jsonBody ?? {}),
@@ -19,8 +24,11 @@ function createMockContext(overrides?: { jsonBody?: unknown; params?: Record<str
 			query: vi.fn((name: string) => overrides?.queryParams?.[name]),
 		},
 		json: jsonMock,
+		body: bodyMock,
+		get: vi.fn((key: string) => contextValues[key]),
 		_getJsonCall: () => jsonMock.mock.calls[0],
-	} as unknown as Context & { _getJsonCall: () => [unknown, number] };
+		_getBodyCall: () => bodyMock.mock.calls[0],
+	} as unknown as Context & { _getJsonCall: () => [unknown, number]; _getBodyCall: () => [unknown, number] };
 }
 
 describe('Route Controller', () => {
@@ -79,9 +87,9 @@ describe('Route Controller', () => {
 
 		it('should return 200 with filtered routes', async () => {
 			mockUseCase.execute.mockResolvedValue(ok([]));
-			const ctx = createMockContext({ queryParams: { villeD: 'Paris', villeA: 'Lyon', dateT: '2025-06-15' } });
+			const ctx = createMockContext({ queryParams: { departureCity: 'Paris', arrivalCity: 'Lyon', date: '2025-06-15' } });
 			await findRoute(ctx);
-			expect(mockUseCase.execute).toHaveBeenCalledWith({ villeD: 'Paris', villeA: 'Lyon', dateT: '2025-06-15' });
+			expect(mockUseCase.execute).toHaveBeenCalledWith({ departureCity: 'Paris', arrivalCity: 'Lyon', date: '2025-06-15' });
 			const [, status] = ctx._getJsonCall();
 			expect(status).toBe(200);
 		});
@@ -90,7 +98,7 @@ describe('Route Controller', () => {
 			mockUseCase.execute.mockResolvedValue(ok([]));
 			const ctx = createMockContext({ queryParams: {} });
 			await findRoute(ctx);
-			expect(mockUseCase.execute).toHaveBeenCalledWith({ villeD: undefined, villeA: undefined, dateT: undefined });
+			expect(mockUseCase.execute).toHaveBeenCalledWith({ departureCity: undefined, arrivalCity: undefined, date: undefined });
 		});
 	});
 
@@ -102,18 +110,26 @@ describe('Route Controller', () => {
 			container.register(CreateRouteUseCase, { useValue: mockUseCase as unknown as CreateRouteUseCase });
 		});
 
-		it('should return 201 on success', async () => {
+		it('should return 201 on success and use userId from context', async () => {
 			mockUseCase.execute.mockResolvedValue(ok({ id: 'r1' }));
-			const body = { kms: 150, idpers: 'u1', dateT: '2025-06-15', villeD: 'Paris', villeA: 'Lyon', seats: 3, carId: 'c1' };
-			const ctx = createMockContext({ jsonBody: body });
+			const body = { kms: 150, date: '2025-06-15', departureCity: 'Paris', arrivalCity: 'Lyon', seats: 3, carId: 'c1' };
+			const ctx = createMockContext({ jsonBody: body, userId: 'u1' });
 			await createRoute(ctx);
 			const [response, status] = ctx._getJsonCall();
 			expect(status).toBe(201);
-			expect(mockUseCase.execute).toHaveBeenCalledWith(body);
+			expect(mockUseCase.execute).toHaveBeenCalledWith({
+				kms: 150,
+				userId: 'u1',
+				date: '2025-06-15',
+				departureCity: 'Paris',
+				arrivalCity: 'Lyon',
+				seats: 3,
+				carId: 'c1',
+			});
 		});
 
 		it('should throw ZodError for invalid input', async () => {
-			const ctx = createMockContext({ jsonBody: {} });
+			const ctx = createMockContext({ jsonBody: {}, userId: 'u1' });
 			await expect(createRoute(ctx)).rejects.toThrow();
 		});
 	});
@@ -126,12 +142,11 @@ describe('Route Controller', () => {
 			container.register(DeleteRouteUseCase, { useValue: mockUseCase as unknown as DeleteRouteUseCase });
 		});
 
-		it('should return 200 on successful delete', async () => {
+		it('should return 204 on successful delete', async () => {
 			mockUseCase.execute.mockResolvedValue(ok(undefined));
 			const ctx = createMockContext({ params: { id: 'r1' } });
-			await deleteRoute(ctx);
-			const [, status] = ctx._getJsonCall();
-			expect(status).toBe(200);
+			const response = await deleteRoute(ctx);
+			expect(response.status).toBe(204);
 		});
 
 		it('should return error when route not found', async () => {

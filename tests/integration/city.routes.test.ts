@@ -26,29 +26,29 @@ describe('City Routes', () => {
 		deleteMock = registerMockUseCase(DeleteCityUseCase);
 	});
 
-	describe('GET /api/listePostalsCodes', () => {
+	describe('GET /api/cities', () => {
 		it('should return 200 with cities', async () => {
 			const cities = [{ id: '1', cityName: 'Paris', zipcode: '75000' }];
 			listMock.execute.mockResolvedValue(ok(cities));
-			const res = await app.request('/api/listePostalsCodes', { headers: authHeaders() });
+			const res = await app.request('/api/cities', { headers: authHeaders() });
 			expect(res.status).toBe(200);
 			const body = await res.json();
 			expect(body).toEqual({ success: true, data: cities });
 		});
 
 		it('should return 401 without auth token', async () => {
-			const res = await app.request('/api/listePostalsCodes');
+			const res = await app.request('/api/cities');
 			expect(res.status).toBe(401);
 		});
 	});
 
-	describe('POST /api/city', () => {
+	describe('POST /api/cities', () => {
 		it('should return 201 on success', async () => {
 			const city = { id: '1', cityName: 'Paris', zipcode: '75000' };
 			createMock.execute.mockResolvedValue(ok(city));
-			const res = await app.request('/api/city', {
+			const res = await app.request('/api/cities', {
 				method: 'POST',
-				body: JSON.stringify({ ville: 'Paris', cp: '75000' }),
+				body: JSON.stringify({ cityName: 'Paris', zipcode: '75000' }),
 				headers: authHeaders(),
 			});
 			expect(res.status).toBe(201);
@@ -56,18 +56,18 @@ describe('City Routes', () => {
 			expect(body).toEqual({ success: true, data: city });
 		});
 
-		it('should map ville to cityName and cp to zipcode', async () => {
+		it('should pass cityName and zipcode fields', async () => {
 			createMock.execute.mockResolvedValue(ok({ id: '1', cityName: 'Lyon', zipcode: '69000' }));
-			await app.request('/api/city', {
+			await app.request('/api/cities', {
 				method: 'POST',
-				body: JSON.stringify({ ville: 'Lyon', cp: '69000' }),
+				body: JSON.stringify({ cityName: 'Lyon', zipcode: '69000' }),
 				headers: authHeaders(),
 			});
 			expect(createMock.execute).toHaveBeenCalledWith({ cityName: 'Lyon', zipcode: '69000' });
 		});
 
 		it('should reject invalid input', async () => {
-			const res = await app.request('/api/city', {
+			const res = await app.request('/api/cities', {
 				method: 'POST',
 				body: JSON.stringify({}),
 				headers: authHeaders(),
@@ -76,19 +76,19 @@ describe('City Routes', () => {
 		});
 	});
 
-	describe('DELETE /api/city/:id', () => {
-		it('should return 200 on success', async () => {
+	describe('DELETE /api/cities/:id', () => {
+		it('should return 204 on success', async () => {
 			deleteMock.execute.mockResolvedValue(ok(undefined));
-			const res = await app.request('/api/city/1', {
+			const res = await app.request('/api/cities/1', {
 				method: 'DELETE',
 				headers: authHeaders(),
 			});
-			expect(res.status).toBe(200);
+			expect(res.status).toBe(204);
 		});
 
 		it('should return 404 when not found', async () => {
 			deleteMock.execute.mockResolvedValue(err(new CityNotFoundError('1')));
-			const res = await app.request('/api/city/1', {
+			const res = await app.request('/api/cities/1', {
 				method: 'DELETE',
 				headers: authHeaders(),
 			});

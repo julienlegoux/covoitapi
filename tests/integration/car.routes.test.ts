@@ -29,28 +29,28 @@ describe('Car Routes', () => {
 		deleteMock = registerMockUseCase(DeleteCarUseCase);
 	});
 
-	describe('GET /api/listCars', () => {
+	describe('GET /api/cars', () => {
 		it('should return 200 with cars', async () => {
 			const cars = [{ id: '1', immat: 'AB-123-CD' }];
 			listMock.execute.mockResolvedValue(ok(cars));
-			const res = await app.request('/api/listCars', { headers: authHeaders() });
+			const res = await app.request('/api/cars', { headers: authHeaders() });
 			expect(res.status).toBe(200);
 			const body = await res.json();
 			expect(body).toEqual({ success: true, data: cars });
 		});
 
 		it('should return 401 without auth token', async () => {
-			const res = await app.request('/api/listCars');
+			const res = await app.request('/api/cars');
 			expect(res.status).toBe(401);
 		});
 	});
 
-	describe('POST /api/car', () => {
-		const validBody = { modele: 'Corolla', marqueId: 'b1', immatriculation: 'AB-123-CD' };
+	describe('POST /api/cars', () => {
+		const validBody = { model: 'Corolla', brandId: 'b1', licensePlate: 'AB-123-CD' };
 
 		it('should return 201 on success', async () => {
 			createMock.execute.mockResolvedValue(ok({ id: '1', immat: 'AB-123-CD' }));
-			const res = await app.request('/api/car', {
+			const res = await app.request('/api/cars', {
 				method: 'POST',
 				body: JSON.stringify(validBody),
 				headers: authHeaders(),
@@ -59,7 +59,7 @@ describe('Car Routes', () => {
 		});
 
 		it('should reject invalid input', async () => {
-			const res = await app.request('/api/car', {
+			const res = await app.request('/api/cars', {
 				method: 'POST',
 				body: JSON.stringify({}),
 				headers: authHeaders(),
@@ -69,7 +69,7 @@ describe('Car Routes', () => {
 
 		it('should return 409 when car already exists', async () => {
 			createMock.execute.mockResolvedValue(err(new CarAlreadyExistsError('AB-123-CD')));
-			const res = await app.request('/api/car', {
+			const res = await app.request('/api/cars', {
 				method: 'POST',
 				body: JSON.stringify(validBody),
 				headers: authHeaders(),
@@ -78,12 +78,12 @@ describe('Car Routes', () => {
 		});
 	});
 
-	describe('PUT /api/car/:id', () => {
-		const validBody = { modele: 'Yaris', marqueId: 'b1', immatriculation: 'XY-999-ZZ' };
+	describe('PUT /api/cars/:id', () => {
+		const validBody = { model: 'Yaris', brandId: 'b1', licensePlate: 'XY-999-ZZ' };
 
 		it('should return 200 on success', async () => {
 			updateMock.execute.mockResolvedValue(ok({ id: '1', immat: 'XY-999-ZZ' }));
-			const res = await app.request('/api/car/1', {
+			const res = await app.request('/api/cars/1', {
 				method: 'PUT',
 				body: JSON.stringify(validBody),
 				headers: authHeaders(),
@@ -93,7 +93,7 @@ describe('Car Routes', () => {
 
 		it('should return 404 when not found', async () => {
 			updateMock.execute.mockResolvedValue(err(new CarNotFoundError('1')));
-			const res = await app.request('/api/car/1', {
+			const res = await app.request('/api/cars/1', {
 				method: 'PUT',
 				body: JSON.stringify(validBody),
 				headers: authHeaders(),
@@ -102,31 +102,31 @@ describe('Car Routes', () => {
 		});
 	});
 
-	describe('PATCH /api/car/:id', () => {
+	describe('PATCH /api/cars/:id', () => {
 		it('should return 200 on success', async () => {
 			updateMock.execute.mockResolvedValue(ok({ id: '1', immat: 'AB-123-CD' }));
-			const res = await app.request('/api/car/1', {
+			const res = await app.request('/api/cars/1', {
 				method: 'PATCH',
-				body: JSON.stringify({ immatriculation: 'XY-999-ZZ' }),
+				body: JSON.stringify({ licensePlate: 'XY-999-ZZ' }),
 				headers: authHeaders(),
 			});
 			expect(res.status).toBe(200);
 		});
 	});
 
-	describe('DELETE /api/car/:id', () => {
-		it('should return 200 on success', async () => {
+	describe('DELETE /api/cars/:id', () => {
+		it('should return 204 on success', async () => {
 			deleteMock.execute.mockResolvedValue(ok(undefined));
-			const res = await app.request('/api/car/1', {
+			const res = await app.request('/api/cars/1', {
 				method: 'DELETE',
 				headers: authHeaders(),
 			});
-			expect(res.status).toBe(200);
+			expect(res.status).toBe(204);
 		});
 
 		it('should return 404 when not found', async () => {
 			deleteMock.execute.mockResolvedValue(err(new CarNotFoundError('1')));
-			const res = await app.request('/api/car/1', {
+			const res = await app.request('/api/cars/1', {
 				method: 'DELETE',
 				headers: authHeaders(),
 			});

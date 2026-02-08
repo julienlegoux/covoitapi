@@ -6,7 +6,6 @@ describe('ErrorCodes', () => {
 		expect(ErrorCodes.USER_ALREADY_EXISTS).toBeDefined();
 		expect(ErrorCodes.INVALID_CREDENTIALS).toBeDefined();
 		expect(ErrorCodes.USER_NOT_FOUND).toBeDefined();
-		expect(ErrorCodes.VALIDATION_ERROR).toBeDefined();
 		expect(ErrorCodes.DATABASE_ERROR).toBeDefined();
 		expect(ErrorCodes.TOKEN_EXPIRED).toBeDefined();
 		expect(ErrorCodes.INTERNAL_ERROR).toBeDefined();
@@ -36,7 +35,6 @@ describe('ErrorCodes', () => {
 
 	it('should have correct categories', () => {
 		expect(ErrorCodes.USER_ALREADY_EXISTS.category).toBe('domain');
-		expect(ErrorCodes.VALIDATION_ERROR.category).toBe('application');
 		expect(ErrorCodes.DATABASE_ERROR.category).toBe('infrastructure');
 		expect(ErrorCodes.TOKEN_EXPIRED.category).toBe('auth');
 		expect(ErrorCodes.INTERNAL_ERROR.category).toBe('system');
@@ -64,7 +62,6 @@ describe('getHttpStatus()', () => {
 		expect(getHttpStatus('USER_ALREADY_EXISTS')).toBe(409);
 		expect(getHttpStatus('INVALID_CREDENTIALS')).toBe(401);
 		expect(getHttpStatus('USER_NOT_FOUND')).toBe(404);
-		expect(getHttpStatus('VALIDATION_ERROR')).toBe(400);
 		expect(getHttpStatus('DATABASE_ERROR')).toBe(500);
 		expect(getHttpStatus('TOKEN_EXPIRED')).toBe(401);
 	});

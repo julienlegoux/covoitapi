@@ -24,9 +24,9 @@ export async function getRoute(c: Context): Promise<Response> {
 
 export async function findRoute(c: Context): Promise<Response> {
 	const input: FindRouteInput = {
-		villeD: c.req.query('villeD'),
-		villeA: c.req.query('villeA'),
-		dateT: c.req.query('dateT'),
+		departureCity: c.req.query('departureCity'),
+		arrivalCity: c.req.query('arrivalCity'),
+		date: c.req.query('date'),
 	};
 
 	const useCase = container.resolve(FindRouteUseCase);
@@ -40,10 +40,10 @@ export async function createRoute(c: Context): Promise<Response> {
 
 	const input: CreateRouteInput = {
 		kms: validated.kms,
-		idpers: validated.idpers,
-		dateT: validated.dateT,
-		villeD: validated.villeD,
-		villeA: validated.villeA,
+		userId: c.get('userId'),
+		date: validated.date,
+		departureCity: validated.departureCity,
+		arrivalCity: validated.arrivalCity,
 		seats: validated.seats,
 		carId: validated.carId,
 	};
@@ -57,5 +57,8 @@ export async function deleteRoute(c: Context): Promise<Response> {
 	const id = c.req.param('id');
 	const useCase = container.resolve(DeleteRouteUseCase);
 	const result = await useCase.execute(id);
-	return resultToResponse(c, result);
+	if (!result.success) {
+		return resultToResponse(c, result);
+	}
+	return c.body(null, 204);
 }

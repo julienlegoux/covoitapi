@@ -4,10 +4,9 @@ import { createRouteSchema } from './route.validator.js';
 describe('createRouteSchema', () => {
 	const validInput = {
 		kms: 150,
-		idpers: 'user-1',
-		dateT: '2025-06-15',
-		villeD: 'Paris',
-		villeA: 'Lyon',
+		date: '2025-06-15',
+		departureCity: 'Paris',
+		arrivalCity: 'Lyon',
 		seats: 3,
 		carId: 'car-1',
 	};
@@ -38,26 +37,25 @@ describe('createRouteSchema', () => {
 		expect(result.success).toBe(false);
 	});
 
-	it('should reject missing idpers', () => {
-		const { idpers, ...rest } = validInput;
+	it('should not require userId (userId comes from JWT)', () => {
+		const result = createRouteSchema.safeParse(validInput);
+		expect(result.success).toBe(true);
+	});
+
+	it('should reject missing date', () => {
+		const { date, ...rest } = validInput;
 		const result = createRouteSchema.safeParse(rest);
 		expect(result.success).toBe(false);
 	});
 
-	it('should reject missing dateT', () => {
-		const { dateT, ...rest } = validInput;
+	it('should reject missing departureCity', () => {
+		const { departureCity, ...rest } = validInput;
 		const result = createRouteSchema.safeParse(rest);
 		expect(result.success).toBe(false);
 	});
 
-	it('should reject missing villeD', () => {
-		const { villeD, ...rest } = validInput;
-		const result = createRouteSchema.safeParse(rest);
-		expect(result.success).toBe(false);
-	});
-
-	it('should reject missing villeA', () => {
-		const { villeA, ...rest } = validInput;
+	it('should reject missing arrivalCity', () => {
+		const { arrivalCity, ...rest } = validInput;
 		const result = createRouteSchema.safeParse(rest);
 		expect(result.success).toBe(false);
 	});

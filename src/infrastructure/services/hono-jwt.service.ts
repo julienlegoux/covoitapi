@@ -37,7 +37,12 @@ export class HonoJwtService implements JwtService {
 	async verify(token: string): Promise<Result<JwtPayload, TokenExpiredError | TokenInvalidError | TokenMalformedError>> {
 		try {
 			const decoded = await honoVerify(token, this.secret, 'HS256');
-			return ok({ userId: decoded.userId as string });
+
+			if (!decoded.userId || typeof decoded.userId !== 'string') {
+				return err(new TokenInvalidError('Token payload missing userId'));
+			}
+
+			return ok({ userId: decoded.userId, role: (decoded.role as string) ?? 'USER' });
 		} catch (e) {
 			const error = e instanceof Error ? e : new Error(String(e));
 			const message = error.message.toLowerCase();

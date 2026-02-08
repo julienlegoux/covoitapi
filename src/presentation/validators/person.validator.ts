@@ -1,22 +1,22 @@
 import { z } from 'zod';
 
 export const createPersonSchema = z.object({
-	prenom: z.string().min(1, 'First name is required'),
-	nom: z.string().min(1, 'Last name is required'),
-	tel: z.string().min(1, 'Phone is required'),
+	firstName: z.string().min(1, 'First name is required'),
+	lastName: z.string().min(1, 'Last name is required'),
+	phone: z.string().min(1, 'Phone is required'),
 	email: z.email('Invalid email format'),
 	password: z.string().min(8, 'Password must be at least 8 characters'),
 });
 
 export const updatePersonSchema = z.object({
-	prenom: z.string().min(1, 'First name is required'),
-	nom: z.string().min(1, 'Last name is required'),
-	tel: z.string().min(1, 'Phone is required'),
+	firstName: z.string().min(1, 'First name is required'),
+	lastName: z.string().min(1, 'Last name is required'),
+	phone: z.string().min(1, 'Phone is required'),
 	email: z.email('Invalid email format'),
 });
 
 export const patchPersonSchema = z.object({
-	tel: z.string().min(1).optional(),
+	phone: z.string().min(1).optional(),
 	email: z.email('Invalid email format').optional(),
 });
 

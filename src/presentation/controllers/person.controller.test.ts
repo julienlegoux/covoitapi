@@ -78,15 +78,15 @@ describe('Person Controller', () => {
 
 		it('should return 201 on success', async () => {
 			mockUseCase.execute.mockResolvedValue(ok({ id: '1' }));
-			const ctx = createMockContext({ jsonBody: { prenom: 'John', nom: 'Doe', tel: '0612345678', email: 'j@d.com', password: 'Password1' } });
+			const ctx = createMockContext({ jsonBody: { firstName: 'John', lastName: 'Doe', phone: '0612345678', email: 'j@d.com', password: 'Password1' } });
 			await createPerson(ctx);
 			const [response, status] = ctx._getJsonCall();
 			expect(status).toBe(201);
 		});
 
-		it('should map prenom->firstName, nom->lastName, tel->phone', async () => {
+		it('should map firstName, lastName, phone correctly', async () => {
 			mockUseCase.execute.mockResolvedValue(ok({ id: '1' }));
-			const ctx = createMockContext({ jsonBody: { prenom: 'John', nom: 'Doe', tel: '0612345678', email: 'j@d.com', password: 'Pass1234' } });
+			const ctx = createMockContext({ jsonBody: { firstName: 'John', lastName: 'Doe', phone: '0612345678', email: 'j@d.com', password: 'Pass1234' } });
 			await createPerson(ctx);
 			expect(mockUseCase.execute).toHaveBeenCalledWith({
 				firstName: 'John', lastName: 'Doe', phone: '0612345678', email: 'j@d.com', password: 'Pass1234',
@@ -107,9 +107,9 @@ describe('Person Controller', () => {
 			container.register(UpdatePersonUseCase, { useValue: mockUseCase as unknown as UpdatePersonUseCase });
 		});
 
-		it('should return 200 and extract idpers from params', async () => {
+		it('should return 200 and extract id from params', async () => {
 			mockUseCase.execute.mockResolvedValue(ok({ id: '1' }));
-			const ctx = createMockContext({ jsonBody: { prenom: 'John', nom: 'Doe', tel: '06', email: 'j@d.com' }, params: { idpers: 'u1' } });
+			const ctx = createMockContext({ jsonBody: { firstName: 'John', lastName: 'Doe', phone: '06', email: 'j@d.com' }, params: { id: 'u1' } });
 			await updatePerson(ctx);
 			expect(mockUseCase.execute).toHaveBeenCalledWith('u1', { firstName: 'John', lastName: 'Doe', phone: '06', email: 'j@d.com' });
 			const [, status] = ctx._getJsonCall();
@@ -125,9 +125,9 @@ describe('Person Controller', () => {
 			container.register(UpdatePersonUseCase, { useValue: mockUseCase as unknown as UpdatePersonUseCase });
 		});
 
-		it('should return 200 and map tel->phone, email', async () => {
+		it('should return 200 and map phone, email', async () => {
 			mockUseCase.execute.mockResolvedValue(ok({ id: '1' }));
-			const ctx = createMockContext({ jsonBody: { tel: '0712345678', email: 'new@test.com' }, params: { idpers: 'u1' } });
+			const ctx = createMockContext({ jsonBody: { phone: '0712345678', email: 'new@test.com' }, params: { id: 'u1' } });
 			await patchPerson(ctx);
 			expect(mockUseCase.execute).toHaveBeenCalledWith('u1', { phone: '0712345678', email: 'new@test.com' });
 		});

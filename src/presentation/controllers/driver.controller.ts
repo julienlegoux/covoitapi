@@ -10,8 +10,8 @@ export async function createDriver(c: Context): Promise<Response> {
 	const validated = createDriverSchema.parse(body);
 
 	const input: CreateDriverInput = {
-		driverLicense: validated.permis,
-		userId: validated.idpers,
+		driverLicense: validated.driverLicense,
+		userId: c.get('userId'),
 	};
 
 	const useCase = container.resolve(CreateDriverUseCase);

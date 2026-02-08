@@ -49,9 +49,7 @@ export class RegisterUseCase {
 		const createResult = await this.userRepository.create({
 			email: input.email,
 			password: hashResult.value,
-			firstName: input.firstName,
-			lastName: input.lastName,
-			phone: input.phone,
+			role: 'USER',
 		});
 		if (!createResult.success) {
 			return createResult;
@@ -60,7 +58,7 @@ export class RegisterUseCase {
 		const user = createResult.value;
 
 		// Send welcome email (don't fail registration if email fails)
-		const emailResult = await this.emailService.sendWelcomeEmail(user.email, user.firstName);
+		const emailResult = await this.emailService.sendWelcomeEmail(user.email, user.firstName ?? 'there');
 		if (!emailResult.success) {
 			logger.warn('Failed to send welcome email', {
 				userId: user.id,
@@ -71,7 +69,7 @@ export class RegisterUseCase {
 		}
 
 		// Generate token
-		const tokenResult = await this.jwtService.sign({ userId: user.id });
+		const tokenResult = await this.jwtService.sign({ userId: user.id, role: 'USER' });
 		if (!tokenResult.success) {
 			return tokenResult;
 		}

@@ -27,9 +27,9 @@ export async function createPerson(c: Context): Promise<Response> {
 	const validated = createPersonSchema.parse(body);
 
 	const input: CreatePersonInput = {
-		firstName: validated.prenom,
-		lastName: validated.nom,
-		phone: validated.tel,
+		firstName: validated.firstName,
+		lastName: validated.lastName,
+		phone: validated.phone,
 		email: validated.email,
 		password: validated.password,
 	};
@@ -40,14 +40,14 @@ export async function createPerson(c: Context): Promise<Response> {
 }
 
 export async function updatePerson(c: Context): Promise<Response> {
-	const id = c.req.param('idpers');
+	const id = c.req.param('id');
 	const body = await c.req.json();
 	const validated = updatePersonSchema.parse(body);
 
 	const input: UpdatePersonInput = {
-		firstName: validated.prenom,
-		lastName: validated.nom,
-		phone: validated.tel,
+		firstName: validated.firstName,
+		lastName: validated.lastName,
+		phone: validated.phone,
 		email: validated.email,
 	};
 
@@ -57,12 +57,12 @@ export async function updatePerson(c: Context): Promise<Response> {
 }
 
 export async function patchPerson(c: Context): Promise<Response> {
-	const id = c.req.param('idpers');
+	const id = c.req.param('id');
 	const body = await c.req.json();
 	const validated = patchPersonSchema.parse(body);
 
 	const input: PatchPersonInput = {
-		phone: validated.tel,
+		phone: validated.phone,
 		email: validated.email,
 	};
 

@@ -19,20 +19,59 @@ This is an impressively well-structured project for its stage. The clean archite
 
 **1. Entity/Prisma type mismatch — `as unknown as` casting (HIGH)**
 - File: `src/infrastructure/database/repositories/prisma-route.repository.ts` lines 26, 43, 84
+- File: `src/infrastructure/database/repositories/prisma-inscription.repository.ts` lines 22, 34, 46, 58
 - `return ok(routes as unknown as RouteEntity[])` — double-casting destroys type safety
-- Root cause: `RouteEntity` (domain) is a flat type with only scalar fields, but Prisma queries use `include` to return nested relations (driver, car, cities). The shapes don't match.
-- **Fix**: Create a proper domain entity type that includes relations, or map Prisma results to domain entities explicitly in the repository.
+- Root cause: domain entities are flat types with only scalar fields, but Prisma queries use `include` to return nested relations (driver, car, cities). The shapes don't match.
+- **Fix**: Create proper domain entity types that include relations, or map Prisma results to domain entities explicitly in the repository.
 
 **2. Anemic domain entities**
 - All entities in `src/domain/entities/` are plain type aliases — no behavior, no validation, no invariant enforcement
 - Example: `route.entity.ts` is just `{ id, dateRoute, kms, seats, driverId, carId }` — no method to check `hasAvailableSeats()`, no factory method
 - In clean architecture, entities should encapsulate business rules. Currently all logic lives in use cases.
-- **Recommendation**: Not critical at this scale, but worth noting. As the domain grows, push invariants into entities.
+- **Recommendation**: Not critical at this scale, but as the domain grows, push invariants into entities.
 
 **3. Flat route mounting**
 - File: `src/presentation/routes/index.ts` lines 21-27 — 7 route modules mounted at `app.route('/', ...)` instead of RESTful grouping
 - Results in URLs like `/api/listBrands`, `/api/brand`, `/api/listCars` rather than `/api/brands`, `/api/brands/:id`
 - **Recommendation**: Group under RESTful resource paths (`/api/brands`, `/api/cars`, `/api/routes`, etc.)
+
+---
+
+## UNUSED CODE & DEAD FEATURES
+
+### Utility Functions (completely unused)
+| File | Line(s) | Export | Status |
+|------|---------|--------|--------|
+| `src/lib/shared/utils/response.util.ts` | 5 | `successResponse()` | Never imported anywhere |
+| `src/lib/shared/utils/response.util.ts` | 13 | `errorResponse()` | Never imported anywhere |
+| `src/presentation/middleware/request-logger.middleware.ts` | 6 | `requestLogger()` | Defined but never mounted in any route |
+
+### Request Context helpers (all unused)
+| File | Line(s) | Export | Status |
+|------|---------|--------|--------|
+| `src/lib/context/request-context.ts` | 33-36 | `getContextSafe()` | Never called |
+| `src/lib/context/request-context.ts` | 38-40 | `getRequestId()` | Never called |
+| `src/lib/context/request-context.ts` | 42-44 | `getUserId()` | Never called |
+| `src/lib/context/request-context.ts` | 53-55 | `setUserId()` | Never called |
+| `src/lib/context/request-context.ts` | 65-68 | `runWithContextSync()` | Never called |
+
+### Application Error Classes (never instantiated)
+| File | Line(s) | Export | Status |
+|------|---------|--------|--------|
+| `src/application/errors/application.errors.ts` | 11-18 | `ValidationError` | Exported but never thrown |
+| `src/application/errors/application.errors.ts` | 21-25 | `NotFoundError` | Exported but never thrown |
+
+### ColorRepository (full dead feature)
+- `src/lib/shared/di/tokens.ts` line 4 — token defined, never injected
+- `src/lib/shared/di/container.ts` line 33 — registered in DI, never resolved
+- `src/infrastructure/database/repositories/prisma-color.repository.ts` — full implementation, never used
+- `src/domain/repositories/color.repository.ts` — interface defined, never referenced
+- No routes, controllers, or use cases exist for colors
+
+### Two different logger implementations
+- `src/lib/shared/utils/logger.util.ts` — simple console wrapper
+- `src/infrastructure/logging/logger.ts` — structured logger with formatters
+- Both are used in different parts of the codebase — should standardize on one
 
 ---
 
@@ -135,6 +174,10 @@ This is an impressively well-structured project for its stage. The clean archite
   - Could be optimized with singleton registration for stateless use cases
   - Makes controllers harder to test in isolation (tight coupling to the container)
 
+**19. Empty zipcode on auto-created cities**
+- `src/application/use-cases/route/create-route.use-case.ts` line 66
+- Cities created during route creation get `zipcode: ''` — should validate or require zipcode input.
+
 ---
 
 ## TESTING (7/10)
@@ -148,19 +191,19 @@ This is an impressively well-structured project for its stage. The clean archite
 
 ### What Needs Improvement
 
-**19. No test coverage reporting configured**
+**20. No test coverage reporting configured**
 - `vitest.config.ts` has `coverage: { provider: 'v8' }` but no `thresholds` or CI integration.
 - **Recommendation**: Add coverage thresholds (e.g., 80% for branches/lines).
 
-**20. Integration tests use mocks — not real DB**
+**21. Integration tests use mocks — not real DB**
 - `tests/integration/*.test.ts` mock the DI container rather than using a test database.
 - These are effectively "thick unit tests", not true integration tests.
 - **Recommendation**: Add a docker-compose test database for true integration tests, or use Prisma's test utilities.
 
-**21. Missing test for driver use case**
+**22. Missing test for driver use case**
 - `create-driver.use-case.ts` has no `.test.ts` file — the only use case without tests.
 
-**22. No E2E or contract tests**
+**23. No E2E or contract tests**
 - No test verifies the full HTTP request/response cycle with a real server.
 - The Postman collection exists but isn't automated.
 
@@ -168,57 +211,63 @@ This is an impressively well-structured project for its stage. The clean archite
 
 ## DATABASE DESIGN (7/10)
 
-**23. CityRoute lacks departure/arrival distinction**
+**24. CityRoute lacks departure/arrival distinction**
 - As mentioned in #17, the join table `CityRoute(routeId, cityId)` has no way to know which city is the departure and which is the arrival.
 - This makes the `findRoute` filter unreliable.
 - **Fix**: Add a `type` enum column (`'departure' | 'arrival' | 'stop'`) or an `order` integer.
 
-**24. Cascade deletes are aggressive**
-- Deleting a Brand cascades to Model → Car → (blocked by Route Restrict, which was changed to Cascade)
-- Deleting a User cascades to Driver → Routes → Inscriptions
+**25. Cascade deletes are aggressive**
+- Deleting a Brand cascades to Model -> Car -> (blocked by Route Restrict, which was changed to Cascade)
+- Deleting a User cascades to Driver -> Routes -> Inscriptions
 - This means deleting a Brand can wipe out associated routes and inscriptions.
 - **Recommendation**: Use soft deletes for critical entities (User, Route) or restrict cascades.
 
-**25. No indexes beyond unique constraints**
+**26. No indexes beyond unique constraints**
 - No composite indexes for common query patterns (e.g., `Route.dateRoute` + city filters).
 - The `findByFilters` query would benefit from an index on `dateRoute`.
 
-**26. No `updatedAt` on most entities**
+**27. No `updatedAt` on most entities**
 - Only `User` has `updatedAt`. Car, Route, Brand, City, etc. have no audit trail.
 
 ---
 
 ## API DESIGN (6/10)
 
-**27. No API versioning**
+**28. No API versioning**
 - Base path is `/api` — no `/api/v1`. Hard to evolve without breaking clients.
 
-**28. Delete endpoints return 200 with data instead of 204**
+**29. Delete endpoints return 200 with data instead of 204**
 - REST convention: `DELETE` returns `204 No Content`. Current implementation returns `200` with `{ success: true, data: undefined }`.
 
-**29. No OpenAPI/Swagger documentation**
+**30. No OpenAPI/Swagger documentation**
 - The Postman collection exists, but no machine-readable API spec.
 - Hono supports `@hono/zod-openapi` which could auto-generate docs from existing Zod schemas.
 
-**30. Health endpoint is inside the error handler middleware**
+**31. Health endpoint is inside the error handler middleware**
 - If the error handler itself throws, the health check fails. Health checks should be as lightweight as possible.
 
 ---
 
 ## INFRASTRUCTURE & DEVOPS (7.5/10)
 
-**31. Environment variables well managed**
+**32. Environment variables well managed**
 - `.env` and `.env.local` are properly gitignored. `.env.example` provides a clear template for required variables.
 - Environment validation exists at startup (DATABASE_URL, JWT_SECRET throw if missing).
 
-**32. No CI/CD pipeline visible**
+**33. No CI/CD pipeline visible**
 - No `.github/workflows/` files found. Tests and linting are only run manually.
 - **Recommendation**: Add a GitHub Actions workflow for: lint, test, build, deploy.
 
-**33. Prisma client generated into source tree**
+**34. Prisma client generated into source tree**
 - `src/infrastructure/database/generated/` contains the auto-generated Prisma client committed to git.
 - This adds noise to diffs and can cause merge conflicts.
 - **Recommendation**: Add `generated/` to `.gitignore` and generate at build time.
+
+**35. DI container migration is complete**
+- Old `src/infrastructure/di/container.ts` deleted, all imports updated to new path `src/lib/shared/di/container.ts`.
+- No stray references to old path found.
+
+**36. All npm dependencies are used** — no unused packages found.
 
 ---
 
@@ -227,6 +276,7 @@ This is an impressively well-structured project for its stage. The clean archite
 | Category | Rating | Key Issues |
 |---|---|---|
 | Architecture & Design | 8/10 | Type casting, anemic entities |
+| Unused Code | — | 12 unused exports, 1 dead feature (ColorRepository) |
 | Security | 6/10 | No authorization, userId from body |
 | Naming & Consistency | 5/10 | French/English mix, non-RESTful URLs |
 | Code Quality | 7.5/10 | Duplicate registration, no pagination, date bugs |
@@ -240,10 +290,12 @@ This is an impressively well-structured project for its stage. The clean archite
 ## PRIORITY FIX ORDER
 
 1. **Authorization + userId from JWT** (#4, #5) — security-critical
-2. **Route filter logic + CityRoute schema** (#17, #23) — data correctness
-3. **Add pagination** (#14) — scalability
-4. **Validate findRoute query params + dates** (#15, #16) — input safety
-5. **Standardize naming to English + RESTful URLs** (#10, #11, #12) — DX & maintainability
-6. **Remove duplicate person/register flow** (#13) — code clarity
-7. **Fix Prisma-to-entity type mapping** (#1) — type safety
-8. **Add CI/CD + coverage thresholds** (#19, #32) — process quality
+2. **Route filter logic + CityRoute schema** (#17, #24) — data correctness
+3. **Remove unused code** (unused functions, ColorRepository, dead error classes) — code hygiene
+4. **Add pagination** (#14) — scalability
+5. **Validate findRoute query params + dates** (#15, #16) — input safety
+6. **Standardize naming to English + RESTful URLs** (#10, #11, #12) — DX & maintainability
+7. **Remove duplicate person/register flow** (#13) — code clarity
+8. **Fix Prisma-to-entity type mapping** (#1) — type safety
+9. **Add CI/CD + coverage thresholds** (#20, #33) — process quality
+10. **Standardize on one logger** — consistency

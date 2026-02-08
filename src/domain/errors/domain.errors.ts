@@ -71,12 +71,15 @@ export class DriverAlreadyExistsError extends DomainError {
 	}
 }
 
-export class RouteNotFoundError extends DomainError {
+export class TravelNotFoundError extends DomainError {
 	constructor(identifier: string) {
-		super(`Route not found: ${identifier}`, 'ROUTE_NOT_FOUND');
-		this.name = 'RouteNotFoundError';
+		super(`Travel not found: ${identifier}`, 'TRAVEL_NOT_FOUND');
+		this.name = 'TravelNotFoundError';
 	}
 }
+
+/** @deprecated Use TravelNotFoundError instead. Kept for backward compatibility. */
+export const RouteNotFoundError = TravelNotFoundError;
 
 export class InscriptionNotFoundError extends DomainError {
 	constructor(identifier: string) {
@@ -96,5 +99,19 @@ export class NoSeatsAvailableError extends DomainError {
 	constructor(routeId: string) {
 		super(`No seats available on route ${routeId}`, 'NO_SEATS_AVAILABLE');
 		this.name = 'NoSeatsAvailableError';
+	}
+}
+
+export class ColorNotFoundError extends DomainError {
+	constructor(id: string) {
+		super(`Color not found: ${id}`, 'COLOR_NOT_FOUND');
+		this.name = 'ColorNotFoundError';
+	}
+}
+
+export class ColorAlreadyExistsError extends DomainError {
+	constructor(name: string) {
+		super(`Color already exists: ${name}`, 'COLOR_ALREADY_EXISTS');
+		this.name = 'ColorAlreadyExistsError';
 	}
 }

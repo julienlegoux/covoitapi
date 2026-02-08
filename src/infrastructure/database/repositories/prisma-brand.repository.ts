@@ -14,10 +14,15 @@ export class PrismaBrandRepository implements BrandRepository {
 		private readonly prisma: PrismaClient,
 	) {}
 
-	async findAll(): Promise<Result<BrandEntity[], DatabaseError>> {
+	async findAll(params?: { skip: number; take: number }): Promise<Result<{ data: BrandEntity[]; total: number }, DatabaseError>> {
 		try {
-			const brands = await this.prisma.brand.findMany();
-			return ok(brands);
+			const [data, total] = await Promise.all([
+				this.prisma.brand.findMany({
+					...(params && { skip: params.skip, take: params.take }),
+				}),
+				this.prisma.brand.count(),
+			]);
+			return ok({ data, total });
 		} catch (e) {
 			return err(new DatabaseError('Failed to find all brands', e));
 		}
