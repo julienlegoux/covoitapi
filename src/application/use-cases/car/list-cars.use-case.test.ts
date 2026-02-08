@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { createMockCarRepository } from '../../../../tests/setup.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import { ok, err } from '../../../lib/shared/types/result.js';
-import { DatabaseError } from '../../../infrastructure/errors/repository.errors.js';
+import { DatabaseError } from '../../../lib/errors/repository.errors.js';
 import { ListCarsUseCase } from './list-cars.use-case.js';
 
 describe('ListCarsUseCase', () => {

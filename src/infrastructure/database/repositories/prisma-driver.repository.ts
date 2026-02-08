@@ -4,7 +4,7 @@ import type { DriverRepository } from '../../../domain/repositories/driver.repos
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import type { Result } from '../../../lib/shared/types/result.js';
 import { ok, err } from '../../../lib/shared/types/result.js';
-import { DatabaseError } from '../../errors/repository.errors.js';
+import { DatabaseError } from '../../../lib/errors/repository.errors.js';
 import type { PrismaClient } from '../generated/prisma/client.js';
 
 @injectable()
@@ -14,14 +14,14 @@ export class PrismaDriverRepository implements DriverRepository {
 		private readonly prisma: PrismaClient,
 	) {}
 
-	async findByUserId(userId: string): Promise<Result<DriverEntity | null, DatabaseError>> {
+	async findByUserRefId(userRefId: number): Promise<Result<DriverEntity | null, DatabaseError>> {
 		try {
 			const driver = await this.prisma.driver.findUnique({
-				where: { userId },
+				where: { userRefId },
 			});
 			return ok(driver);
 		} catch (e) {
-			return err(new DatabaseError('Failed to find driver by user id', e));
+			return err(new DatabaseError('Failed to find driver by user ref id', e));
 		}
 	}
 
@@ -30,7 +30,7 @@ export class PrismaDriverRepository implements DriverRepository {
 			const driver = await this.prisma.driver.create({
 				data: {
 					driverLicense: data.driverLicense,
-					userId: data.userId,
+					userRefId: data.userRefId,
 				},
 			});
 			return ok(driver);

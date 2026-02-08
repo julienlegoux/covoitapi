@@ -3,7 +3,7 @@ import { container } from 'tsyringe';
 import { RegisterUseCase } from '../../src/application/use-cases/auth/register.use-case.js';
 import { LoginUseCase } from '../../src/application/use-cases/auth/login.use-case.js';
 import { ok, err } from '../../src/lib/shared/types/result.js';
-import { UserAlreadyExistsError, InvalidCredentialsError } from '../../src/domain/errors/domain.errors.js';
+import { UserAlreadyExistsError, InvalidCredentialsError } from '../../src/lib/errors/domain.errors.js';
 import { jsonHeaders, registerMockJwtService, registerMockUseCase } from './helpers.js';
 
 vi.mock('../../src/infrastructure/database/generated/prisma/client.js', () => ({

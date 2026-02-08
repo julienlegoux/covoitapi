@@ -1,5 +1,5 @@
 import type { Result } from '../../lib/shared/types/result.js';
-import type { JwtError } from '../../infrastructure/errors/jwt.errors.js';
+import type { JwtError } from '../../lib/errors/jwt.errors.js';
 
 export type JwtPayload = {
 	userId: string;

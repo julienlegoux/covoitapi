@@ -4,7 +4,7 @@ import type { ModelRepository } from '../../../domain/repositories/model.reposit
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import type { Result } from '../../../lib/shared/types/result.js';
 import { ok, err } from '../../../lib/shared/types/result.js';
-import { DatabaseError } from '../../errors/repository.errors.js';
+import { DatabaseError } from '../../../lib/errors/repository.errors.js';
 import type { PrismaClient } from '../generated/prisma/client.js';
 
 @injectable()
@@ -34,10 +34,10 @@ export class PrismaModelRepository implements ModelRepository {
 		}
 	}
 
-	async findByNameAndBrand(name: string, brandId: string): Promise<Result<ModelEntity | null, DatabaseError>> {
+	async findByNameAndBrand(name: string, brandRefId: number): Promise<Result<ModelEntity | null, DatabaseError>> {
 		try {
 			const model = await this.prisma.model.findFirst({
-				where: { name, brandId },
+				where: { name, brandRefId },
 			});
 			return ok(model);
 		} catch (e) {
@@ -50,7 +50,7 @@ export class PrismaModelRepository implements ModelRepository {
 			const model = await this.prisma.model.create({
 				data: {
 					name: data.name,
-					brandId: data.brandId,
+					brandRefId: data.brandRefId,
 				},
 			});
 			return ok(model);

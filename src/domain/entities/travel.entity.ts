@@ -1,12 +1,13 @@
 export type TravelEntity = {
 	id: string;
+	refId: number;
 	dateRoute: Date;
 	kms: number;
 	seats: number;
-	driverId: string;
-	carId: string;
+	driverRefId: number;
+	carRefId: number;
 };
 
-export type CreateTravelData = Omit<TravelEntity, 'id'> & {
-	cityIds?: string[];
+export type CreateTravelData = Omit<TravelEntity, 'id' | 'refId'> & {
+	cityRefIds?: number[];
 };

@@ -1,18 +1,22 @@
 export type UserEntity = {
 	id: string;
-	email: string;
-	password: string;
+	refId: number;
 	firstName: string | null;
 	lastName: string | null;
 	phone: string | null;
-	role: string;
+	authRefId: number;
 	anonymizedAt: Date | null;
 	createdAt: Date;
 	updatedAt: Date;
 };
 
-export type PublicUserEntity = Omit<UserEntity, 'password'>;
+export type PublicUserEntity = UserEntity & { email: string };
 
-export type CreateUserData = Omit<UserEntity, 'id' | 'createdAt' | 'updatedAt' | 'anonymizedAt' | 'role'>;
+export type CreateUserData = {
+	firstName: string | null;
+	lastName: string | null;
+	phone: string | null;
+	authRefId: number;
+};
 
-export type UpdateUserData = Partial<Pick<UserEntity, 'firstName' | 'lastName' | 'email' | 'phone'>>;
+export type UpdateUserData = Partial<Pick<UserEntity, 'firstName' | 'lastName' | 'phone'>>;

@@ -1,6 +1,7 @@
 const TravelRepositoryToken = Symbol('TravelRepository');
 
 export const TOKENS = {
+	AuthRepository: Symbol('AuthRepository'),
 	UserRepository: Symbol('UserRepository'),
 	BrandRepository: Symbol('BrandRepository'),
 	ColorRepository: Symbol('ColorRepository'),

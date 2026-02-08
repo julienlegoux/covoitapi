@@ -1,14 +1,19 @@
 import { inject, injectable } from 'tsyringe';
 import type { PublicUserEntity, UpdateUserData } from '../../../domain/entities/user.entity.js';
-import { UserNotFoundError } from '../../../domain/errors/domain.errors.js';
+import { UserNotFoundError } from '../../../lib/errors/domain.errors.js';
 import type { UserRepository } from '../../../domain/repositories/user.repository.js';
-import type { RepositoryError } from '../../../infrastructure/errors/repository.errors.js';
+import type { RepositoryError } from '../../../lib/errors/repository.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import type { Result } from '../../../lib/shared/types/result.js';
 import { err } from '../../../lib/shared/types/result.js';
-import type { UpdatePersonInput, PatchPersonInput } from '../../dtos/person.dto.js';
 
 type UpdateUserError = UserNotFoundError | RepositoryError;
+
+export type UpdateProfileInput = {
+	firstName?: string;
+	lastName?: string;
+	phone?: string;
+};
 
 @injectable()
 export class UpdateUserUseCase {
@@ -17,7 +22,7 @@ export class UpdateUserUseCase {
 		private readonly userRepository: UserRepository,
 	) {}
 
-	async execute(id: string, input: UpdatePersonInput | PatchPersonInput): Promise<Result<PublicUserEntity, UpdateUserError>> {
+	async execute(id: string, input: UpdateProfileInput): Promise<Result<PublicUserEntity, UpdateUserError>> {
 		const findResult = await this.userRepository.findById(id);
 		if (!findResult.success) {
 			return findResult;
@@ -28,9 +33,8 @@ export class UpdateUserUseCase {
 		}
 
 		const updateData: UpdateUserData = {};
-		if ('firstName' in input && input.firstName) updateData.firstName = input.firstName;
-		if ('lastName' in input && input.lastName) updateData.lastName = input.lastName;
-		if (input.email) updateData.email = input.email;
+		if (input.firstName) updateData.firstName = input.firstName;
+		if (input.lastName) updateData.lastName = input.lastName;
 		if (input.phone) updateData.phone = input.phone;
 
 		return this.userRepository.update(id, updateData);

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { HonoJwtService } from './hono-jwt.service.js';
-import { TokenExpiredError, TokenInvalidError, TokenMalformedError, TokenSigningError } from '../errors/jwt.errors.js';
+import { TokenExpiredError, TokenInvalidError, TokenMalformedError, TokenSigningError } from '../../lib/errors/jwt.errors.js';
 
 describe('HonoJwtService', () => {
 	let jwtService: HonoJwtService;

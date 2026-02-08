@@ -4,7 +4,7 @@ import { ListCitiesUseCase } from '../../src/application/use-cases/city/list-cit
 import { CreateCityUseCase } from '../../src/application/use-cases/city/create-city.use-case.js';
 import { DeleteCityUseCase } from '../../src/application/use-cases/city/delete-city.use-case.js';
 import { ok, err } from '../../src/lib/shared/types/result.js';
-import { CityNotFoundError } from '../../src/domain/errors/domain.errors.js';
+import { CityNotFoundError } from '../../src/lib/errors/domain.errors.js';
 import { authHeaders, registerMockJwtService, registerMockUseCase } from './helpers.js';
 
 vi.mock('../../src/infrastructure/database/generated/prisma/client.js', () => ({

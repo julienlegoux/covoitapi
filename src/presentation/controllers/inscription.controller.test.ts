@@ -8,7 +8,7 @@ import { ListRoutePassengersUseCase } from '../../application/use-cases/inscript
 import { CreateInscriptionUseCase } from '../../application/use-cases/inscription/create-inscription.use-case.js';
 import { DeleteInscriptionUseCase } from '../../application/use-cases/inscription/delete-inscription.use-case.js';
 import { ok, err } from '../../lib/shared/types/result.js';
-import { InscriptionNotFoundError, RouteNotFoundError } from '../../domain/errors/domain.errors.js';
+import { InscriptionNotFoundError, RouteNotFoundError } from '../../lib/errors/domain.errors.js';
 
 function createMockContext(overrides?: { jsonBody?: unknown; params?: Record<string, string>; queryParams?: Record<string, string>; userId?: string }) {
 	const jsonMock = vi.fn((body, status) => ({ body, status }));
@@ -107,7 +107,7 @@ describe('Inscription Controller', () => {
 			await createInscription(ctx);
 			const [response, status] = ctx._getJsonCall();
 			expect(status).toBe(201);
-			expect(mockUseCase.execute).toHaveBeenCalledWith({ idpers: 'u1', idtrajet: 'r1' });
+			expect(mockUseCase.execute).toHaveBeenCalledWith({ userId: 'u1', travelId: 'r1' });
 		});
 
 		it('should throw ZodError for invalid input', async () => {

@@ -1,4 +1,4 @@
-import { getContext } from '../../lib/context/request-context.js';
+import { getContext } from '../context/request-context.js';
 import {
 	type ErrorInfo,
 	LOG_LEVELS,

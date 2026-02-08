@@ -1,7 +1,7 @@
 import type { Context } from 'hono';
 import type { ContentfulStatusCode } from 'hono/utils/http-status';
 import type { Result } from '../types/result.js';
-import { getHttpStatus } from '../../../infrastructure/errors/error-registry.js';
+import { getHttpStatus } from '../../errors/error-registry.js';
 import type { ApiResponse } from '../types/index.js';
 
 interface ErrorWithCode {

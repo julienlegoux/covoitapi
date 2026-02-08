@@ -3,7 +3,7 @@ import { injectable } from 'tsyringe';
 import type { EmailService, SendEmailOptions } from '../../domain/services/email.service.js';
 import type { Result } from '../../lib/shared/types/result.js';
 import { ok, err } from '../../lib/shared/types/result.js';
-import { EmailDeliveryError } from '../errors/email.errors.js';
+import { EmailDeliveryError } from '../../lib/errors/email.errors.js';
 
 @injectable()
 export class ResendEmailService implements EmailService {

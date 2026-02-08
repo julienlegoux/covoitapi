@@ -1,9 +1,10 @@
 export type CarEntity = {
 	id: string;
+	refId: number;
 	immat: string;
-	modelId: string;
+	modelRefId: number;
 };
 
-export type CreateCarData = Omit<CarEntity, 'id'>;
+export type CreateCarData = Omit<CarEntity, 'id' | 'refId'>;
 
 export type UpdateCarData = Partial<CreateCarData>;

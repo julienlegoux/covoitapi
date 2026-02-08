@@ -6,7 +6,7 @@ import { ListBrandsUseCase } from '../../application/use-cases/brand/list-brands
 import { CreateBrandUseCase } from '../../application/use-cases/brand/create-brand.use-case.js';
 import { DeleteBrandUseCase } from '../../application/use-cases/brand/delete-brand.use-case.js';
 import { ok, err } from '../../lib/shared/types/result.js';
-import { BrandNotFoundError } from '../../domain/errors/domain.errors.js';
+import { BrandNotFoundError } from '../../lib/errors/domain.errors.js';
 
 function createMockContext(overrides?: { jsonBody?: unknown; params?: Record<string, string>; queryParams?: Record<string, string> }) {
 	const jsonMock = vi.fn((body, status) => ({ body, status }));

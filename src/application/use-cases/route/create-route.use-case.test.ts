@@ -1,37 +1,47 @@
 import { container } from 'tsyringe';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { createMockRouteRepository, createMockDriverRepository, createMockCityRepository } from '../../../../tests/setup.js';
-import { DriverNotFoundError } from '../../../domain/errors/domain.errors.js';
+import { createMockTravelRepository, createMockDriverRepository, createMockCityRepository, createMockUserRepository, createMockCarRepository } from '../../../../tests/setup.js';
+import { DriverNotFoundError } from '../../../lib/errors/domain.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import { ok, err } from '../../../lib/shared/types/result.js';
-import { DatabaseError } from '../../../infrastructure/errors/repository.errors.js';
+import { DatabaseError } from '../../../lib/errors/repository.errors.js';
 import { CreateRouteUseCase } from './create-route.use-case.js';
 
 describe('CreateRouteUseCase', () => {
 	let useCase: CreateRouteUseCase;
-	let mockRouteRepo: ReturnType<typeof createMockRouteRepository>;
+	let mockRouteRepo: ReturnType<typeof createMockTravelRepository>;
 	let mockDriverRepo: ReturnType<typeof createMockDriverRepository>;
 	let mockCityRepo: ReturnType<typeof createMockCityRepository>;
+	let mockUserRepo: ReturnType<typeof createMockUserRepository>;
+	let mockCarRepo: ReturnType<typeof createMockCarRepository>;
 
 	const validInput = { kms: 150, userId: 'user-1', date: '2025-06-15', departureCity: 'Paris', arrivalCity: 'Lyon', seats: 3, carId: 'car-1' };
-	const driver = { id: 'driver-1', driverLicense: 'DL123', userId: 'user-1' };
+	const user = { id: 'user-1', refId: 1, authRefId: 10, firstName: 'John', lastName: 'Doe', phone: '0612345678', email: 'test@example.com', anonymizedAt: null, createdAt: new Date(), updatedAt: new Date() };
+	const driver = { id: 'driver-1', refId: 2, driverLicense: 'DL123', userRefId: 1, anonymizedAt: null };
+	const car = { id: 'car-1', refId: 3, immat: 'AB-123-CD', modelRefId: 10 };
 
 	beforeEach(() => {
-		mockRouteRepo = createMockRouteRepository();
+		mockRouteRepo = createMockTravelRepository();
 		mockDriverRepo = createMockDriverRepository();
 		mockCityRepo = createMockCityRepository();
-		container.registerInstance(TOKENS.RouteRepository, mockRouteRepo);
+		mockUserRepo = createMockUserRepository();
+		mockCarRepo = createMockCarRepository();
+		container.registerInstance(TOKENS.TravelRepository, mockRouteRepo);
 		container.registerInstance(TOKENS.DriverRepository, mockDriverRepo);
 		container.registerInstance(TOKENS.CityRepository, mockCityRepo);
+		container.registerInstance(TOKENS.UserRepository, mockUserRepo);
+		container.registerInstance(TOKENS.CarRepository, mockCarRepo);
 		useCase = container.resolve(CreateRouteUseCase);
 	});
 
 	it('should create route with existing cities', async () => {
-		const parisCity = { id: 'city-1', cityName: 'Paris', zipcode: '75000' };
-		const lyonCity = { id: 'city-2', cityName: 'Lyon', zipcode: '69000' };
-		const route = { id: 'r1', dateRoute: new Date('2025-06-15'), kms: 150, seats: 3, driverId: 'driver-1', carId: 'car-1' };
+		const parisCity = { id: 'city-1', refId: 20, cityName: 'Paris', zipcode: '75000' };
+		const lyonCity = { id: 'city-2', refId: 21, cityName: 'Lyon', zipcode: '69000' };
+		const route = { id: 'r1', refId: 1, dateRoute: new Date('2025-06-15'), kms: 150, seats: 3, driverRefId: 2, carRefId: 3 };
 
-		mockDriverRepo.findByUserId.mockResolvedValue(ok(driver));
+		mockUserRepo.findById.mockResolvedValue(ok(user));
+		mockDriverRepo.findByUserRefId.mockResolvedValue(ok(driver));
+		mockCarRepo.findById.mockResolvedValue(ok(car));
 		mockCityRepo.findByCityName.mockResolvedValueOnce(ok(parisCity)).mockResolvedValueOnce(ok(lyonCity));
 		mockRouteRepo.create.mockResolvedValue(ok(route));
 
@@ -42,18 +52,20 @@ describe('CreateRouteUseCase', () => {
 			dateRoute: new Date('2025-06-15'),
 			kms: 150,
 			seats: 3,
-			driverId: 'driver-1',
-			carId: 'car-1',
-			cityIds: ['city-1', 'city-2'],
+			driverRefId: 2,
+			carRefId: 3,
+			cityRefIds: [20, 21],
 		});
 	});
 
 	it('should create route with new cities', async () => {
-		const newParis = { id: 'city-new-1', cityName: 'Paris', zipcode: '' };
-		const newLyon = { id: 'city-new-2', cityName: 'Lyon', zipcode: '' };
-		const route = { id: 'r1', dateRoute: new Date('2025-06-15'), kms: 150, seats: 3, driverId: 'driver-1', carId: 'car-1' };
+		const newParis = { id: 'city-new-1', refId: 30, cityName: 'Paris', zipcode: '' };
+		const newLyon = { id: 'city-new-2', refId: 31, cityName: 'Lyon', zipcode: '' };
+		const route = { id: 'r1', refId: 1, dateRoute: new Date('2025-06-15'), kms: 150, seats: 3, driverRefId: 2, carRefId: 3 };
 
-		mockDriverRepo.findByUserId.mockResolvedValue(ok(driver));
+		mockUserRepo.findById.mockResolvedValue(ok(user));
+		mockDriverRepo.findByUserRefId.mockResolvedValue(ok(driver));
+		mockCarRepo.findById.mockResolvedValue(ok(car));
 		mockCityRepo.findByCityName.mockResolvedValue(ok(null));
 		mockCityRepo.create.mockResolvedValueOnce(ok(newParis)).mockResolvedValueOnce(ok(newLyon));
 		mockRouteRepo.create.mockResolvedValue(ok(route));
@@ -65,28 +77,34 @@ describe('CreateRouteUseCase', () => {
 	});
 
 	it('should return DriverNotFoundError when driver not found', async () => {
-		mockDriverRepo.findByUserId.mockResolvedValue(ok(null));
+		mockUserRepo.findById.mockResolvedValue(ok(user));
+		mockDriverRepo.findByUserRefId.mockResolvedValue(ok(null));
 		const result = await useCase.execute(validInput);
 		expect(result.success).toBe(false);
 		if (!result.success) expect(result.error).toBeInstanceOf(DriverNotFoundError);
 	});
 
 	it('should propagate error from driverRepository.findByUserId', async () => {
-		mockDriverRepo.findByUserId.mockResolvedValue(err(new DatabaseError('db error')));
+		mockUserRepo.findById.mockResolvedValue(ok(user));
+		mockDriverRepo.findByUserRefId.mockResolvedValue(err(new DatabaseError('db error')));
 		const result = await useCase.execute(validInput);
 		expect(result.success).toBe(false);
 	});
 
 	it('should propagate error from cityRepository.findByCityName', async () => {
-		mockDriverRepo.findByUserId.mockResolvedValue(ok(driver));
+		mockUserRepo.findById.mockResolvedValue(ok(user));
+		mockDriverRepo.findByUserRefId.mockResolvedValue(ok(driver));
+		mockCarRepo.findById.mockResolvedValue(ok(car));
 		mockCityRepo.findByCityName.mockResolvedValue(err(new DatabaseError('db error')));
 		const result = await useCase.execute(validInput);
 		expect(result.success).toBe(false);
 	});
 
 	it('should propagate error from routeRepository.create', async () => {
-		mockDriverRepo.findByUserId.mockResolvedValue(ok(driver));
-		mockCityRepo.findByCityName.mockResolvedValue(ok({ id: 'c1', cityName: 'Paris', zipcode: '75000' }));
+		mockUserRepo.findById.mockResolvedValue(ok(user));
+		mockDriverRepo.findByUserRefId.mockResolvedValue(ok(driver));
+		mockCarRepo.findById.mockResolvedValue(ok(car));
+		mockCityRepo.findByCityName.mockResolvedValue(ok({ id: 'c1', refId: 40, cityName: 'Paris', zipcode: '75000' }));
 		mockRouteRepo.create.mockResolvedValue(err(new DatabaseError('db error')));
 		const result = await useCase.execute(validInput);
 		expect(result.success).toBe(false);
