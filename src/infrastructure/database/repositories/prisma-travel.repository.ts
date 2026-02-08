@@ -17,7 +17,7 @@ export class PrismaTravelRepository implements TravelRepository {
 	async findAll(params?: { skip: number; take: number }): Promise<Result<{ data: TravelEntity[]; total: number }, DatabaseError>> {
 		try {
 			const [routes, total] = await Promise.all([
-				this.prisma.route.findMany({
+				this.prisma.travel.findMany({
 					...(params && { skip: params.skip, take: params.take }),
 					include: {
 						driver: { include: { user: true } },
@@ -25,7 +25,7 @@ export class PrismaTravelRepository implements TravelRepository {
 						cities: { include: { city: true } },
 					},
 				}),
-				this.prisma.route.count(),
+				this.prisma.travel.count(),
 			]);
 			return ok({ data: routes as unknown as TravelEntity[], total });
 		} catch (e) {
@@ -35,7 +35,7 @@ export class PrismaTravelRepository implements TravelRepository {
 
 	async findById(id: string): Promise<Result<TravelEntity | null, DatabaseError>> {
 		try {
-			const route = await this.prisma.route.findUnique({
+			const route = await this.prisma.travel.findUnique({
 				where: { id },
 				include: {
 					driver: { include: { user: true } },
@@ -93,7 +93,7 @@ export class PrismaTravelRepository implements TravelRepository {
 				};
 			}
 
-			const routes = await this.prisma.route.findMany({
+			const routes = await this.prisma.travel.findMany({
 				where,
 				include: {
 					driver: { include: { user: true } },
@@ -109,7 +109,7 @@ export class PrismaTravelRepository implements TravelRepository {
 
 	async create(data: CreateTravelData): Promise<Result<TravelEntity, DatabaseError>> {
 		try {
-			const route = await this.prisma.route.create({
+			const route = await this.prisma.travel.create({
 				data: {
 					dateRoute: data.dateRoute,
 					kms: data.kms,
@@ -118,7 +118,10 @@ export class PrismaTravelRepository implements TravelRepository {
 					carId: data.carId,
 					cities: data.cityIds?.length
 						? {
-								create: data.cityIds.map((cityId) => ({ cityId })),
+								create: data.cityIds.map((cityId, index) => ({
+									cityId,
+									type: index === 0 ? 'DEPARTURE' as const : 'ARRIVAL' as const,
+								})),
 							}
 						: undefined,
 				},
@@ -131,7 +134,7 @@ export class PrismaTravelRepository implements TravelRepository {
 
 	async delete(id: string): Promise<Result<void, DatabaseError>> {
 		try {
-			await this.prisma.route.delete({
+			await this.prisma.travel.delete({
 				where: { id },
 			});
 			return ok(undefined);

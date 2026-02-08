@@ -49,7 +49,9 @@ export class RegisterUseCase {
 		const createResult = await this.userRepository.create({
 			email: input.email,
 			password: hashResult.value,
-			role: 'USER',
+			firstName: null,
+			lastName: null,
+			phone: null,
 		});
 		if (!createResult.success) {
 			return createResult;

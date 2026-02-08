@@ -80,14 +80,12 @@ export const ErrorCodes = {
 	COLOR_NOT_FOUND: {
 		code: 'COLOR_NOT_FOUND',
 		httpStatus: 404,
-		category: 'domain' as const,
-		message: 'Color not found',
+		category: 'domain',
 	},
 	COLOR_ALREADY_EXISTS: {
 		code: 'COLOR_ALREADY_EXISTS',
 		httpStatus: 409,
-		category: 'domain' as const,
-		message: 'Color already exists',
+		category: 'domain',
 	},
 
 	// Infrastructure Errors - External service failures
