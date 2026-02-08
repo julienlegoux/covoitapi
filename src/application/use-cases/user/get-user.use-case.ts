@@ -22,7 +22,7 @@ export class GetUserUseCase {
 			return result;
 		}
 
-		if (!result.value) {
+		if (!result.value || result.value.anonymizedAt !== null) {
 			return err(new UserNotFoundError(id));
 		}
 
