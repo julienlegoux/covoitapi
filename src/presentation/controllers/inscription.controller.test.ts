@@ -10,14 +10,23 @@ import { DeleteInscriptionUseCase } from '../../application/use-cases/inscriptio
 import { ok, err } from '../../lib/shared/types/result.js';
 import { InscriptionNotFoundError, RouteNotFoundError } from '../../domain/errors/domain.errors.js';
 
-function createMockContext(overrides?: { jsonBody?: unknown; params?: Record<string, string> }) {
+function createMockContext(overrides?: { jsonBody?: unknown; params?: Record<string, string>; queryParams?: Record<string, string>; userId?: string }) {
 	const jsonMock = vi.fn((body, status) => ({ body, status }));
+	const bodyMock = vi.fn((body, status) => new Response(body, { status }));
+	const queryParams = overrides?.queryParams ?? {};
+	const contextValues: Record<string, unknown> = {};
+	if (overrides?.userId) {
+		contextValues['userId'] = overrides.userId;
+	}
 	return {
 		req: {
 			json: vi.fn().mockResolvedValue(overrides?.jsonBody ?? {}),
 			param: vi.fn((name: string) => overrides?.params?.[name]),
+			query: vi.fn((name: string) => queryParams[name]),
 		},
 		json: jsonMock,
+		body: bodyMock,
+		get: vi.fn((key: string) => contextValues[key]),
 		_getJsonCall: () => jsonMock.mock.calls[0],
 	} as unknown as Context & { _getJsonCall: () => [unknown, number] };
 }
@@ -31,14 +40,17 @@ describe('Inscription Controller', () => {
 			container.register(ListInscriptionsUseCase, { useValue: mockUseCase as unknown as ListInscriptionsUseCase });
 		});
 
-		it('should return 200 with list', async () => {
-			const inscriptions = [{ id: '1', createdAt: new Date(), userId: 'u1', routeId: 'r1' }];
-			mockUseCase.execute.mockResolvedValue(ok(inscriptions));
+		it('should return 200 with paginated list', async () => {
+			const paginatedResult = {
+				data: [{ id: '1', createdAt: new Date(), userId: 'u1', routeId: 'r1' }],
+				meta: { page: 1, limit: 20, total: 1, totalPages: 1 },
+			};
+			mockUseCase.execute.mockResolvedValue(ok(paginatedResult));
 			const ctx = createMockContext();
 			await listInscriptions(ctx);
 			const [response, status] = ctx._getJsonCall();
 			expect(status).toBe(200);
-			expect(response).toEqual({ success: true, data: inscriptions });
+			expect(response).toEqual({ success: true, data: paginatedResult });
 		});
 	});
 
@@ -50,11 +62,12 @@ describe('Inscription Controller', () => {
 			container.register(ListUserInscriptionsUseCase, { useValue: mockUseCase as unknown as ListUserInscriptionsUseCase });
 		});
 
-		it('should return 200 and extract idpers from params', async () => {
-			mockUseCase.execute.mockResolvedValue(ok([]));
-			const ctx = createMockContext({ params: { idpers: 'user-1' } });
+		it('should return 200 and extract id from params with pagination', async () => {
+			const paginatedResult = { data: [], meta: { page: 1, limit: 20, total: 0, totalPages: 0 } };
+			mockUseCase.execute.mockResolvedValue(ok(paginatedResult));
+			const ctx = createMockContext({ params: { id: 'user-1' } });
 			await listUserInscriptions(ctx);
-			expect(mockUseCase.execute).toHaveBeenCalledWith('user-1');
+			expect(mockUseCase.execute).toHaveBeenCalledWith('user-1', { page: 1, limit: 20 });
 			const [, status] = ctx._getJsonCall();
 			expect(status).toBe(200);
 		});
@@ -68,11 +81,12 @@ describe('Inscription Controller', () => {
 			container.register(ListRoutePassengersUseCase, { useValue: mockUseCase as unknown as ListRoutePassengersUseCase });
 		});
 
-		it('should return 200 and extract idtrajet from params', async () => {
-			mockUseCase.execute.mockResolvedValue(ok([]));
-			const ctx = createMockContext({ params: { idtrajet: 'route-1' } });
+		it('should return 200 and extract id from params with pagination', async () => {
+			const paginatedResult = { data: [], meta: { page: 1, limit: 20, total: 0, totalPages: 0 } };
+			mockUseCase.execute.mockResolvedValue(ok(paginatedResult));
+			const ctx = createMockContext({ params: { id: 'route-1' } });
 			await listRoutePassengers(ctx);
-			expect(mockUseCase.execute).toHaveBeenCalledWith('route-1');
+			expect(mockUseCase.execute).toHaveBeenCalledWith('route-1', { page: 1, limit: 20 });
 			const [, status] = ctx._getJsonCall();
 			expect(status).toBe(200);
 		});
@@ -86,10 +100,10 @@ describe('Inscription Controller', () => {
 			container.register(CreateInscriptionUseCase, { useValue: mockUseCase as unknown as CreateInscriptionUseCase });
 		});
 
-		it('should return 201 on success', async () => {
+		it('should return 201 on success and use userId from context', async () => {
 			const inscription = { id: '1', createdAt: new Date(), userId: 'u1', routeId: 'r1' };
 			mockUseCase.execute.mockResolvedValue(ok(inscription));
-			const ctx = createMockContext({ jsonBody: { idpers: 'u1', idtrajet: 'r1' } });
+			const ctx = createMockContext({ jsonBody: { travelId: 'r1' }, userId: 'u1' });
 			await createInscription(ctx);
 			const [response, status] = ctx._getJsonCall();
 			expect(status).toBe(201);
@@ -97,13 +111,13 @@ describe('Inscription Controller', () => {
 		});
 
 		it('should throw ZodError for invalid input', async () => {
-			const ctx = createMockContext({ jsonBody: {} });
+			const ctx = createMockContext({ jsonBody: {}, userId: 'u1' });
 			await expect(createInscription(ctx)).rejects.toThrow();
 		});
 
 		it('should return error when route not found', async () => {
 			mockUseCase.execute.mockResolvedValue(err(new RouteNotFoundError('r1')));
-			const ctx = createMockContext({ jsonBody: { idpers: 'u1', idtrajet: 'r1' } });
+			const ctx = createMockContext({ jsonBody: { travelId: 'r1' }, userId: 'u1' });
 			await createInscription(ctx);
 			const [response] = ctx._getJsonCall();
 			expect(response).toHaveProperty('success', false);
@@ -118,12 +132,11 @@ describe('Inscription Controller', () => {
 			container.register(DeleteInscriptionUseCase, { useValue: mockUseCase as unknown as DeleteInscriptionUseCase });
 		});
 
-		it('should return 200 on successful delete', async () => {
+		it('should return 204 on successful delete', async () => {
 			mockUseCase.execute.mockResolvedValue(ok(undefined));
 			const ctx = createMockContext({ params: { id: '1' } });
-			await deleteInscription(ctx);
-			const [, status] = ctx._getJsonCall();
-			expect(status).toBe(200);
+			const response = await deleteInscription(ctx);
+			expect(response.status).toBe(204);
 		});
 
 		it('should return error when not found', async () => {

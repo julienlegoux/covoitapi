@@ -13,7 +13,7 @@ describe('CreateRouteUseCase', () => {
 	let mockDriverRepo: ReturnType<typeof createMockDriverRepository>;
 	let mockCityRepo: ReturnType<typeof createMockCityRepository>;
 
-	const validInput = { kms: 150, idpers: 'user-1', dateT: '2025-06-15', villeD: 'Paris', villeA: 'Lyon', seats: 3, carId: 'car-1' };
+	const validInput = { kms: 150, userId: 'user-1', date: '2025-06-15', departureCity: 'Paris', arrivalCity: 'Lyon', seats: 3, carId: 'car-1' };
 	const driver = { id: 'driver-1', driverLicense: 'DL123', userId: 'user-1' };
 
 	beforeEach(() => {

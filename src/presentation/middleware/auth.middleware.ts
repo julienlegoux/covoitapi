@@ -26,6 +26,7 @@ export async function authMiddleware(c: Context, next: Next): Promise<Response |
 
 	if (result.success) {
 		c.set('userId', result.value.userId);
+		c.set('role', result.value.role ?? 'USER');
 		await next();
 		return;
 	}

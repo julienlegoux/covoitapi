@@ -1,9 +1,9 @@
 import type { Context, Next } from 'hono';
 import type { ContentfulStatusCode } from 'hono/utils/http-status';
 import { ZodError } from 'zod';
-import { ApplicationError } from '../../application/errors/application.errors.js';
 import { DomainError } from '../../domain/errors/domain.errors.js';
-import { logger } from '../../lib/shared/utils/logger.util.js';
+import { getHttpStatus, isErrorCode } from '../../infrastructure/errors/error-registry.js';
+import { logger } from '../../infrastructure/logging/logger.js';
 import type { ErrorResponse } from '../types/error.types.js';
 
 export async function errorHandler(c: Context, next: Next): Promise<Response | undefined> {
@@ -46,16 +46,6 @@ function buildErrorResponse(error: unknown): ErrorResponse {
 		};
 	}
 
-	if (error instanceof ApplicationError) {
-		return {
-			success: false,
-			error: {
-				code: error.code,
-				message: error.message,
-			},
-		};
-	}
-
 	logger.error('Unexpected error', { error });
 	return {
 		success: false,
@@ -72,37 +62,7 @@ function getStatusCode(error: unknown): number {
 	}
 
 	if (error instanceof DomainError) {
-		switch (error.code) {
-			case 'USER_ALREADY_EXISTS':
-			case 'CAR_ALREADY_EXISTS':
-			case 'ALREADY_INSCRIBED':
-				return 409;
-			case 'INVALID_CREDENTIALS':
-				return 401;
-			case 'USER_NOT_FOUND':
-			case 'BRAND_NOT_FOUND':
-			case 'CITY_NOT_FOUND':
-			case 'CAR_NOT_FOUND':
-			case 'DRIVER_NOT_FOUND':
-			case 'ROUTE_NOT_FOUND':
-			case 'INSCRIPTION_NOT_FOUND':
-				return 404;
-			case 'NO_SEATS_AVAILABLE':
-				return 400;
-			default:
-				return 400;
-		}
-	}
-
-	if (error instanceof ApplicationError) {
-		switch (error.code) {
-			case 'VALIDATION_ERROR':
-				return 400;
-			case 'NOT_FOUND':
-				return 404;
-			default:
-				return 400;
-		}
+		return isErrorCode(error.code) ? getHttpStatus(error.code) : 400;
 	}
 
 	return 500;

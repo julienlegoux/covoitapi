@@ -5,10 +5,10 @@ import { UserNotFoundError } from '../../../domain/errors/domain.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import { ok, err } from '../../../lib/shared/types/result.js';
 import { DatabaseError } from '../../../infrastructure/errors/repository.errors.js';
-import { GetPersonUseCase } from './get-person.use-case.js';
+import { GetUserUseCase } from '../user/get-user.use-case.js';
 
-describe('GetPersonUseCase', () => {
-	let useCase: GetPersonUseCase;
+describe('GetUserUseCase', () => {
+	let useCase: GetUserUseCase;
 	let mockUserRepository: ReturnType<typeof createMockUserRepository>;
 
 	const user = { id: '1', email: 'a@b.com', password: 'h', firstName: 'A', lastName: 'B', phone: '06', createdAt: new Date(), updatedAt: new Date() };
@@ -16,10 +16,10 @@ describe('GetPersonUseCase', () => {
 	beforeEach(() => {
 		mockUserRepository = createMockUserRepository();
 		container.registerInstance(TOKENS.UserRepository, mockUserRepository);
-		useCase = container.resolve(GetPersonUseCase);
+		useCase = container.resolve(GetUserUseCase);
 	});
 
-	it('should return person when found', async () => {
+	it('should return user when found', async () => {
 		mockUserRepository.findById.mockResolvedValue(ok(user));
 		const result = await useCase.execute('1');
 		expect(result.success).toBe(true);

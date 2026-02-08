@@ -1,5 +1,7 @@
 // Repositories
 export { PrismaUserRepository } from './database/repositories/prisma-user.repository.js';
+export { PrismaTravelRepository } from './database/repositories/prisma-travel.repository.js';
+export { PrismaRouteRepository } from './database/repositories/prisma-route.repository.js';
 
 // Services
 export { ArgonPasswordService } from './services/argon-password.service.js';

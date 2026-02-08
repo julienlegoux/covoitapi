@@ -14,9 +14,6 @@ export async function register(c: Context): Promise<Response> {
 		email: validated.email,
 		password: validated.password,
 		confirmPassword: validated.confirmPassword,
-		firstName: validated.firstName,
-		lastName: validated.lastName,
-		phone: validated.phone,
 	};
 
 	const registerUseCase = container.resolve(RegisterUseCase);

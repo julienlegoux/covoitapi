@@ -14,10 +14,15 @@ export class PrismaCityRepository implements CityRepository {
 		private readonly prisma: PrismaClient,
 	) {}
 
-	async findAll(): Promise<Result<CityEntity[], DatabaseError>> {
+	async findAll(params?: { skip: number; take: number }): Promise<Result<{ data: CityEntity[]; total: number }, DatabaseError>> {
 		try {
-			const cities = await this.prisma.city.findMany();
-			return ok(cities);
+			const [data, total] = await Promise.all([
+				this.prisma.city.findMany({
+					...(params && { skip: params.skip, take: params.take }),
+				}),
+				this.prisma.city.count(),
+			]);
+			return ok({ data, total });
 		} catch (e) {
 			return err(new DatabaseError('Failed to find all cities', e));
 		}

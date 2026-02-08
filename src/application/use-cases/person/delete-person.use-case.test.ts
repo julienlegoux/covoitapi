@@ -5,19 +5,19 @@ import { UserNotFoundError } from '../../../domain/errors/domain.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import { ok, err } from '../../../lib/shared/types/result.js';
 import { DatabaseError } from '../../../infrastructure/errors/repository.errors.js';
-import { DeletePersonUseCase } from './delete-person.use-case.js';
+import { DeleteUserUseCase } from '../user/delete-user.use-case.js';
 
-describe('DeletePersonUseCase', () => {
-	let useCase: DeletePersonUseCase;
+describe('DeleteUserUseCase', () => {
+	let useCase: DeleteUserUseCase;
 	let mockUserRepository: ReturnType<typeof createMockUserRepository>;
 
 	beforeEach(() => {
 		mockUserRepository = createMockUserRepository();
 		container.registerInstance(TOKENS.UserRepository, mockUserRepository);
-		useCase = container.resolve(DeletePersonUseCase);
+		useCase = container.resolve(DeleteUserUseCase);
 	});
 
-	it('should delete person successfully', async () => {
+	it('should delete user successfully', async () => {
 		mockUserRepository.findById.mockResolvedValue(ok({ id: '1', email: 'a@b.com', password: 'h', firstName: 'A', lastName: 'B', phone: '06', createdAt: new Date(), updatedAt: new Date() }));
 		mockUserRepository.delete.mockResolvedValue(ok(undefined));
 		const result = await useCase.execute('1');

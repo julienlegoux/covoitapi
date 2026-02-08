@@ -47,7 +47,7 @@ export class LoginUseCase {
 		}
 
 		// Generate token
-		const tokenResult = await this.jwtService.sign({ userId: user.id });
+		const tokenResult = await this.jwtService.sign({ userId: user.id, role: user.role });
 		if (!tokenResult.success) {
 			return tokenResult;
 		}

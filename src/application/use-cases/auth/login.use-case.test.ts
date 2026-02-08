@@ -29,6 +29,7 @@ describe('LoginUseCase', () => {
 		firstName: 'John',
 		lastName: 'Doe',
 		phone: '0612345678',
+		role: 'USER',
 		createdAt: new Date(),
 		updatedAt: new Date(),
 	};
@@ -62,7 +63,7 @@ describe('LoginUseCase', () => {
 			validInput.password,
 			existingUser.password,
 		);
-		expect(mockJwtService.sign).toHaveBeenCalledWith({ userId: 'user-123' });
+		expect(mockJwtService.sign).toHaveBeenCalledWith({ userId: 'user-123', role: 'USER' });
 	});
 
 	it('should return InvalidCredentialsError when user not found', async () => {

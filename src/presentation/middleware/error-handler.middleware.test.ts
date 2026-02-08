@@ -3,7 +3,6 @@ import type { Context, Next } from 'hono';
 import { type ZodError, z } from 'zod';
 import { errorHandler } from './error-handler.middleware.js';
 import { DomainError, UserAlreadyExistsError, InvalidCredentialsError, UserNotFoundError } from '../../domain/errors/domain.errors.js';
-import { ApplicationError, ValidationError, NotFoundError } from '../../application/errors/application.errors.js';
 
 function createMockContext() {
 	const jsonMock = vi.fn();
@@ -176,49 +175,6 @@ describe('errorHandler middleware', () => {
 			const [response, status] = ctx._getJsonCall();
 			expect(status).toBe(400);
 			expect(response.error.code).toBe('UNKNOWN_DOMAIN_ERROR');
-		});
-	});
-
-	describe('ApplicationError handling', () => {
-		it('should return 400 for VALIDATION_ERROR', async () => {
-			const error = new ValidationError('Invalid input', { field: ['error message'] });
-
-			const ctx = createMockContext();
-			const next = createThrowingNext(error);
-
-			await errorHandler(ctx as unknown as Context, next);
-
-			const [response, status] = ctx._getJsonCall();
-			expect(status).toBe(400);
-			expect(response.success).toBe(false);
-			expect(response.error.code).toBe('VALIDATION_ERROR');
-		});
-
-		it('should return 404 for NOT_FOUND', async () => {
-			const error = new NotFoundError('User', 'user-123');
-
-			const ctx = createMockContext();
-			const next = createThrowingNext(error);
-
-			await errorHandler(ctx as unknown as Context, next);
-
-			const [response, status] = ctx._getJsonCall();
-			expect(status).toBe(404);
-			expect(response.success).toBe(false);
-			expect(response.error.code).toBe('NOT_FOUND');
-		});
-
-		it('should return 400 for generic ApplicationError', async () => {
-			const error = new ApplicationError('Some application error', 'UNKNOWN_APP_ERROR');
-
-			const ctx = createMockContext();
-			const next = createThrowingNext(error);
-
-			await errorHandler(ctx as unknown as Context, next);
-
-			const [response, status] = ctx._getJsonCall();
-			expect(status).toBe(400);
-			expect(response.error.code).toBe('UNKNOWN_APP_ERROR');
 		});
 	});
 

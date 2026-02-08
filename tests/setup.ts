@@ -16,8 +16,10 @@ export function createMockUserRepository() {
 		findByEmail: vi.fn(),
 		create: vi.fn(),
 		update: vi.fn(),
+		updateRole: vi.fn(),
 		delete: vi.fn(),
 		existsByEmail: vi.fn(),
+		anonymize: vi.fn(),
 	};
 }
 
@@ -67,7 +69,7 @@ export function createMockDriverRepository() {
 	};
 }
 
-export function createMockRouteRepository() {
+export function createMockTravelRepository() {
 	return {
 		findAll: vi.fn(),
 		findById: vi.fn(),
@@ -76,6 +78,9 @@ export function createMockRouteRepository() {
 		delete: vi.fn(),
 	};
 }
+
+/** @deprecated Use createMockTravelRepository instead. Kept for backward compatibility. */
+export const createMockRouteRepository = createMockTravelRepository;
 
 export function createMockInscriptionRepository() {
 	return {
@@ -94,6 +99,10 @@ export function createMockColorRepository() {
 	return {
 		findAll: vi.fn(),
 		findById: vi.fn(),
+		findByName: vi.fn(),
+		create: vi.fn(),
+		update: vi.fn(),
+		delete: vi.fn(),
 	};
 }
 
@@ -159,7 +168,10 @@ export function createMockPrismaClient() {
 	return {
 		user: {
 			findUnique: vi.fn(),
+			findMany: vi.fn(),
 			create: vi.fn(),
+			update: vi.fn(),
+			delete: vi.fn(),
 			count: vi.fn(),
 		},
 	};
@@ -255,23 +267,63 @@ export function createMockDeletePersonUseCase() {
 	return { execute: vi.fn() };
 }
 
-export function createMockListRoutesUseCase() {
+// ─── User Use Case Mocks (aliases for Person mocks) ───
+
+/** @deprecated Use createMockListPersonsUseCase. Alias kept for consistency with User naming. */
+export const createMockListUsersUseCase = createMockListPersonsUseCase;
+/** @deprecated Use createMockGetPersonUseCase. Alias kept for consistency with User naming. */
+export const createMockGetUserUseCase = createMockGetPersonUseCase;
+/** @deprecated Use createMockCreatePersonUseCase. Alias kept for consistency with User naming. */
+export const createMockCreateUserUseCase = createMockCreatePersonUseCase;
+/** @deprecated Use createMockUpdatePersonUseCase. Alias kept for consistency with User naming. */
+export const createMockUpdateUserUseCase = createMockUpdatePersonUseCase;
+/** @deprecated Use createMockDeletePersonUseCase. Alias kept for consistency with User naming. */
+export const createMockDeleteUserUseCase = createMockDeletePersonUseCase;
+
+export function createMockListTravelsUseCase() {
 	return { execute: vi.fn() };
 }
 
-export function createMockGetRouteUseCase() {
+export function createMockGetTravelUseCase() {
 	return { execute: vi.fn() };
 }
 
-export function createMockFindRouteUseCase() {
+export function createMockFindTravelUseCase() {
 	return { execute: vi.fn() };
 }
 
-export function createMockCreateRouteUseCase() {
+export function createMockCreateTravelUseCase() {
 	return { execute: vi.fn() };
 }
 
-export function createMockDeleteRouteUseCase() {
+export function createMockDeleteTravelUseCase() {
+	return { execute: vi.fn() };
+}
+
+/** @deprecated Use createMockListTravelsUseCase instead. */
+export const createMockListRoutesUseCase = createMockListTravelsUseCase;
+/** @deprecated Use createMockGetTravelUseCase instead. */
+export const createMockGetRouteUseCase = createMockGetTravelUseCase;
+/** @deprecated Use createMockFindTravelUseCase instead. */
+export const createMockFindRouteUseCase = createMockFindTravelUseCase;
+/** @deprecated Use createMockCreateTravelUseCase instead. */
+export const createMockCreateRouteUseCase = createMockCreateTravelUseCase;
+/** @deprecated Use createMockDeleteTravelUseCase instead. */
+export const createMockDeleteRouteUseCase = createMockDeleteTravelUseCase;
+
+export function createMockListColorsUseCase() {
+	return { execute: vi.fn() };
+}
+
+export function createMockCreateColorUseCase() {
+	return { execute: vi.fn() };
+}
+
+export function createMockUpdateColorUseCase() {
+	return { execute: vi.fn() };
+}
+
+export function createMockDeleteColorUseCase() {
 	return { execute: vi.fn() };
 }
 
@@ -286,3 +338,82 @@ export function createMockLogger() {
 		child: vi.fn(),
 	};
 }
+
+// ─── Entity Data Factories ───
+
+export function createMockUserData(overrides?: Partial<{
+	id: string;
+	email: string;
+	password: string;
+	firstName: string | undefined;
+	lastName: string | undefined;
+	phone: string | undefined;
+	role: string;
+	anonymizedAt: Date | null;
+	createdAt: Date;
+	updatedAt: Date;
+}>) {
+	return {
+		id: overrides?.id ?? 'user-id-1',
+		email: overrides?.email ?? 'test@example.com',
+		password: overrides?.password ?? 'hashed-password',
+		firstName: overrides?.firstName !== undefined ? overrides.firstName : 'John',
+		lastName: overrides?.lastName !== undefined ? overrides.lastName : 'Doe',
+		phone: overrides?.phone !== undefined ? overrides.phone : '0612345678',
+		role: overrides?.role ?? 'USER',
+		anonymizedAt: overrides?.anonymizedAt ?? null,
+		createdAt: overrides?.createdAt ?? new Date('2025-01-01'),
+		updatedAt: overrides?.updatedAt ?? new Date('2025-01-01'),
+	};
+}
+
+export function createMockDriverData(overrides?: Partial<{
+	id: string;
+	driverLicense: string;
+	userId: string;
+	anonymizedAt: Date | null;
+}>) {
+	return {
+		id: overrides?.id ?? 'driver-id-1',
+		driverLicense: overrides?.driverLicense ?? 'DL-123456',
+		userId: overrides?.userId ?? 'user-id-1',
+		anonymizedAt: overrides?.anonymizedAt ?? null,
+	};
+}
+
+export function createMockInscriptionData(overrides?: Partial<{
+	id: string;
+	createdAt: Date;
+	userId: string;
+	routeId: string;
+	status: string;
+}>) {
+	return {
+		id: overrides?.id ?? 'inscription-id-1',
+		createdAt: overrides?.createdAt ?? new Date('2025-01-01'),
+		userId: overrides?.userId ?? 'user-id-1',
+		routeId: overrides?.routeId ?? 'route-id-1',
+		status: overrides?.status ?? 'ACTIVE',
+	};
+}
+
+export function createMockTravelData(overrides?: Partial<{
+	id: string;
+	dateRoute: Date;
+	kms: number;
+	seats: number;
+	driverId: string;
+	carId: string;
+}>) {
+	return {
+		id: overrides?.id ?? 'travel-id-1',
+		dateRoute: overrides?.dateRoute ?? new Date('2025-06-01'),
+		kms: overrides?.kms ?? 100,
+		seats: overrides?.seats ?? 3,
+		driverId: overrides?.driverId ?? 'driver-id-1',
+		carId: overrides?.carId ?? 'car-id-1',
+	};
+}
+
+/** @deprecated Use createMockTravelData instead. Kept for backward compatibility. */
+export const createMockRouteData = createMockTravelData;

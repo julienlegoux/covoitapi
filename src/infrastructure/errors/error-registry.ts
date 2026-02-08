@@ -51,6 +51,12 @@ export const ErrorCodes = {
 		httpStatus: 409,
 		category: 'domain',
 	},
+	TRAVEL_NOT_FOUND: {
+		code: 'TRAVEL_NOT_FOUND',
+		httpStatus: 404,
+		category: 'domain',
+	},
+	/** @deprecated Use TRAVEL_NOT_FOUND instead. Kept for backward compatibility. */
 	ROUTE_NOT_FOUND: {
 		code: 'ROUTE_NOT_FOUND',
 		httpStatus: 404,
@@ -71,17 +77,17 @@ export const ErrorCodes = {
 		httpStatus: 400,
 		category: 'domain',
 	},
-
-	// Application Errors - Input/validation issues
-	VALIDATION_ERROR: {
-		code: 'VALIDATION_ERROR',
-		httpStatus: 400,
-		category: 'application',
-	},
-	NOT_FOUND: {
-		code: 'NOT_FOUND',
+	COLOR_NOT_FOUND: {
+		code: 'COLOR_NOT_FOUND',
 		httpStatus: 404,
-		category: 'application',
+		category: 'domain' as const,
+		message: 'Color not found',
+	},
+	COLOR_ALREADY_EXISTS: {
+		code: 'COLOR_ALREADY_EXISTS',
+		httpStatus: 409,
+		category: 'domain' as const,
+		message: 'Color already exists',
 	},
 
 	// Infrastructure Errors - External service failures

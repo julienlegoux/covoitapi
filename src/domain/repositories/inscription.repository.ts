@@ -3,7 +3,7 @@ import type { RepositoryError } from '../../infrastructure/errors/repository.err
 import type { CreateInscriptionData, InscriptionEntity } from '../entities/inscription.entity.js';
 
 export interface InscriptionRepository {
-	findAll(): Promise<Result<InscriptionEntity[], RepositoryError>>;
+	findAll(params?: { skip: number; take: number }): Promise<Result<{ data: InscriptionEntity[]; total: number }, RepositoryError>>;
 	findById(id: string): Promise<Result<InscriptionEntity | null, RepositoryError>>;
 	findByUserId(userId: string): Promise<Result<InscriptionEntity[], RepositoryError>>;
 	findByRouteId(routeId: string): Promise<Result<InscriptionEntity[], RepositoryError>>;

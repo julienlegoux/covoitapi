@@ -23,9 +23,6 @@ describe('Auth Controller', () => {
 		email: 'test@example.com',
 		password: 'Password123',
 		confirmPassword: 'Password123',
-		firstName: 'John',
-		lastName: 'Doe',
-		phone: '+33612345678',
 	};
 
 	const validLoginInput = {
@@ -70,9 +67,6 @@ describe('Auth Controller', () => {
 				email: 'test@example.com',
 				password: 'Password123',
 				confirmPassword: 'Password123',
-				firstName: 'John',
-				lastName: 'Doe',
-				phone: '+33612345678',
 			});
 		});
 

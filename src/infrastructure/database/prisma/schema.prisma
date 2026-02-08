@@ -7,15 +7,34 @@ datasource db {
   provider = "postgresql"
 }
 
+enum Role {
+  USER
+  DRIVER
+  ADMIN
+}
+
+enum CityTravelType {
+  DEPARTURE
+  ARRIVAL
+}
+
+enum InscriptionStatus {
+  ACTIVE
+  CANCELLED
+  ANONYMIZED
+}
+
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  password  String
-  firstName String   @map("first_name")
-  lastName  String   @map("last_name")
-  phone     String
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id            String    @id @default(uuid())
+  email         String    @unique
+  password      String
+  firstName     String?   @map("first_name")
+  lastName      String?   @map("last_name")
+  phone         String?
+  role          Role      @default(USER)
+  anonymizedAt  DateTime? @map("anonymized_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
 
   driver       Driver?
   inscriptions Inscription[]
@@ -24,17 +43,18 @@ model User {
 }
 
 model Driver {
-  id            String @id @default(uuid())
-  driverLicense String @unique @map("driver_license")
-  userId        String @unique @map("user_id")
+  id            String    @id @default(uuid())
+  driverLicense String    @unique @map("driver_license")
+  userId        String    @unique @map("user_id")
+  anonymizedAt  DateTime? @map("anonymized_at")
 
-  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  routes Route[]
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  travels Travel[]
 
   @@map("drivers")
 }
 
-model Route {
+model Travel {
   id        String   @id @default(uuid())
   dateRoute DateTime @map("date_route")
   kms       Int
@@ -42,22 +62,23 @@ model Route {
   driverId  String   @map("driver_id")
   carId     String   @map("car_id")
 
-  driver       Driver        @relation(fields: [driverId], references: [id], onDelete: Cascade)
-  car          Car           @relation(fields: [carId], references: [id], onDelete: Restrict)
+  driver       Driver          @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  car          Car             @relation(fields: [carId], references: [id], onDelete: Restrict)
   inscriptions Inscription[]
-  cities       CityRoute[]
+  cities       CityTravel[]
 
   @@map("routes")
 }
 
 model Inscription {
-  id        String   @id @default(uuid())
-  createdAt DateTime @default(now()) @map("created_at")
-  userId    String   @map("user_id")
-  routeId   String   @map("route_id")
+  id        String            @id @default(uuid())
+  createdAt DateTime          @default(now()) @map("created_at")
+  userId    String            @map("user_id")
+  routeId   String            @map("route_id")
+  status    InscriptionStatus @default(ACTIVE)
 
-  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  route Route @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  travel Travel @relation(fields: [routeId], references: [id], onDelete: Cascade)
 
   @@unique([userId, routeId])
   @@map("inscriptions")
@@ -68,17 +89,18 @@ model City {
   cityName String @map("city_name")
   zipcode  String
 
-  routes CityRoute[]
+  travels CityTravel[]
 
   @@map("cities")
 }
 
-model CityRoute {
-  routeId String @map("route_id")
-  cityId  String @map("city_id")
+model CityTravel {
+  routeId String         @map("route_id")
+  cityId  String         @map("city_id")
+  type    CityTravelType
 
-  route Route @relation(fields: [routeId], references: [id], onDelete: Cascade)
-  city  City  @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  travel Travel @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  city   City   @relation(fields: [cityId], references: [id], onDelete: Cascade)
 
   @@id([routeId, cityId])
   @@map("city_routes")
@@ -89,8 +111,8 @@ model Car {
   immat   String @unique
   modelId String @map("model_id")
 
-  model  Model   @relation(fields: [modelId], references: [id], onDelete: Cascade)
-  routes Route[]
+  model   Model    @relation(fields: [modelId], references: [id], onDelete: Restrict)
+  travels Travel[]
 
   @@map("cars")
 }
@@ -100,7 +122,7 @@ model Model {
   name    String
   brandId String @map("brand_id")
 
-  brand  Brand        @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  brand  Brand        @relation(fields: [brandId], references: [id], onDelete: Restrict)
   cars   Car[]
   colors ColorModel[]
 

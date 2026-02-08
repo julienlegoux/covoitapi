@@ -14,10 +14,15 @@ export class PrismaCarRepository implements CarRepository {
 		private readonly prisma: PrismaClient,
 	) {}
 
-	async findAll(): Promise<Result<CarEntity[], DatabaseError>> {
+	async findAll(params?: { skip: number; take: number }): Promise<Result<{ data: CarEntity[]; total: number }, DatabaseError>> {
 		try {
-			const cars = await this.prisma.car.findMany();
-			return ok(cars);
+			const [data, total] = await Promise.all([
+				this.prisma.car.findMany({
+					...(params && { skip: params.skip, take: params.take }),
+				}),
+				this.prisma.car.count(),
+			]);
+			return ok({ data, total });
 		} catch (e) {
 			return err(new DatabaseError('Failed to find all cars', e));
 		}

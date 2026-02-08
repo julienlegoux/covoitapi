@@ -3,6 +3,7 @@ import type { JwtError } from '../../infrastructure/errors/jwt.errors.js';
 
 export type JwtPayload = {
 	userId: string;
+	role: string;
 };
 
 export interface JwtService {

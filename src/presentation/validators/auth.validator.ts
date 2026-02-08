@@ -11,9 +11,6 @@ export const registerSchema = z
 				'Password must contain at least one lowercase, one uppercase, and one number',
 			),
 		confirmPassword: z.string(),
-		firstName: z.string().min(1, 'First name is required'),
-		lastName: z.string().min(1, 'Last name is required'),
-		phone: z.string().regex(/^(\+33|0)[1-9](\d{2}){4}$/, 'Invalid phone number format'),
 	})
 	.refine((data) => data.password === data.confirmPassword, {
 		message: 'Passwords do not match',
