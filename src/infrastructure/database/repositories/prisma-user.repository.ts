@@ -135,7 +135,7 @@ export class PrismaUserRepository implements UserRepository {
 				await tx.driver.updateMany({
 					where: { userId: id },
 					data: {
-						driverLicense: 'ANONYMIZED',
+						driverLicense: `ANONYMIZED-${crypto.randomUUID()}`,
 						anonymizedAt: new Date(),
 					},
 				});
