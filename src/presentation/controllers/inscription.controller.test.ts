@@ -107,7 +107,7 @@ describe('Inscription Controller', () => {
 			await createInscription(ctx);
 			const [response, status] = ctx._getJsonCall();
 			expect(status).toBe(201);
-			expect(mockUseCase.execute).toHaveBeenCalledWith({ idpers: 'u1', idtrajet: 'r1' });
+			expect(mockUseCase.execute).toHaveBeenCalledWith({ userId: 'u1', travelId: 'r1' });
 		});
 
 		it('should throw ZodError for invalid input', async () => {
