@@ -9,7 +9,7 @@ export { errorHandler } from './middleware/error-handler.middleware.js';
 export { app } from './routes/index.js';
 
 // Types
-export type { ErrorResponse } from './types/error.types.js';
+export type { ErrorResponse } from '../lib/errors/error.types.js';
 
 // Validators
 export * from './validators/auth.validator.js';

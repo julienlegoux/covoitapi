@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import type { Context, Next } from 'hono';
-import { logger } from '../../infrastructure/logging/logger.js';
+import { logger } from '../../lib/logging/logger.js';
 import { getContext, runWithContext } from '../../lib/context/request-context.js';
 
 export async function requestLogger(c: Context, next: Next): Promise<void> {

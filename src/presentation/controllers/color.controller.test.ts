@@ -7,7 +7,7 @@ import { CreateColorUseCase } from '../../application/use-cases/color/create-col
 import { UpdateColorUseCase } from '../../application/use-cases/color/update-color.use-case.js';
 import { DeleteColorUseCase } from '../../application/use-cases/color/delete-color.use-case.js';
 import { ok, err } from '../../lib/shared/types/result.js';
-import { ColorNotFoundError, ColorAlreadyExistsError } from '../../domain/errors/domain.errors.js';
+import { ColorNotFoundError, ColorAlreadyExistsError } from '../../lib/errors/domain.errors.js';
 
 function createMockContext(overrides?: { jsonBody?: unknown; params?: Record<string, string>; queryParams?: Record<string, string> }) {
 	const jsonMock = vi.fn((body, status) => ({ body, status }));

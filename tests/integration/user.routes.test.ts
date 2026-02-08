@@ -6,7 +6,7 @@ import { CreatePersonUseCase } from '../../src/application/use-cases/person/crea
 import { UpdatePersonUseCase } from '../../src/application/use-cases/person/update-person.use-case.js';
 import { AnonymizeUserUseCase } from '../../src/application/use-cases/user/anonymize-user.use-case.js';
 import { ok, err } from '../../src/lib/shared/types/result.js';
-import { UserNotFoundError } from '../../src/domain/errors/domain.errors.js';
+import { UserNotFoundError } from '../../src/lib/errors/domain.errors.js';
 import { authHeaders, registerMockJwtService, registerMockUseCase } from './helpers.js';
 
 vi.mock('../../src/infrastructure/database/generated/prisma/client.js', () => ({

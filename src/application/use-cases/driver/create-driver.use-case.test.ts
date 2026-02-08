@@ -5,8 +5,8 @@ import {
 	createMockDriverRepository,
 	createMockUserRepository,
 } from '../../../../tests/setup.js';
-import { DriverAlreadyExistsError } from '../../../domain/errors/domain.errors.js';
-import { DatabaseError } from '../../../infrastructure/errors/repository.errors.js';
+import { DriverAlreadyExistsError } from '../../../lib/errors/domain.errors.js';
+import { DatabaseError } from '../../../lib/errors/repository.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import { ok, err } from '../../../lib/shared/types/result.js';
 import type { CreateDriverInput } from '../../dtos/driver.dto.js';

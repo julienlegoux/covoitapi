@@ -1,10 +1,10 @@
 import { container } from 'tsyringe';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { createMockTravelRepository, createMockDriverRepository, createMockCityRepository } from '../../../../tests/setup.js';
-import { DriverNotFoundError } from '../../../domain/errors/domain.errors.js';
+import { DriverNotFoundError } from '../../../lib/errors/domain.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import { ok, err } from '../../../lib/shared/types/result.js';
-import { DatabaseError } from '../../../infrastructure/errors/repository.errors.js';
+import { DatabaseError } from '../../../lib/errors/repository.errors.js';
 import { CreateTravelUseCase } from './create-travel.use-case.js';
 
 describe('CreateTravelUseCase', () => {

@@ -1,8 +1,8 @@
 import { inject, injectable } from 'tsyringe';
 import type { ColorEntity } from '../../../domain/entities/color.entity.js';
-import { ColorAlreadyExistsError } from '../../../domain/errors/domain.errors.js';
+import { ColorAlreadyExistsError } from '../../../lib/errors/domain.errors.js';
 import type { ColorRepository } from '../../../domain/repositories/color.repository.js';
-import type { RepositoryError } from '../../../infrastructure/errors/repository.errors.js';
+import type { RepositoryError } from '../../../lib/errors/repository.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import type { Result } from '../../../lib/shared/types/result.js';
 import { err } from '../../../lib/shared/types/result.js';

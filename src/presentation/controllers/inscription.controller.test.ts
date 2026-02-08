@@ -8,7 +8,7 @@ import { ListRoutePassengersUseCase } from '../../application/use-cases/inscript
 import { CreateInscriptionUseCase } from '../../application/use-cases/inscription/create-inscription.use-case.js';
 import { DeleteInscriptionUseCase } from '../../application/use-cases/inscription/delete-inscription.use-case.js';
 import { ok, err } from '../../lib/shared/types/result.js';
-import { InscriptionNotFoundError, RouteNotFoundError } from '../../domain/errors/domain.errors.js';
+import { InscriptionNotFoundError, RouteNotFoundError } from '../../lib/errors/domain.errors.js';
 
 function createMockContext(overrides?: { jsonBody?: unknown; params?: Record<string, string>; queryParams?: Record<string, string>; userId?: string }) {
 	const jsonMock = vi.fn((body, status) => ({ body, status }));

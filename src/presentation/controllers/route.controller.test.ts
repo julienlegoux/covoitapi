@@ -8,7 +8,7 @@ import { FindRouteUseCase } from '../../application/use-cases/route/find-route.u
 import { CreateRouteUseCase } from '../../application/use-cases/route/create-route.use-case.js';
 import { DeleteRouteUseCase } from '../../application/use-cases/route/delete-route.use-case.js';
 import { ok, err } from '../../lib/shared/types/result.js';
-import { RouteNotFoundError } from '../../domain/errors/domain.errors.js';
+import { RouteNotFoundError } from '../../lib/errors/domain.errors.js';
 
 function createMockContext(overrides?: { jsonBody?: unknown; params?: Record<string, string>; queryParams?: Record<string, string>; userId?: string }) {
 	const jsonMock = vi.fn((body, status) => ({ body, status }));

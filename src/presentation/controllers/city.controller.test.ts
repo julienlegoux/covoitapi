@@ -6,7 +6,7 @@ import { ListCitiesUseCase } from '../../application/use-cases/city/list-cities.
 import { CreateCityUseCase } from '../../application/use-cases/city/create-city.use-case.js';
 import { DeleteCityUseCase } from '../../application/use-cases/city/delete-city.use-case.js';
 import { ok, err } from '../../lib/shared/types/result.js';
-import { CityNotFoundError } from '../../domain/errors/domain.errors.js';
+import { CityNotFoundError } from '../../lib/errors/domain.errors.js';
 
 function createMockContext(overrides?: { jsonBody?: unknown; params?: Record<string, string>; queryParams?: Record<string, string> }) {
 	const jsonMock = vi.fn((body, status) => ({ body, status }));

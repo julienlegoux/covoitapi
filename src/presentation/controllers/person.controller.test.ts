@@ -8,7 +8,7 @@ import { CreatePersonUseCase } from '../../application/use-cases/person/create-p
 import { UpdatePersonUseCase } from '../../application/use-cases/person/update-person.use-case.js';
 import { DeletePersonUseCase } from '../../application/use-cases/person/delete-person.use-case.js';
 import { ok, err } from '../../lib/shared/types/result.js';
-import { UserNotFoundError } from '../../domain/errors/domain.errors.js';
+import { UserNotFoundError } from '../../lib/errors/domain.errors.js';
 
 function createMockContext(overrides?: { jsonBody?: unknown; params?: Record<string, string> }) {
 	const jsonMock = vi.fn((body, status) => ({ body, status }));

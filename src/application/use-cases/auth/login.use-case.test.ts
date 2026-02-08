@@ -5,7 +5,7 @@ import {
 	createMockPasswordService,
 	createMockUserRepository,
 } from '../../../../tests/setup.js';
-import { InvalidCredentialsError } from '../../../domain/errors/domain.errors.js';
+import { InvalidCredentialsError } from '../../../lib/errors/domain.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import { ok } from '../../../lib/shared/types/result.js';
 import type { LoginInput } from '../../dtos/auth.dto.js';

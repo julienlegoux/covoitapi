@@ -5,7 +5,7 @@ import { CreateCarUseCase } from '../../src/application/use-cases/car/create-car
 import { UpdateCarUseCase } from '../../src/application/use-cases/car/update-car.use-case.js';
 import { DeleteCarUseCase } from '../../src/application/use-cases/car/delete-car.use-case.js';
 import { ok, err } from '../../src/lib/shared/types/result.js';
-import { CarNotFoundError, CarAlreadyExistsError } from '../../src/domain/errors/domain.errors.js';
+import { CarNotFoundError, CarAlreadyExistsError } from '../../src/lib/errors/domain.errors.js';
 import { authHeaders, registerMockJwtService, registerMockUseCase } from './helpers.js';
 
 vi.mock('../../src/infrastructure/database/generated/prisma/client.js', () => ({

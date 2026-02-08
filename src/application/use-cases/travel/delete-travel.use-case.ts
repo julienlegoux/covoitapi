@@ -1,7 +1,7 @@
 import { inject, injectable } from 'tsyringe';
-import { TravelNotFoundError } from '../../../domain/errors/domain.errors.js';
+import { TravelNotFoundError } from '../../../lib/errors/domain.errors.js';
 import type { TravelRepository } from '../../../domain/repositories/travel.repository.js';
-import type { RepositoryError } from '../../../infrastructure/errors/repository.errors.js';
+import type { RepositoryError } from '../../../lib/errors/repository.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import type { Result } from '../../../lib/shared/types/result.js';
 import { err } from '../../../lib/shared/types/result.js';

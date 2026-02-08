@@ -6,7 +6,7 @@ import {
 	createMockPasswordService,
 	createMockUserRepository,
 } from '../../../../tests/setup.js';
-import { UserAlreadyExistsError } from '../../../domain/errors/domain.errors.js';
+import { UserAlreadyExistsError } from '../../../lib/errors/domain.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import { ok } from '../../../lib/shared/types/result.js';
 import type { RegisterInput } from '../../dtos/auth.dto.js';

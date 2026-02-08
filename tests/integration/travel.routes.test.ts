@@ -6,7 +6,7 @@ import { FindRouteUseCase } from '../../src/application/use-cases/route/find-rou
 import { CreateRouteUseCase } from '../../src/application/use-cases/route/create-route.use-case.js';
 import { DeleteRouteUseCase } from '../../src/application/use-cases/route/delete-route.use-case.js';
 import { ok, err } from '../../src/lib/shared/types/result.js';
-import { RouteNotFoundError } from '../../src/domain/errors/domain.errors.js';
+import { RouteNotFoundError } from '../../src/lib/errors/domain.errors.js';
 import { authHeaders, registerMockJwtService, registerMockUseCase } from './helpers.js';
 
 vi.mock('../../src/infrastructure/database/generated/prisma/client.js', () => ({

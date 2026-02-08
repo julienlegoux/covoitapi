@@ -4,7 +4,7 @@ import { ListBrandsUseCase } from '../../src/application/use-cases/brand/list-br
 import { CreateBrandUseCase } from '../../src/application/use-cases/brand/create-brand.use-case.js';
 import { DeleteBrandUseCase } from '../../src/application/use-cases/brand/delete-brand.use-case.js';
 import { ok, err } from '../../src/lib/shared/types/result.js';
-import { BrandNotFoundError } from '../../src/domain/errors/domain.errors.js';
+import { BrandNotFoundError } from '../../src/lib/errors/domain.errors.js';
 import { authHeaders, registerMockJwtService, registerMockUseCase } from './helpers.js';
 
 vi.mock('../../src/infrastructure/database/generated/prisma/client.js', () => ({
