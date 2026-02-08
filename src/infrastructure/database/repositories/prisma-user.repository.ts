@@ -7,6 +7,7 @@ import type { Result } from '../../../lib/shared/types/result.js';
 import { ok, err } from '../../../lib/shared/types/result.js';
 import { DatabaseError } from '../../errors/repository.errors.js';
 import type { PrismaClient } from '../generated/prisma/client.js';
+import type { $Enums } from '../generated/prisma/client.js';
 
 @injectable()
 export class PrismaUserRepository implements UserRepository {
@@ -84,7 +85,7 @@ export class PrismaUserRepository implements UserRepository {
 		try {
 			await this.prisma.user.update({
 				where: { id },
-				data: { role },
+				data: { role: role as $Enums.Role },
 			});
 			return ok(undefined);
 		} catch (e) {

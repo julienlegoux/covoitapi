@@ -46,7 +46,7 @@ function buildErrorResponse(error: unknown): ErrorResponse {
 		};
 	}
 
-	logger.error('Unexpected error', { error });
+	logger.error('Unexpected error', error instanceof Error ? error : null);
 	return {
 		success: false,
 		error: {

@@ -19,7 +19,7 @@ export class PrismaInscriptionRepository implements InscriptionRepository {
 			const [inscriptions, total] = await Promise.all([
 				this.prisma.inscription.findMany({
 					...(params && { skip: params.skip, take: params.take }),
-					include: { user: true, route: true },
+					include: { user: true, travel: true },
 				}),
 				this.prisma.inscription.count(),
 			]);
@@ -33,7 +33,7 @@ export class PrismaInscriptionRepository implements InscriptionRepository {
 		try {
 			const inscription = await this.prisma.inscription.findUnique({
 				where: { id },
-				include: { user: true, route: true },
+				include: { user: true, travel: true },
 			});
 			return ok(inscription as unknown as InscriptionEntity | null);
 		} catch (e) {
@@ -45,7 +45,7 @@ export class PrismaInscriptionRepository implements InscriptionRepository {
 		try {
 			const inscriptions = await this.prisma.inscription.findMany({
 				where: { userId },
-				include: { route: true },
+				include: { travel: true },
 			});
 			return ok(inscriptions as unknown as InscriptionEntity[]);
 		} catch (e) {
