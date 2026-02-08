@@ -1,10 +1,10 @@
 import { inject, injectable } from 'tsyringe';
 import type { TravelEntity } from '../../../domain/entities/travel.entity.js';
-import { DriverNotFoundError } from '../../../domain/errors/domain.errors.js';
+import { DriverNotFoundError } from '../../../lib/errors/domain.errors.js';
 import type { DriverRepository } from '../../../domain/repositories/driver.repository.js';
 import type { CityRepository } from '../../../domain/repositories/city.repository.js';
 import type { TravelRepository } from '../../../domain/repositories/travel.repository.js';
-import type { RepositoryError } from '../../../infrastructure/errors/repository.errors.js';
+import type { RepositoryError } from '../../../lib/errors/repository.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import type { Result } from '../../../lib/shared/types/result.js';
 import { err } from '../../../lib/shared/types/result.js';

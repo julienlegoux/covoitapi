@@ -1,7 +1,7 @@
 import { inject, injectable } from 'tsyringe';
-import { BrandNotFoundError } from '../../../domain/errors/domain.errors.js';
+import { BrandNotFoundError } from '../../../lib/errors/domain.errors.js';
 import type { BrandRepository } from '../../../domain/repositories/brand.repository.js';
-import type { RepositoryError } from '../../../infrastructure/errors/repository.errors.js';
+import type { RepositoryError } from '../../../lib/errors/repository.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import type { Result } from '../../../lib/shared/types/result.js';
 import { err } from '../../../lib/shared/types/result.js';

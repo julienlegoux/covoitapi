@@ -1,9 +1,9 @@
 import { inject, injectable } from 'tsyringe';
 import type { DriverEntity } from '../../../domain/entities/driver.entity.js';
-import { DriverAlreadyExistsError } from '../../../domain/errors/domain.errors.js';
+import { DriverAlreadyExistsError } from '../../../lib/errors/domain.errors.js';
 import type { DriverRepository } from '../../../domain/repositories/driver.repository.js';
 import type { UserRepository } from '../../../domain/repositories/user.repository.js';
-import type { RepositoryError } from '../../../infrastructure/errors/repository.errors.js';
+import type { RepositoryError } from '../../../lib/errors/repository.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import type { Result } from '../../../lib/shared/types/result.js';
 import { err } from '../../../lib/shared/types/result.js';

@@ -1,5 +1,5 @@
 import type { Result } from '../../lib/shared/types/result.js';
-import type { RepositoryError } from '../../infrastructure/errors/repository.errors.js';
+import type { RepositoryError } from '../../lib/errors/repository.errors.js';
 import type { CarEntity, CreateCarData, UpdateCarData } from '../entities/car.entity.js';
 
 export interface CarRepository {

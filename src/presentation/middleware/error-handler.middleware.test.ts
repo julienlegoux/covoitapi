@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import type { Context, Next } from 'hono';
 import { type ZodError, z } from 'zod';
 import { errorHandler } from './error-handler.middleware.js';
-import { DomainError, UserAlreadyExistsError, InvalidCredentialsError, UserNotFoundError } from '../../domain/errors/domain.errors.js';
+import { DomainError, UserAlreadyExistsError, InvalidCredentialsError, UserNotFoundError } from '../../lib/errors/domain.errors.js';
 
 function createMockContext() {
 	const jsonMock = vi.fn();

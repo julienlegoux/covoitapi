@@ -7,7 +7,7 @@ import { CreateCarUseCase } from '../../application/use-cases/car/create-car.use
 import { UpdateCarUseCase } from '../../application/use-cases/car/update-car.use-case.js';
 import { DeleteCarUseCase } from '../../application/use-cases/car/delete-car.use-case.js';
 import { ok, err } from '../../lib/shared/types/result.js';
-import { CarNotFoundError } from '../../domain/errors/domain.errors.js';
+import { CarNotFoundError } from '../../lib/errors/domain.errors.js';
 
 function createMockContext(overrides?: { jsonBody?: unknown; params?: Record<string, string>; queryParams?: Record<string, string> }) {
 	const jsonMock = vi.fn((body, status) => ({ body, status }));

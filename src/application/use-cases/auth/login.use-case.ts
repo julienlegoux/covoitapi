@@ -1,11 +1,11 @@
 import { inject, injectable } from 'tsyringe';
-import { InvalidCredentialsError } from '../../../domain/errors/domain.errors.js';
+import { InvalidCredentialsError } from '../../../lib/errors/domain.errors.js';
 import type { UserRepository } from '../../../domain/repositories/user.repository.js';
 import type { JwtService } from '../../../domain/services/jwt.service.js';
 import type { PasswordService } from '../../../domain/services/password.service.js';
-import type { RepositoryError } from '../../../infrastructure/errors/repository.errors.js';
-import type { PasswordError } from '../../../infrastructure/errors/password.errors.js';
-import type { JwtError } from '../../../infrastructure/errors/jwt.errors.js';
+import type { RepositoryError } from '../../../lib/errors/repository.errors.js';
+import type { PasswordError } from '../../../lib/errors/password.errors.js';
+import type { JwtError } from '../../../lib/errors/jwt.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import type { Result } from '../../../lib/shared/types/result.js';
 import { ok, err } from '../../../lib/shared/types/result.js';

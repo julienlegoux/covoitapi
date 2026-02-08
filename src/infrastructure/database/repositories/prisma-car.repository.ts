@@ -4,7 +4,7 @@ import type { CarRepository } from '../../../domain/repositories/car.repository.
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import type { Result } from '../../../lib/shared/types/result.js';
 import { ok, err } from '../../../lib/shared/types/result.js';
-import { DatabaseError } from '../../errors/repository.errors.js';
+import { DatabaseError } from '../../../lib/errors/repository.errors.js';
 import type { PrismaClient } from '../generated/prisma/client.js';
 
 @injectable()

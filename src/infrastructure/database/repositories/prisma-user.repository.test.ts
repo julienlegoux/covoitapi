@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { container } from 'tsyringe';
 import { PrismaUserRepository } from './prisma-user.repository.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
-import { DatabaseError } from '../../errors/repository.errors.js';
+import { DatabaseError } from '../../../lib/errors/repository.errors.js';
 
 function createMockPrismaClient() {
 	return {

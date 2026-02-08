@@ -1,10 +1,10 @@
 import { container } from 'tsyringe';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { createMockUserRepository, createMockPasswordService } from '../../../../tests/setup.js';
-import { UserAlreadyExistsError } from '../../../domain/errors/domain.errors.js';
+import { UserAlreadyExistsError } from '../../../lib/errors/domain.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import { ok, err } from '../../../lib/shared/types/result.js';
-import { DatabaseError } from '../../../infrastructure/errors/repository.errors.js';
+import { DatabaseError } from '../../../lib/errors/repository.errors.js';
 import { CreateUserUseCase } from '../user/create-user.use-case.js';
 
 describe('CreateUserUseCase', () => {

@@ -4,7 +4,7 @@ import { container } from 'tsyringe';
 import { updateProfile } from './user.controller.js';
 import { UpdateUserUseCase } from '../../application/use-cases/user/update-user.use-case.js';
 import { ok, err } from '../../lib/shared/types/result.js';
-import { UserNotFoundError } from '../../domain/errors/domain.errors.js';
+import { UserNotFoundError } from '../../lib/errors/domain.errors.js';
 
 function createMockContext(overrides?: { jsonBody?: unknown; userId?: string }) {
 	const jsonMock = vi.fn((body, status) => ({ body, status }));
