@@ -12,7 +12,10 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:push": "prisma db push",
-    "db:reset": "prisma migrate reset"
+    "db:reset": "prisma migrate reset",
+    "db:seed": "tsx src/infrastructure/database/prisma/seed.ts",
+    "db:size": "tsx src/infrastructure/database/prisma/check-size.ts",
+    "db:export": "tsx src/infrastructure/database/prisma/export.ts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.3.0",

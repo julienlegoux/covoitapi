@@ -474,74 +474,81 @@
 
     <div class="entity-card">
       <div class="header">
-        <div class="icon" style="background:rgba(108,140,255,0.15);color:var(--accent);">U</div>
-        User (Personne)
+        <div class="icon" style="background:rgba(108,140,255,0.15);color:var(--accent);">A</div>
+        Auth (Authentification)
       </div>
       <div class="fields">
-        <div class="field"><span class="type">Int</span><span class="name">id</span><span class="pk">PK</span></div>
-        <div class="field"><span class="type">String</span><span class="name">login</span></div>
-        <div class="field"><span class="type">String</span><span class="name">password</span></div>
-        <div class="field"><span class="type">String</span><span class="name">prenom</span></div>
-        <div class="field"><span class="type">String</span><span class="name">nom</span></div>
-        <div class="field"><span class="type">String</span><span class="name">telephone</span></div>
+        <div class="field"><span class="type">UUID</span><span class="name">id</span><span class="pk">PK</span></div>
+        <div class="field"><span class="type">Int</span><span class="name">refId</span></div>
         <div class="field"><span class="type">String</span><span class="name">email</span></div>
-        <div class="field"><span class="type">String?</span><span class="name">ville</span></div>
-        <div class="field"><span class="type">String?</span><span class="name">role</span></div>
-      </div>
-    </div>
-
-    <div class="entity-card">
-      <div class="header">
-        <div class="icon" style="background:rgba(52,211,153,0.15);color:var(--accent-3);">R</div>
-        Route (Trajet)
-      </div>
-      <div class="fields">
-        <div class="field"><span class="type">Int</span><span class="name">id</span><span class="pk">PK</span></div>
-        <div class="field"><span class="type">String</span><span class="name">villeDepart</span></div>
-        <div class="field"><span class="type">String</span><span class="name">villeArrivee</span></div>
-        <div class="field"><span class="type">DateTime</span><span class="name">dateDepart</span></div>
-        <div class="field"><span class="type">Int</span><span class="name">kms</span></div>
-        <div class="field"><span class="type">Int</span><span class="name">placesDisponibles</span></div>
-        <div class="field"><span class="type">Int</span><span class="name">conducteurId</span><span class="fk">FK</span></div>
-      </div>
-    </div>
-
-    <div class="entity-card">
-      <div class="header">
-        <div class="icon" style="background:rgba(244,114,182,0.15);color:var(--pink);">I</div>
-        Inscription (Réservation)
-      </div>
-      <div class="fields">
-        <div class="field"><span class="type">Int</span><span class="name">id</span><span class="pk">PK</span></div>
-        <div class="field"><span class="type">Int</span><span class="name">userId</span><span class="fk">FK</span></div>
-        <div class="field"><span class="type">Int</span><span class="name">routeId</span><span class="fk">FK</span></div>
+        <div class="field"><span class="type">String</span><span class="name">password</span></div>
+        <div class="field"><span class="type">Role</span><span class="name">role</span></div>
+        <div class="field"><span class="type">DateTime?</span><span class="name">anonymizedAt</span></div>
         <div class="field"><span class="type">DateTime</span><span class="name">createdAt</span></div>
+        <div class="field"><span class="type">DateTime</span><span class="name">updatedAt</span></div>
       </div>
     </div>
 
     <div class="entity-card">
       <div class="header">
-        <div class="icon" style="background:rgba(251,191,36,0.15);color:var(--warn);">C</div>
-        Car (Voiture)
+        <div class="icon" style="background:rgba(52,211,153,0.15);color:var(--accent);">U</div>
+        User (Utilisateur)
       </div>
       <div class="fields">
-        <div class="field"><span class="type">Int</span><span class="name">id</span><span class="pk">PK</span></div>
-        <div class="field"><span class="type">String</span><span class="name">modele</span></div>
-        <div class="field"><span class="type">Int</span><span class="name">places</span></div>
-        <div class="field"><span class="type">String</span><span class="name">immatriculation</span></div>
-        <div class="field"><span class="type">Int</span><span class="name">brandId</span><span class="fk">FK</span></div>
-        <div class="field"><span class="type">Int</span><span class="name">userId</span><span class="fk">FK</span></div>
+        <div class="field"><span class="type">UUID</span><span class="name">id</span><span class="pk">PK</span></div>
+        <div class="field"><span class="type">Int</span><span class="name">refId</span></div>
+        <div class="field"><span class="type">String?</span><span class="name">firstName</span></div>
+        <div class="field"><span class="type">String?</span><span class="name">lastName</span></div>
+        <div class="field"><span class="type">String?</span><span class="name">phone</span></div>
+        <div class="field"><span class="type">Int</span><span class="name">authRefId</span><span class="fk">FK</span></div>
+        <div class="field"><span class="type">DateTime?</span><span class="name">anonymizedAt</span></div>
+        <div class="field"><span class="type">DateTime</span><span class="name">createdAt</span></div>
+        <div class="field"><span class="type">DateTime</span><span class="name">updatedAt</span></div>
       </div>
     </div>
 
     <div class="entity-card">
       <div class="header">
-        <div class="icon" style="background:rgba(167,139,250,0.15);color:var(--accent-2);">B</div>
-        Brand (Marque)
+        <div class="icon" style="background:rgba(167,139,250,0.15);color:var(--accent-2);">D</div>
+        Driver (Conducteur)
       </div>
       <div class="fields">
-        <div class="field"><span class="type">Int</span><span class="name">id</span><span class="pk">PK</span></div>
-        <div class="field"><span class="type">String</span><span class="name">nom</span></div>
+        <div class="field"><span class="type">UUID</span><span class="name">id</span><span class="pk">PK</span></div>
+        <div class="field"><span class="type">Int</span><span class="name">refId</span></div>
+        <div class="field"><span class="type">String</span><span class="name">driverLicense</span></div>
+        <div class="field"><span class="type">Int</span><span class="name">userRefId</span><span class="fk">FK</span></div>
+        <div class="field"><span class="type">DateTime?</span><span class="name">anonymizedAt</span></div>
+      </div>
+    </div>
+
+    <div class="entity-card">
+      <div class="header">
+        <div class="icon" style="background:rgba(52,211,153,0.15);color:var(--accent-3);">T</div>
+        Travel (Trajet)
+      </div>
+      <div class="fields">
+        <div class="field"><span class="type">UUID</span><span class="name">id</span><span class="pk">PK</span></div>
+        <div class="field"><span class="type">Int</span><span class="name">refId</span></div>
+        <div class="field"><span class="type">DateTime</span><span class="name">dateRoute</span></div>
+        <div class="field"><span class="type">Int</span><span class="name">kms</span></div>
+        <div class="field"><span class="type">Int</span><span class="name">seats</span></div>
+        <div class="field"><span class="type">Int</span><span class="name">driverRefId</span><span class="fk">FK</span></div>
+        <div class="field"><span class="type">Int</span><span class="name">carRefId</span><span class="fk">FK</span></div>
+      </div>
+    </div>
+
+    <div class="entity-card">
+      <div class="header">
+        <div class="icon" style="background:rgba(244,114,182,0.15);color:var(--danger);">I</div>
+        Inscription (Reservation)
+      </div>
+      <div class="fields">
+        <div class="field"><span class="type">UUID</span><span class="name">id</span><span class="pk">PK</span></div>
+        <div class="field"><span class="type">Int</span><span class="name">refId</span></div>
+        <div class="field"><span class="type">Int</span><span class="name">userRefId</span><span class="fk">FK</span></div>
+        <div class="field"><span class="type">Int</span><span class="name">routeRefId</span><span class="fk">FK</span></div>
+        <div class="field"><span class="type">Status</span><span class="name">status</span></div>
+        <div class="field"><span class="type">DateTime</span><span class="name">createdAt</span></div>
       </div>
     </div>
 
@@ -551,9 +558,73 @@
         City (Ville)
       </div>
       <div class="fields">
-        <div class="field"><span class="type">Int</span><span class="name">id</span><span class="pk">PK</span></div>
-        <div class="field"><span class="type">String</span><span class="name">ville</span></div>
-        <div class="field"><span class="type">String</span><span class="name">codePostal</span></div>
+        <div class="field"><span class="type">UUID</span><span class="name">id</span><span class="pk">PK</span></div>
+        <div class="field"><span class="type">Int</span><span class="name">refId</span></div>
+        <div class="field"><span class="type">String</span><span class="name">cityName</span></div>
+        <div class="field"><span class="type">String</span><span class="name">zipcode</span></div>
+      </div>
+    </div>
+
+    <div class="entity-card">
+      <div class="header">
+        <div class="icon" style="background:rgba(59,130,246,0.15);color:var(--info);">CT</div>
+        CityTravel (Ville-Trajet)
+      </div>
+      <div class="fields">
+        <div class="field"><span class="type">Int</span><span class="name">routeRefId</span><span class="pk">PK</span><span class="fk">FK</span></div>
+        <div class="field"><span class="type">Int</span><span class="name">cityRefId</span><span class="pk">PK</span><span class="fk">FK</span></div>
+        <div class="field"><span class="type">Enum</span><span class="name">type</span></div>
+      </div>
+    </div>
+
+    <div class="entity-card">
+      <div class="header">
+        <div class="icon" style="background:rgba(251,191,36,0.15);color:var(--warn);">C</div>
+        Car (Voiture)
+      </div>
+      <div class="fields">
+        <div class="field"><span class="type">UUID</span><span class="name">id</span><span class="pk">PK</span></div>
+        <div class="field"><span class="type">Int</span><span class="name">refId</span></div>
+        <div class="field"><span class="type">String</span><span class="name">immat</span></div>
+        <div class="field"><span class="type">Int</span><span class="name">modelRefId</span><span class="fk">FK</span></div>
+      </div>
+    </div>
+
+    <div class="entity-card">
+      <div class="header">
+        <div class="icon" style="background:rgba(245,158,11,0.15);color:var(--accent-3);">M</div>
+        Model (Modele)
+      </div>
+      <div class="fields">
+        <div class="field"><span class="type">UUID</span><span class="name">id</span><span class="pk">PK</span></div>
+        <div class="field"><span class="type">Int</span><span class="name">refId</span></div>
+        <div class="field"><span class="type">String</span><span class="name">name</span></div>
+        <div class="field"><span class="type">Int</span><span class="name">brandRefId</span><span class="fk">FK</span></div>
+      </div>
+    </div>
+
+    <div class="entity-card">
+      <div class="header">
+        <div class="icon" style="background:rgba(167,139,250,0.15);color:var(--accent-2);">B</div>
+        Brand (Marque)
+      </div>
+      <div class="fields">
+        <div class="field"><span class="type">UUID</span><span class="name">id</span><span class="pk">PK</span></div>
+        <div class="field"><span class="type">Int</span><span class="name">refId</span></div>
+        <div class="field"><span class="type">String</span><span class="name">name</span></div>
+      </div>
+    </div>
+
+    <div class="entity-card">
+      <div class="header">
+        <div class="icon" style="background:rgba(0,212,170,0.15);color:var(--accent);">Co</div>
+        Color (Couleur)
+      </div>
+      <div class="fields">
+        <div class="field"><span class="type">UUID</span><span class="name">id</span><span class="pk">PK</span></div>
+        <div class="field"><span class="type">Int</span><span class="name">refId</span></div>
+        <div class="field"><span class="type">String</span><span class="name">name</span></div>
+        <div class="field"><span class="type">String</span><span class="name">hex</span></div>
       </div>
     </div>
 
@@ -565,42 +636,47 @@
 <section id="usecase">
 <div class="container">
   <h2><span class="num">02</span>Diagrammes de Cas d'Utilisation</h2>
-  <p class="section-desc">Les cas d'utilisation identifiés dans le cahier des charges, avec les acteurs élève et administrateur.</p>
+  <p class="section-desc">Les cas d'utilisation identifiés pour les trois acteurs : Utilisateur, Conducteur et Administrateur.</p>
 
   <h3>Use Case — Authentification & Inscription</h3>
   <div class="diagram-card">
     <div class="mermaid">
 graph LR
-    Eleve((👤 Élève))
-    Admin((👤 Admin))
+    User((Utilisateur))
+    Admin((Admin))
 
-    UC1[🔐 Authentification]
-    UC2[📝 Register]
-    UC3[✅ Confirmation Registration]
+    UC1[Authentification]
+    UC2[Inscription]
+    UC3[Confirmation Registration]
 
-    Eleve --> UC1
-    Eleve --> UC2
+    User --> UC1
+    User --> UC2
     Admin --> UC1
     UC1 -.extend.-> UC2
     UC2 -.include.-> UC3
     </div>
   </div>
 
-  <h3>Use Case — Accueil (Utilisateur Authentifié)</h3>
+  <h3>Use Case — Accueil (Utilisateur Authentifie)</h3>
   <div class="diagram-card">
     <div class="mermaid">
 graph LR
-    Eleve((👤 Élève))
+    User((Utilisateur))
+    Driver((Conducteur))
 
-    UC0[🔐 Authentification]
-    UC1[🏠 Accueil]
-    UC2[📋 Liste des Trajets]
-    UC3[🔍 Rechercher un Trajet]
-    UC4[📢 Publier un Trajet]
-    UC5[🗂️ Liste de mes Trajets]
-    UC6[👤 Informations de mon compte]
+    UC0[Authentification]
+    UC1[Accueil]
+    UC2[Liste des Trajets]
+    UC3[Rechercher un Trajet]
+    UC4[Reserver une Place]
+    UC5[Mon Compte]
+    UC6[Devenir Conducteur]
+    UC7[Publier un Trajet]
+    UC8[Gerer mes Voitures]
 
-    Eleve --> UC1
+    User --> UC1
+    Driver --> UC7
+    Driver --> UC8
     UC1 -.include.-> UC0
     UC1 -.include.-> UC2
     UC1 -.extend.-> UC3
@@ -610,18 +686,18 @@ graph LR
     </div>
   </div>
 
-  <h3>Use Case — Détail & Réservation d'un Trajet</h3>
+  <h3>Use Case — Detail & Reservation d'un Trajet</h3>
   <div class="diagram-card">
     <div class="mermaid">
 graph LR
-    Eleve((👤 Élève))
+    User((Utilisateur))
 
-    UC1[📋 Liste des Trajets]
-    UC2[🔎 Détail d'un Trajet]
-    UC3[🎫 Réserver une Place]
-    UC4[📧 Envoyer Email au Conducteur]
+    UC1[Liste des Trajets]
+    UC2[Detail d un Trajet]
+    UC3[Reserver une Place]
+    UC4[Annuler une Reservation]
 
-    Eleve --> UC1
+    User --> UC1
     UC1 -.extend.-> UC2
     UC2 -.extend.-> UC3
     UC2 -.extend.-> UC4
@@ -632,37 +708,69 @@ graph LR
   <div class="diagram-card">
     <div class="mermaid">
 graph LR
-    Eleve((👤 Élève))
+    Driver((Conducteur))
 
-    UC1[🗂️ Liste de mes Trajets]
-    UC2[👁️ Consulter une Réservation]
-    UC3[❌ Supprimer une Réservation]
-    UC4[📢 Publier un Trajet]
-    UC5[➕ Créer un Trajet]
-    UC6[🗑️ Supprimer un Trajet]
-    UC7[📧 Email aux Passagers]
+    UC1[Mes Trajets]
+    UC2[Voir les Passagers]
+    UC3[Publier un Trajet]
+    UC4[Creer un Trajet]
+    UC5[Supprimer un Trajet]
+    UC6[Gerer mes Voitures]
+    UC7[Ajouter une Voiture]
+    UC8[Modifier une Voiture]
+    UC9[Supprimer une Voiture]
 
-    Eleve --> UC1
-    Eleve --> UC4
+    Driver --> UC1
+    Driver --> UC3
+    Driver --> UC6
     UC1 -.extend.-> UC2
-    UC1 -.extend.-> UC3
-    UC4 -.extend.-> UC5
-    UC4 -.extend.-> UC6
+    UC3 -.extend.-> UC4
+    UC3 -.extend.-> UC5
     UC6 -.extend.-> UC7
+    UC6 -.extend.-> UC8
+    UC6 -.extend.-> UC9
     </div>
   </div>
 
-  <h3>Use Case — Mon Compte</h3>
+  <h3>Use Case — Mon Compte & RGPD</h3>
   <div class="diagram-card">
     <div class="mermaid">
 graph LR
-    Eleve((👤 Élève))
+    User((Utilisateur))
 
-    UC1[👤 Informations de mon compte]
-    UC2[✏️ Modifier mon compte]
+    UC1[Informations de mon compte]
+    UC2[Modifier mon profil]
+    UC3[Anonymiser mon compte RGPD]
 
-    Eleve --> UC1
+    User --> UC1
     UC1 -.extend.-> UC2
+    UC1 -.extend.-> UC3
+    </div>
+  </div>
+
+  <h3>Use Case — Administration</h3>
+  <div class="diagram-card">
+    <div class="mermaid">
+graph LR
+    Admin((Admin))
+
+    UC1[Liste des Utilisateurs]
+    UC2[Supprimer un Utilisateur]
+    UC3[Gerer les Marques]
+    UC4[Gerer les Villes]
+    UC5[Ajouter une Marque]
+    UC6[Supprimer une Marque]
+    UC7[Ajouter une Ville]
+    UC8[Supprimer une Ville]
+
+    Admin --> UC1
+    Admin --> UC3
+    Admin --> UC4
+    UC1 -.extend.-> UC2
+    UC3 -.extend.-> UC5
+    UC3 -.extend.-> UC6
+    UC4 -.extend.-> UC7
+    UC4 -.extend.-> UC8
     </div>
   </div>
 </div>
@@ -677,78 +785,123 @@ graph LR
   <div class="diagram-card">
     <div class="mermaid">
 classDiagram
-    class User {
-        +Int id
-        +String login
-        +String password
-        +String prenom
-        +String nom
-        +String telephone
+    class Auth {
+        +UUID id
+        +Int refId
         +String email
-        +String ville
-        +String role
-        +register(login, password) User
-        +login(login, password) Token
-        +updateProfile() User
+        +String password
+        +Role role
+        +DateTime anonymizedAt
+        +register(email, password) Auth
+        +login(email, password) Token
     }
 
-    class Route {
-        +Int id
-        +String villeDepart
-        +String villeArrivee
-        +DateTime dateDepart
+    class User {
+        +UUID id
+        +Int refId
+        +String firstName
+        +String lastName
+        +String phone
+        +Int authRefId
+        +DateTime anonymizedAt
+        +updateProfile() User
+        +anonymize() void
+    }
+
+    class Driver {
+        +UUID id
+        +Int refId
+        +String driverLicense
+        +Int userRefId
+        +DateTime anonymizedAt
+        +create(driverLicense) Driver
+    }
+
+    class Travel {
+        +UUID id
+        +Int refId
+        +DateTime dateRoute
         +Int kms
-        +Int placesDisponibles
-        +Int conducteurId
-        +create() Route
+        +Int seats
+        +Int driverRefId
+        +Int carRefId
+        +create() Travel
         +delete() void
-        +search(villeD, villeA, date) Route[]
+        +search(departure, arrival, date) Travel[]
     }
 
     class Inscription {
-        +Int id
-        +Int userId
-        +Int routeId
+        +UUID id
+        +Int refId
+        +Int userRefId
+        +Int routeRefId
+        +InscriptionStatus status
         +DateTime createdAt
         +create() Inscription
         +delete() void
-        +checkAvailability() Boolean
+    }
+
+    class City {
+        +UUID id
+        +Int refId
+        +String cityName
+        +String zipcode
+        +create() City
+        +delete() void
+    }
+
+    class CityTravel {
+        +Int routeRefId
+        +Int cityRefId
+        +CityTravelType type
     }
 
     class Car {
-        +Int id
-        +String modele
-        +Int places
-        +String immatriculation
-        +Int brandId
-        +Int userId
+        +UUID id
+        +Int refId
+        +String immat
+        +Int modelRefId
         +create() Car
         +update() Car
         +delete() void
     }
 
+    class Model {
+        +UUID id
+        +Int refId
+        +String name
+        +Int brandRefId
+    }
+
     class Brand {
-        +Int id
-        +String nom
+        +UUID id
+        +Int refId
+        +String name
         +create() Brand
         +delete() void
     }
 
-    class City {
-        +Int id
-        +String ville
-        +String codePostal
-        +create() City
+    class Color {
+        +UUID id
+        +Int refId
+        +String name
+        +String hex
+        +create() Color
+        +update() Color
         +delete() void
     }
 
-    User "1" --> "*" Route : conduit
-    User "1" --> "*" Inscription : réserve
-    Route "1" --> "*" Inscription : contient
-    User "1" --> "0..1" Car : possède
-    Car "*" --> "1" Brand : est de marque
-    Route "*" --> "1" City : villeDepart
-    Route "*" --> "1" City : villeArrivee
+    Auth "1" --> "1" User : authentifie
+    User "1" --> "0..1" Driver : devient conducteur
+    User "1" --> "*" Inscription : reserve
+    Driver "1" --> "*" Travel : publie
+    Travel "1" --> "*" Inscription : contient
+    Travel "1" --> "2" CityTravel : depart et arrivee
+    Travel "*" --> "1" Car : utilise
+    City "1" --> "*" CityTravel : reference
+    Car "*" --> "1" Model : est un modele
+    Model "*" --> "1" Brand : est de marque
+    Model "*" --> "*" Color : disponible en
     </div>
   </div>
 </div>
@@ -760,183 +913,239 @@ classDiagram
   <h2><span class="num">04</span>Diagrammes de Séquence</h2>
   <p class="section-desc">Flux d'interactions détaillés pour chaque cas d'utilisation principal.</p>
 
-  <h3>Séquence — Authentification (Login)</h3>
+  <h3>Sequence — Authentification (Login)</h3>
   <div class="diagram-card">
     <div class="mermaid">
 sequenceDiagram
-    actor E as Élève
+    actor U as Utilisateur
     participant App as Application Mobile
-    participant API as API REST (Hono)
+    participant API as API REST Hono
     participant DB as Neon PostgreSQL
 
-    E->>App: Saisit email + password
-    App->>API: POST /login {login, password}
-    API->>DB: SELECT user WHERE login = ?
-    DB-->>API: User trouvé
-    alt Password correct
-        API->>API: Génère token (JWT)
+    U->>App: Saisit email + password
+    App->>API: POST /api/auth/login {email, password}
+    API->>DB: SELECT auth WHERE email = ?
+    DB-->>API: Auth trouve
+    alt Password correct (Argon2)
+        API->>API: Genere token JWT
         API-->>App: 200 {token, userId}
-        App-->>E: Redirection Accueil
+        App-->>U: Redirection Accueil
     else Password incorrect
-        API-->>App: 401 {error: "Identifiants incorrects"}
-        App-->>E: Affiche message d'erreur
+        API-->>App: 401 {error INVALID_CREDENTIALS}
+        App-->>U: Affiche message erreur
     end
     </div>
   </div>
 
-  <h3>Séquence — Inscription (Register)</h3>
+  <h3>Sequence — Inscription (Register)</h3>
   <div class="diagram-card">
     <div class="mermaid">
 sequenceDiagram
-    actor E as Élève
+    actor U as Utilisateur
     participant App as Application Mobile
-    participant API as API REST (Hono)
+    participant API as API REST Hono
     participant DB as Neon PostgreSQL
 
-    E->>App: Saisit login, password, confirmPassword
-    App->>API: POST /register {login, password, confirmPassword}
-    alt Passwords ne correspondent pas
-        API-->>App: 400 {error: "Mots de passe différents"}
-        App-->>E: Affiche erreur
-    else Passwords identiques
-        API->>DB: INSERT INTO users
-        DB-->>API: User créé
-        API->>API: Génère token
-        API-->>App: 201 {token, userId}
-        App-->>E: Redirection Accueil
+    U->>App: Saisit email, password, confirmPassword
+    App->>API: POST /api/auth/register {email, password, confirmPassword}
+    API->>API: Validation Zod (email, password min 8 chars)
+    alt Validation echouee
+        API-->>App: 400 {error VALIDATION_ERROR}
+        App-->>U: Affiche erreurs
+    else Validation OK
+        API->>DB: SELECT auth WHERE email = ?
+        alt Email deja utilise
+            API-->>App: 409 {error USER_ALREADY_EXISTS}
+        else Email disponible
+            API->>API: Hash password (Argon2)
+            API->>DB: INSERT INTO auths + INSERT INTO users
+            DB-->>API: Auth + User crees
+            API->>API: Genere token JWT
+            API-->>App: 201 {token, userId}
+            App-->>U: Redirection Accueil
+        end
     end
     </div>
   </div>
 
-  <h3>Séquence — Liste des Trajets</h3>
+  <h3>Sequence — Liste des Trajets</h3>
   <div class="diagram-card">
     <div class="mermaid">
 sequenceDiagram
-    actor E as Élève
+    actor U as Utilisateur
     participant App as Application Mobile
-    participant API as API REST (Hono)
+    participant API as API REST Hono
     participant DB as Neon PostgreSQL
 
-    E->>App: Accède à l'Accueil
-    App->>API: GET /listRoutes (x-auth-token: token)
-    API->>API: Vérifie token
+    U->>App: Accede a la liste des trajets
+    App->>API: GET /api/travels?page=1&limit=10 (x-auth-token)
+    API->>API: authMiddleware verifie JWT
     alt Token valide
-        API->>DB: SELECT * FROM routes + JOIN users
-        DB-->>API: Liste des trajets
-        API-->>App: 200 [{trajet1}, {trajet2}, ...]
-        App-->>E: Affiche liste des trajets
+        API->>API: requireRole USER
+        API->>DB: SELECT travels + JOIN driver, car, cities
+        DB-->>API: Liste paginee des trajets
+        API-->>App: 200 {items, total, page, limit}
+        App-->>U: Affiche liste des trajets
     else Token invalide
-        API-->>App: 403 {error: "Non autorisé"}
+        API-->>App: 401 {error UNAUTHORIZED}
     end
     </div>
   </div>
 
-  <h3>Séquence — Détail Trajet + Info Conducteur</h3>
+  <h3>Sequence — Detail Trajet</h3>
   <div class="diagram-card">
     <div class="mermaid">
 sequenceDiagram
-    actor E as Élève
+    actor U as Utilisateur
     participant App as Application Mobile
-    participant API as API REST (Hono)
+    participant API as API REST Hono
     participant DB as Neon PostgreSQL
 
-    E->>App: Clic sur un trajet
-    App->>API: GET /route/{id} (x-auth-token)
-    API->>DB: SELECT route WHERE id = ?
-    DB-->>API: Détail du trajet
-    API->>DB: SELECT person WHERE id = conducteurId
-    DB-->>API: Info conducteur
-    API-->>App: 200 {trajet + conducteur + voiture}
-    App-->>E: Affiche détail du trajet
+    U->>App: Clic sur un trajet
+    App->>API: GET /api/travels/:id (x-auth-token)
+    API->>API: authMiddleware + requireRole USER
+    API->>DB: SELECT travel WHERE id + JOIN driver, car, cities
+    DB-->>API: Detail du trajet complet
+    API-->>App: 200 {travel + driver + car + cities}
+    App-->>U: Affiche detail du trajet
     </div>
   </div>
 
-  <h3>Séquence — Réserver une Place</h3>
+  <h3>Sequence — Reserver une Place</h3>
   <div class="diagram-card">
     <div class="mermaid">
 sequenceDiagram
-    actor E as Élève
+    actor U as Utilisateur
     participant App as Application Mobile
-    participant API as API REST (Hono)
+    participant API as API REST Hono
     participant DB as Neon PostgreSQL
 
-    E->>App: Clic "Réserver"
-    App->>API: POST /inscription {idpers, idtrajet}
-    API->>DB: COUNT inscriptions WHERE routeId = ?
-    DB-->>API: Nombre de réservations
-    API->>DB: SELECT places FROM routes WHERE id = ?
-    DB-->>API: Nombre de places
+    U->>App: Clic Reserver
+    App->>API: POST /api/inscriptions {travelId} (x-auth-token)
+    API->>API: authMiddleware + requireRole USER
+    API->>DB: SELECT travel WHERE id = travelId
+    DB-->>API: Travel trouve
+    API->>DB: COUNT inscriptions WHERE routeRefId = ?
+    DB-->>API: Nombre de reservations
 
-    alt Places disponibles
+    alt Places disponibles et pas deja inscrit
         API->>DB: INSERT INTO inscriptions
-        DB-->>API: OK
-        API-->>App: 200 {message: "OK"}
-        App-->>E: "Réservation effectuée"
+        DB-->>API: Inscription creee
+        API-->>App: 201 {inscription}
+        App-->>U: Reservation effectuee
+    else Deja inscrit
+        API-->>App: 409 {error ALREADY_INSCRIBED}
+        App-->>U: Deja inscrit a ce trajet
     else Plus de place
-        API-->>App: 400 {message: "NOK - Plus de place"}
-        App-->>E: "Réservation impossible"
+        API-->>App: 400 {error NO_SEATS_AVAILABLE}
+        App-->>U: Reservation impossible
     end
     </div>
   </div>
 
-  <h3>Séquence — Rechercher un Trajet</h3>
+  <h3>Sequence — Rechercher un Trajet</h3>
   <div class="diagram-card">
     <div class="mermaid">
 sequenceDiagram
-    actor E as Élève
+    actor U as Utilisateur
     participant App as Application Mobile
-    participant API as API REST (Hono)
+    participant API as API REST Hono
     participant DB as Neon PostgreSQL
 
-    E->>App: Saisit villeDepart, villeArrivée, date
-    App->>API: GET /findRoute?villeD=X&villeA=Y&dateT=Z
-    API->>DB: SELECT FROM routes WHERE villeD AND villeA AND date
-    DB-->>API: Résultats
-    API-->>App: 200 [{trajet1}, {trajet2}, ...]
-    App-->>E: Affiche résultats de recherche
+    U->>App: Saisit ville depart, ville arrivee, date
+    App->>API: GET /api/travels/search?departureCity=X&arrivalCity=Y&date=Z
+    API->>API: authMiddleware + requireRole USER
+    API->>DB: SELECT travels WHERE cities match AND date
+    DB-->>API: Resultats
+    API-->>App: 200 [{travel1}, {travel2}, ...]
+    App-->>U: Affiche resultats de recherche
     </div>
   </div>
 
-  <h3>Séquence — Publier un Trajet</h3>
+  <h3>Sequence — Publier un Trajet (Conducteur)</h3>
   <div class="diagram-card">
     <div class="mermaid">
 sequenceDiagram
-    actor E as Conducteur
+    actor D as Conducteur
     participant App as Application Mobile
-    participant API as API REST (Hono)
+    participant API as API REST Hono
     participant DB as Neon PostgreSQL
 
-    E->>App: Saisit villeD, villeA, date, heure, kms
-    App->>API: POST /route {kms, idpers, dateT, villeD, villeA}
-    API->>DB: INSERT INTO routes
-    DB-->>API: Trajet créé
-    API-->>App: 201 {trajet}
-    App-->>E: Redirection vers "Mes Trajets"
+    D->>App: Saisit depart, arrivee, date, kms, seats, carId
+    App->>API: POST /api/travels {kms, date, departureCity, arrivalCity, seats, carId}
+    API->>API: authMiddleware + requireRole DRIVER
+    API->>API: Validation Zod
+    API->>DB: INSERT INTO routes + city_routes
+    DB-->>API: Travel cree
+    API-->>App: 201 {travel + driver + car + cities}
+    App-->>D: Redirection vers Mes Trajets
     </div>
   </div>
 
-  <h3>Séquence — Supprimer un Trajet (Conducteur)</h3>
+  <h3>Sequence — Supprimer un Trajet (Conducteur)</h3>
   <div class="diagram-card">
     <div class="mermaid">
 sequenceDiagram
-    actor E as Conducteur
+    actor D as Conducteur
     participant App as Application Mobile
-    participant API as API REST (Hono)
+    participant API as API REST Hono
     participant DB as Neon PostgreSQL
-    participant Brevo as API Brevo (Email)
 
-    E->>App: Clic "Supprimer le trajet"
-    App->>API: DELETE /route/{id}
-    API->>DB: SELECT passagers FROM inscriptions WHERE routeId
-    DB-->>API: Liste passagers
-    API->>DB: DELETE FROM inscriptions WHERE routeId
+    D->>App: Clic Supprimer le trajet
+    App->>API: DELETE /api/travels/:id (x-auth-token)
+    API->>API: authMiddleware + requireRole DRIVER
+    API->>DB: DELETE FROM routes WHERE id (CASCADE inscriptions + city_routes)
     DB-->>API: OK
-    API->>DB: DELETE FROM routes WHERE id
+    API-->>App: 204 No Content
+    App-->>D: Redirection vers Mes Trajets
+    </div>
+  </div>
+
+  <h3>Sequence — Devenir Conducteur</h3>
+  <div class="diagram-card">
+    <div class="mermaid">
+sequenceDiagram
+    actor U as Utilisateur
+    participant App as Application Mobile
+    participant API as API REST Hono
+    participant DB as Neon PostgreSQL
+
+    U->>App: Saisit numero de permis
+    App->>API: POST /api/drivers {driverLicense} (x-auth-token)
+    API->>API: authMiddleware + requireRole USER
+    alt Deja conducteur
+        API-->>App: 409 {error DRIVER_ALREADY_EXISTS}
+    else Nouveau conducteur
+        API->>DB: INSERT INTO drivers
+        DB-->>API: Driver cree
+        API->>DB: UPDATE auth SET role = DRIVER
+        DB-->>API: Role mis a jour
+        API-->>App: 201 {driver}
+        App-->>U: Statut conducteur active
+    end
+    </div>
+  </div>
+
+  <h3>Sequence — Anonymisation RGPD</h3>
+  <div class="diagram-card">
+    <div class="mermaid">
+sequenceDiagram
+    actor U as Utilisateur
+    participant App as Application Mobile
+    participant API as API REST Hono
+    participant DB as Neon PostgreSQL
+
+    U->>App: Demande suppression de compte
+    App->>API: DELETE /api/users/me (x-auth-token)
+    API->>API: authMiddleware + requireRole USER
+    API->>DB: UPDATE user SET anonymizedAt, clear personal data
     DB-->>API: OK
-    API->>Brevo: Envoi emails annulation aux passagers
-    Brevo-->>API: OK
-    API-->>App: 200 {message: "OK"}
-    App-->>E: Redirection vers Mes Trajets
+    API->>DB: UPDATE auth SET anonymizedAt, clear email/password
+    DB-->>API: OK
+    API->>DB: UPDATE inscriptions SET status ANONYMIZED
+    DB-->>API: OK
+    API-->>App: 204 No Content
+    App-->>U: Compte anonymise
     </div>
   </div>
 
@@ -952,60 +1161,113 @@ sequenceDiagram
   <div class="diagram-card">
     <div class="mermaid">
 erDiagram
-    USER {
-        int id PK
-        string login UK
+    AUTH {
+        uuid id PK
+        int ref_id UK
+        string email UK
         string password
-        string prenom
-        string nom
-        string telephone
-        string email
-        string ville
-        string role
+        enum role
+        datetime anonymized_at
+        datetime created_at
+        datetime updated_at
     }
 
-    ROUTE {
-        int id PK
-        string ville_depart
-        string ville_arrivee
-        datetime date_depart
+    USER {
+        uuid id PK
+        int ref_id UK
+        string first_name
+        string last_name
+        string phone
+        int auth_ref_id FK
+        datetime anonymized_at
+        datetime created_at
+        datetime updated_at
+    }
+
+    DRIVER {
+        uuid id PK
+        int ref_id UK
+        string driver_license UK
+        int user_ref_id FK
+        datetime anonymized_at
+    }
+
+    TRAVEL {
+        uuid id PK
+        int ref_id UK
+        datetime date_route
         int kms
-        int places_disponibles
-        int conducteur_id FK
+        int seats
+        int driver_ref_id FK
+        int car_ref_id FK
     }
 
     INSCRIPTION {
-        int id PK
-        int user_id FK
-        int route_id FK
+        uuid id PK
+        int ref_id UK
+        int user_ref_id FK
+        int route_ref_id FK
+        enum status
         datetime created_at
     }
 
+    CITY {
+        uuid id PK
+        int ref_id UK
+        string city_name
+        string zipcode
+    }
+
+    CITY_TRAVEL {
+        int route_ref_id PK
+        int city_ref_id PK
+        enum type
+    }
+
     CAR {
-        int id PK
-        string modele
-        int places
-        string immatriculation
-        int brand_id FK
-        int user_id FK
+        uuid id PK
+        int ref_id UK
+        string immat UK
+        int model_ref_id FK
+    }
+
+    MODEL {
+        uuid id PK
+        int ref_id UK
+        string name
+        int brand_ref_id FK
     }
 
     BRAND {
-        int id PK
-        string nom UK
+        uuid id PK
+        int ref_id UK
+        string name
     }
 
-    CITY {
-        int id PK
-        string ville
-        string code_postal
+    COLOR {
+        uuid id PK
+        int ref_id UK
+        string name
+        string hex
     }
 
-    USER ||--o{ ROUTE : "conduit (1,n)"
-    USER ||--o{ INSCRIPTION : "réserve (0,n)"
-    ROUTE ||--o{ INSCRIPTION : "a (0,n)"
-    USER ||--o| CAR : "possède (0,1)"
-    CAR }o--|| BRAND : "marque (1,1)"
+    COLOR_MODEL {
+        int color_ref_id PK
+        int model_ref_id PK
+    }
+
+    AUTH ||--|| USER : "authentifie (1,1)"
+    USER ||--o| DRIVER : "devient (0,1)"
+    USER ||--o{ INSCRIPTION : "reserve (0,n)"
+    DRIVER ||--o{ TRAVEL : "publie (0,n)"
+    TRAVEL ||--o{ INSCRIPTION : "contient (0,n)"
+    TRAVEL ||--|{ CITY_TRAVEL : "depart et arrivee (1,2)"
+    TRAVEL }o--|| CAR : "utilise (1,1)"
+    CITY ||--o{ CITY_TRAVEL : "reference (0,n)"
+    CAR }o--|| MODEL : "modele (1,1)"
+    MODEL }o--|| BRAND : "marque (1,1)"
+    MODEL ||--o{ COLOR_MODEL : "disponible (0,n)"
+    COLOR ||--o{ COLOR_MODEL : "associe (0,n)"
     </div>
   </div>
 </div>
@@ -1015,43 +1277,69 @@ erDiagram
 <section id="routes">
 <div class="container">
   <h2><span class="num">06</span>Routes de l'API REST</h2>
-  <p class="section-desc">Ensemble des endpoints extraits du cahier des charges.</p>
+  <p class="section-desc">Ensemble des endpoints de l'API REST, organises par ressource avec controle d'acces par role (USER / DRIVER / ADMIN).</p>
 
   <div class="diagram-card" style="padding:16px;">
     <table class="routes-table">
       <thead>
-        <tr><th>Méthode</th><th>Route</th><th>Paramètres</th><th>Description</th></tr>
+        <tr><th>Methode</th><th>Route</th><th>Auth</th><th>Parametres</th><th>Description</th></tr>
       </thead>
       <tbody>
-        <tr><td><span class="method post">POST</span></td><td>/register</td><td>login, password</td><td>Inscription utilisateur</td></tr>
-        <tr><td><span class="method post">POST</span></td><td>/login</td><td>login, password</td><td>Authentification → token</td></tr>
-        <tr><td><span class="method get">GET</span></td><td>/listRoutes</td><td>—</td><td>Liste de tous les trajets</td></tr>
-        <tr><td><span class="method get">GET</span></td><td>/route/:id</td><td>id</td><td>Détail d'un trajet</td></tr>
-        <tr><td><span class="method get">GET</span></td><td>/findRoute</td><td>villeD, villeA, dateT</td><td>Rechercher un trajet</td></tr>
-        <tr><td><span class="method post">POST</span></td><td>/route</td><td>kms, idpers, dateT, villeD, villeA</td><td>Publier un trajet</td></tr>
-        <tr><td><span class="method delete">DELETE</span></td><td>/route/:id</td><td>id</td><td>Supprimer un trajet</td></tr>
-        <tr><td><span class="method get">GET</span></td><td>/listInscriptions</td><td>—</td><td>Liste des réservations</td></tr>
-        <tr><td><span class="method get">GET</span></td><td>/listInscriptionsUsers/:idpers</td><td>idpers</td><td>Réservations d'un utilisateur</td></tr>
-        <tr><td><span class="method get">GET</span></td><td>/listPassengersDriver/:idtrajet</td><td>idtrajet</td><td>Passagers d'un trajet (conducteur)</td></tr>
-        <tr><td><span class="method post">POST</span></td><td>/inscription</td><td>idpers, idtrajet</td><td>Réserver une place</td></tr>
-        <tr><td><span class="method delete">DELETE</span></td><td>/inscription/:id</td><td>id</td><td>Supprimer une réservation</td></tr>
-        <tr><td><span class="method get">GET</span></td><td>/listPersons</td><td>—</td><td>Liste des utilisateurs</td></tr>
-        <tr><td><span class="method get">GET</span></td><td>/person/:id</td><td>id</td><td>Détail d'un utilisateur</td></tr>
-        <tr><td><span class="method post">POST</span></td><td>/person</td><td>prenom, nom, tel, email, ville, voiture</td><td>Créer un utilisateur</td></tr>
-        <tr><td><span class="method put">PUT</span></td><td>/person/:idpers</td><td>prenom, nom, tel, email</td><td>Modifier profil complet</td></tr>
-        <tr><td><span class="method patch">PATCH</span></td><td>/person/:idpers</td><td>tel, email, marque</td><td>Modifier profil partiel</td></tr>
-        <tr><td><span class="method delete">DELETE</span></td><td>/person/:id</td><td>id</td><td>Supprimer un utilisateur</td></tr>
-        <tr><td><span class="method get">GET</span></td><td>/listBrands</td><td>—</td><td>Liste des marques</td></tr>
-        <tr><td><span class="method post">POST</span></td><td>/brand</td><td>nom</td><td>Ajouter une marque</td></tr>
-        <tr><td><span class="method delete">DELETE</span></td><td>/brand/:id</td><td>id</td><td>Supprimer une marque</td></tr>
-        <tr><td><span class="method get">GET</span></td><td>/listePostalsCodes</td><td>—</td><td>Liste des villes/CP</td></tr>
-        <tr><td><span class="method post">POST</span></td><td>/city</td><td>ville, cp</td><td>Ajouter une ville</td></tr>
-        <tr><td><span class="method delete">DELETE</span></td><td>/city/:id</td><td>id</td><td>Supprimer une ville</td></tr>
-        <tr><td><span class="method get">GET</span></td><td>/listCars</td><td>—</td><td>Liste des voitures</td></tr>
-        <tr><td><span class="method post">POST</span></td><td>/car</td><td>modele, place, marqueId, immatriculation</td><td>Ajouter une voiture</td></tr>
-        <tr><td><span class="method put">PUT</span></td><td>/car</td><td>modele, place, marqueId, immatriculation</td><td>Modifier voiture (complet)</td></tr>
-        <tr><td><span class="method patch">PATCH</span></td><td>/car</td><td>modele, place, marqueId, immatriculation</td><td>Modifier voiture (partiel)</td></tr>
-        <tr><td><span class="method delete">DELETE</span></td><td>/car/:id</td><td>id</td><td>Supprimer une voiture</td></tr>
+        <tr><td colspan="5" style="color:var(--accent);font-weight:600;padding-top:16px;border:none;">Authentification</td></tr>
+        <tr><td><span class="method post">POST</span></td><td>/api/auth/register</td><td>Public</td><td>email, password, confirmPassword</td><td>Inscription utilisateur</td></tr>
+        <tr><td><span class="method post">POST</span></td><td>/api/auth/login</td><td>Public</td><td>email, password</td><td>Authentification &rarr; JWT token</td></tr>
+
+        <tr><td colspan="5" style="color:var(--accent);font-weight:600;padding-top:16px;border:none;">Utilisateurs</td></tr>
+        <tr><td><span class="method get">GET</span></td><td>/api/users</td><td>ADMIN</td><td>?page, ?limit</td><td>Liste de tous les utilisateurs</td></tr>
+        <tr><td><span class="method get">GET</span></td><td>/api/users/:id</td><td>USER</td><td>id (UUID)</td><td>Detail d'un utilisateur</td></tr>
+        <tr><td><span class="method patch">PATCH</span></td><td>/api/users/me</td><td>USER</td><td>?firstName, ?lastName, ?phone</td><td>Modifier mon profil</td></tr>
+        <tr><td><span class="method delete">DELETE</span></td><td>/api/users/me</td><td>USER</td><td>&mdash;</td><td>Anonymiser mon compte (RGPD)</td></tr>
+        <tr><td><span class="method delete">DELETE</span></td><td>/api/users/:id</td><td>ADMIN</td><td>id (UUID)</td><td>Anonymiser un utilisateur</td></tr>
+
+        <tr><td colspan="5" style="color:var(--accent);font-weight:600;padding-top:16px;border:none;">Conducteurs</td></tr>
+        <tr><td><span class="method post">POST</span></td><td>/api/drivers</td><td>USER</td><td>driverLicense</td><td>Devenir conducteur</td></tr>
+
+        <tr><td colspan="5" style="color:var(--accent);font-weight:600;padding-top:16px;border:none;">Trajets</td></tr>
+        <tr><td><span class="method get">GET</span></td><td>/api/travels</td><td>USER</td><td>?page, ?limit</td><td>Liste des trajets (pagine)</td></tr>
+        <tr><td><span class="method get">GET</span></td><td>/api/travels/search</td><td>USER</td><td>?departureCity, ?arrivalCity, ?date</td><td>Rechercher un trajet</td></tr>
+        <tr><td><span class="method get">GET</span></td><td>/api/travels/:id</td><td>USER</td><td>id (UUID)</td><td>Detail d'un trajet</td></tr>
+        <tr><td><span class="method post">POST</span></td><td>/api/travels</td><td>DRIVER</td><td>kms, date, departureCity, arrivalCity, seats, carId</td><td>Publier un trajet</td></tr>
+        <tr><td><span class="method delete">DELETE</span></td><td>/api/travels/:id</td><td>DRIVER</td><td>id (UUID)</td><td>Supprimer un trajet</td></tr>
+
+        <tr><td colspan="5" style="color:var(--accent);font-weight:600;padding-top:16px;border:none;">Inscriptions (Reservations)</td></tr>
+        <tr><td><span class="method get">GET</span></td><td>/api/inscriptions</td><td>USER</td><td>?page, ?limit</td><td>Liste des reservations</td></tr>
+        <tr><td><span class="method post">POST</span></td><td>/api/inscriptions</td><td>USER</td><td>travelId</td><td>Reserver une place</td></tr>
+        <tr><td><span class="method delete">DELETE</span></td><td>/api/inscriptions/:id</td><td>USER</td><td>id (UUID)</td><td>Annuler une reservation</td></tr>
+
+        <tr><td colspan="5" style="color:var(--accent);font-weight:600;padding-top:16px;border:none;">Routes imbriquees</td></tr>
+        <tr><td><span class="method get">GET</span></td><td>/api/users/:id/inscriptions</td><td>USER</td><td>id (UUID), ?page, ?limit</td><td>Reservations d'un utilisateur</td></tr>
+        <tr><td><span class="method get">GET</span></td><td>/api/travels/:id/passengers</td><td>USER</td><td>id (UUID), ?page, ?limit</td><td>Passagers d'un trajet</td></tr>
+
+        <tr><td colspan="5" style="color:var(--accent);font-weight:600;padding-top:16px;border:none;">Marques</td></tr>
+        <tr><td><span class="method get">GET</span></td><td>/api/brands</td><td>DRIVER</td><td>?page, ?limit</td><td>Liste des marques</td></tr>
+        <tr><td><span class="method post">POST</span></td><td>/api/brands</td><td>ADMIN</td><td>name</td><td>Ajouter une marque</td></tr>
+        <tr><td><span class="method delete">DELETE</span></td><td>/api/brands/:id</td><td>ADMIN</td><td>id (UUID)</td><td>Supprimer une marque</td></tr>
+
+        <tr><td colspan="5" style="color:var(--accent);font-weight:600;padding-top:16px;border:none;">Voitures</td></tr>
+        <tr><td><span class="method get">GET</span></td><td>/api/cars</td><td>DRIVER</td><td>?page, ?limit</td><td>Liste des voitures</td></tr>
+        <tr><td><span class="method post">POST</span></td><td>/api/cars</td><td>DRIVER</td><td>model, brandId, licensePlate</td><td>Ajouter une voiture</td></tr>
+        <tr><td><span class="method put">PUT</span></td><td>/api/cars/:id</td><td>DRIVER</td><td>model, brandId, licensePlate</td><td>Modifier voiture (complet)</td></tr>
+        <tr><td><span class="method patch">PATCH</span></td><td>/api/cars/:id</td><td>DRIVER</td><td>?model, ?brandId, ?licensePlate</td><td>Modifier voiture (partiel)</td></tr>
+        <tr><td><span class="method delete">DELETE</span></td><td>/api/cars/:id</td><td>DRIVER</td><td>id (UUID)</td><td>Supprimer une voiture</td></tr>
+
+        <tr><td colspan="5" style="color:var(--accent);font-weight:600;padding-top:16px;border:none;">Villes</td></tr>
+        <tr><td><span class="method get">GET</span></td><td>/api/cities</td><td>USER</td><td>?page, ?limit</td><td>Liste des villes</td></tr>
+        <tr><td><span class="method post">POST</span></td><td>/api/cities</td><td>USER</td><td>cityName, zipcode</td><td>Ajouter une ville</td></tr>
+        <tr><td><span class="method delete">DELETE</span></td><td>/api/cities/:id</td><td>ADMIN</td><td>id (UUID)</td><td>Supprimer une ville</td></tr>
+
+        <tr><td colspan="5" style="color:var(--accent);font-weight:600;padding-top:16px;border:none;">Couleurs</td></tr>
+        <tr><td><span class="method get">GET</span></td><td>/api/colors</td><td>DRIVER</td><td>?page, ?limit</td><td>Liste des couleurs</td></tr>
+        <tr><td><span class="method post">POST</span></td><td>/api/colors</td><td>DRIVER</td><td>name, hex</td><td>Ajouter une couleur</td></tr>
+        <tr><td><span class="method patch">PATCH</span></td><td>/api/colors/:id</td><td>DRIVER</td><td>?name, ?hex</td><td>Modifier une couleur</td></tr>
+        <tr><td><span class="method delete">DELETE</span></td><td>/api/colors/:id</td><td>DRIVER</td><td>id (UUID)</td><td>Supprimer une couleur</td></tr>
+
+        <tr><td colspan="5" style="color:var(--accent);font-weight:600;padding-top:16px;border:none;">Systeme</td></tr>
+        <tr><td><span class="method get">GET</span></td><td>/api/health</td><td>Public</td><td>&mdash;</td><td>Health check</td></tr>
       </tbody>
     </table>
   </div>
@@ -1062,123 +1350,193 @@ erDiagram
 <section id="archi">
 <div class="container">
   <h2><span class="num">07</span>Architecture Clean — Hono + Prisma + Neon</h2>
-  <p class="section-desc">Organisation du projet en couches (Clean Architecture + SOLID).</p>
+  <p class="section-desc">Organisation du projet en couches (Clean Architecture + SOLID) avec injection de dependances.</p>
 
   <div class="arch-grid">
     <div class="arch-card">
-      <h4>📦 Domain Layer</h4>
-      <p>Entités métier pures, interfaces de repositories, et cas d'utilisation. Aucune dépendance externe. Contient <code>entities/</code>, <code>repositories/</code> (interfaces), <code>use-cases/</code>.</p>
+      <h4>Domain Layer</h4>
+      <p>Entites metier pures, interfaces de repositories, et services abstraits. Aucune dependance externe. Contient <code>entities/</code>, <code>repositories/</code> (interfaces), <code>services/</code> (JwtService, PasswordService, EmailService).</p>
     </div>
     <div class="arch-card">
-      <h4>🔌 Infrastructure Layer</h4>
-      <p>Implémentation des repositories avec Prisma + Neon PostgreSQL. Contient <code>prisma/</code> (schema, migrations), <code>repositories/</code> (implémentations concrètes).</p>
+      <h4>Application Layer</h4>
+      <p>Use cases organises par domaine (auth, user, driver, travel, inscription, car, brand, city, color). Contient <code>use-cases/</code> et <code>dtos/</code>. Chaque use case a ses tests unitaires.</p>
     </div>
     <div class="arch-card">
-      <h4>🌐 Presentation Layer</h4>
-      <p>Routes Hono, controllers, middlewares (auth JWT via <code>x-auth-token</code>), validation des entrées. Contient <code>routes/</code>, <code>controllers/</code>, <code>middlewares/</code>.</p>
+      <h4>Infrastructure Layer</h4>
+      <p>Implementations concretes : Prisma repositories, Argon2 password hashing, Hono JWT, Resend email. Contient <code>database/prisma/</code> (schema, migrations), <code>database/repositories/</code>, <code>services/</code>.</p>
     </div>
     <div class="arch-card">
-      <h4>⚙️ Application Layer</h4>
-      <p>Orchestration des use cases, DTOs, mappers. Fait le pont entre la présentation et le domaine. Contient <code>services/</code>, <code>dtos/</code>, <code>mappers/</code>.</p>
+      <h4>Presentation Layer</h4>
+      <p>Routes Hono, controllers, middlewares (auth JWT, authorization par role, error handler, request logger), validators Zod. Contient <code>routes/</code>, <code>controllers/</code>, <code>middleware/</code>, <code>validators/</code>.</p>
+    </div>
+    <div class="arch-card">
+      <h4>Lib (Shared)</h4>
+      <p>Utilitaires partages : systeme d'erreurs type, logging structure, conteneur DI (<code>container.ts</code> + <code>tokens.ts</code>), types Result, pagination, et result-response.</p>
     </div>
   </div>
 
   <h3>Structure de Fichiers</h3>
   <div class="folder-tree">
 <span class="dir">src/</span>
-├── <span class="dir">domain/</span>                    <span class="comment"># Couche métier pure</span>
+├── <span class="file">index.ts</span>                           <span class="comment"># Point d entree Hono</span>
+│
+├── <span class="dir">domain/</span>                            <span class="comment"># Couche metier pure</span>
 │   ├── <span class="dir">entities/</span>
-│   │   ├── <span class="file">User.ts</span>
-│   │   ├── <span class="file">Route.ts</span>
-│   │   ├── <span class="file">Inscription.ts</span>
-│   │   ├── <span class="file">Car.ts</span>
-│   │   ├── <span class="file">Brand.ts</span>
-│   │   └── <span class="file">City.ts</span>
-│   ├── <span class="dir">repositories/</span>          <span class="comment"># Interfaces (contrats)</span>
-│   │   ├── <span class="file">IUserRepository.ts</span>
-│   │   ├── <span class="file">IRouteRepository.ts</span>
-│   │   ├── <span class="file">IInscriptionRepository.ts</span>
-│   │   ├── <span class="file">ICarRepository.ts</span>
-│   │   ├── <span class="file">IBrandRepository.ts</span>
-│   │   └── <span class="file">ICityRepository.ts</span>
-│   └── <span class="dir">use-cases/</span>
-│       ├── <span class="file">RegisterUseCase.ts</span>
-│       ├── <span class="file">LoginUseCase.ts</span>
-│       ├── <span class="file">CreateRouteUseCase.ts</span>
-│       ├── <span class="file">SearchRouteUseCase.ts</span>
-│       ├── <span class="file">BookRouteUseCase.ts</span>
-│       ├── <span class="file">CancelBookingUseCase.ts</span>
-│       └── <span class="file">UpdateProfileUseCase.ts</span>
+│   │   ├── <span class="file">auth.entity.ts</span>
+│   │   ├── <span class="file">user.entity.ts</span>
+│   │   ├── <span class="file">driver.entity.ts</span>
+│   │   ├── <span class="file">travel.entity.ts</span>
+│   │   ├── <span class="file">inscription.entity.ts</span>
+│   │   ├── <span class="file">car.entity.ts</span>
+│   │   ├── <span class="file">model.entity.ts</span>
+│   │   ├── <span class="file">brand.entity.ts</span>
+│   │   ├── <span class="file">color.entity.ts</span>
+│   │   ├── <span class="file">city.entity.ts</span>
+│   │   └── <span class="file">city-travel.entity.ts</span>
+│   ├── <span class="dir">repositories/</span>              <span class="comment"># Interfaces (contrats)</span>
+│   │   ├── <span class="file">auth.repository.ts</span>
+│   │   ├── <span class="file">user.repository.ts</span>
+│   │   ├── <span class="file">driver.repository.ts</span>
+│   │   ├── <span class="file">travel.repository.ts</span>
+│   │   ├── <span class="file">inscription.repository.ts</span>
+│   │   ├── <span class="file">car.repository.ts</span>
+│   │   ├── <span class="file">model.repository.ts</span>
+│   │   ├── <span class="file">brand.repository.ts</span>
+│   │   ├── <span class="file">color.repository.ts</span>
+│   │   └── <span class="file">city.repository.ts</span>
+│   └── <span class="dir">services/</span>                  <span class="comment"># Interfaces services</span>
+│       ├── <span class="file">jwt.service.ts</span>
+│       ├── <span class="file">password.service.ts</span>
+│       └── <span class="file">email.service.ts</span>
 │
-├── <span class="dir">infrastructure/</span>            <span class="comment"># Implémentations concrètes</span>
-│   ├── <span class="dir">prisma/</span>
-│   │   ├── <span class="file">schema.prisma</span>
-│   │   └── <span class="dir">migrations/</span>
-│   └── <span class="dir">repositories/</span>
-│       ├── <span class="file">PrismaUserRepository.ts</span>
-│       ├── <span class="file">PrismaRouteRepository.ts</span>
-│       ├── <span class="file">PrismaInscriptionRepository.ts</span>
-│       ├── <span class="file">PrismaCarRepository.ts</span>
-│       ├── <span class="file">PrismaBrandRepository.ts</span>
-│       └── <span class="file">PrismaCityRepository.ts</span>
-│
-├── <span class="dir">application/</span>               <span class="comment"># Services & DTOs</span>
+├── <span class="dir">application/</span>                       <span class="comment"># Use cases & DTOs</span>
 │   ├── <span class="dir">dtos/</span>
-│   ├── <span class="dir">mappers/</span>
-│   └── <span class="dir">services/</span>
+│   │   ├── <span class="file">auth.dto.ts</span>
+│   │   ├── <span class="file">brand.dto.ts</span>
+│   │   ├── <span class="file">car.dto.ts</span>
+│   │   ├── <span class="file">city.dto.ts</span>
+│   │   ├── <span class="file">color.dto.ts</span>
+│   │   ├── <span class="file">driver.dto.ts</span>
+│   │   ├── <span class="file">inscription.dto.ts</span>
+│   │   └── <span class="file">travel.dto.ts</span>
+│   └── <span class="dir">use-cases/</span>
+│       ├── <span class="dir">auth/</span>                  <span class="comment"># login, register</span>
+│       ├── <span class="dir">user/</span>                  <span class="comment"># get, list, update, anonymize, delete</span>
+│       ├── <span class="dir">driver/</span>                <span class="comment"># create-driver</span>
+│       ├── <span class="dir">travel/</span>                <span class="comment"># create, delete, find, get, list</span>
+│       ├── <span class="dir">inscription/</span>           <span class="comment"># create, delete, list, user-inscriptions, passengers</span>
+│       ├── <span class="dir">car/</span>                   <span class="comment"># create, delete, list, update</span>
+│       ├── <span class="dir">brand/</span>                 <span class="comment"># create, delete, list</span>
+│       ├── <span class="dir">city/</span>                  <span class="comment"># create, delete, list</span>
+│       └── <span class="dir">color/</span>                 <span class="comment"># create, delete, list, update</span>
 │
-├── <span class="dir">presentation/</span>              <span class="comment"># Hono routes & middlewares</span>
+├── <span class="dir">infrastructure/</span>                    <span class="comment"># Implementations concretes</span>
+│   ├── <span class="dir">database/</span>
+│   │   ├── <span class="dir">prisma/</span>
+│   │   │   ├── <span class="file">schema.prisma</span>      <span class="comment"># Schema BDD Neon PostgreSQL</span>
+│   │   │   ├── <span class="dir">migrations/</span>
+│   │   │   └── <span class="dir">generated/</span>         <span class="comment"># Client Prisma genere</span>
+│   │   └── <span class="dir">repositories/</span>
+│   │       ├── <span class="file">prisma-auth.repository.ts</span>
+│   │       ├── <span class="file">prisma-user.repository.ts</span>
+│   │       ├── <span class="file">prisma-driver.repository.ts</span>
+│   │       ├── <span class="file">prisma-travel.repository.ts</span>
+│   │       ├── <span class="file">prisma-inscription.repository.ts</span>
+│   │       ├── <span class="file">prisma-car.repository.ts</span>
+│   │       ├── <span class="file">prisma-model.repository.ts</span>
+│   │       ├── <span class="file">prisma-brand.repository.ts</span>
+│   │       ├── <span class="file">prisma-color.repository.ts</span>
+│   │       └── <span class="file">prisma-city.repository.ts</span>
+│   └── <span class="dir">services/</span>
+│       ├── <span class="file">argon-password.service.ts</span>  <span class="comment"># Argon2 hashing</span>
+│       ├── <span class="file">hono-jwt.service.ts</span>        <span class="comment"># JWT generation/verification</span>
+│       └── <span class="file">resend-email.service.ts</span>    <span class="comment"># Resend email integration</span>
+│
+├── <span class="dir">presentation/</span>                      <span class="comment"># Hono routes & middlewares</span>
 │   ├── <span class="dir">routes/</span>
+│   │   ├── <span class="file">index.ts</span>               <span class="comment"># App setup, base path /api</span>
 │   │   ├── <span class="file">auth.routes.ts</span>
-│   │   ├── <span class="file">route.routes.ts</span>
+│   │   ├── <span class="file">user.routes.ts</span>
+│   │   ├── <span class="file">driver.routes.ts</span>
+│   │   ├── <span class="file">travel.routes.ts</span>
 │   │   ├── <span class="file">inscription.routes.ts</span>
-│   │   ├── <span class="file">person.routes.ts</span>
+│   │   ├── <span class="file">car.routes.ts</span>
 │   │   ├── <span class="file">brand.routes.ts</span>
 │   │   ├── <span class="file">city.routes.ts</span>
-│   │   └── <span class="file">car.routes.ts</span>
+│   │   └── <span class="file">color.routes.ts</span>
 │   ├── <span class="dir">controllers/</span>
-│   └── <span class="dir">middlewares/</span>
-│       └── <span class="file">authMiddleware.ts</span>  <span class="comment"># Vérifie x-auth-token (JWT)</span>
+│   │   ├── <span class="file">auth.controller.ts</span>
+│   │   ├── <span class="file">user.controller.ts</span>
+│   │   ├── <span class="file">driver.controller.ts</span>
+│   │   ├── <span class="file">brand.controller.ts</span>
+│   │   ├── <span class="file">car.controller.ts</span>
+│   │   ├── <span class="file">city.controller.ts</span>
+│   │   ├── <span class="file">color.controller.ts</span>
+│   │   ├── <span class="file">inscription.controller.ts</span>
+│   │   └── <span class="file">route.controller.ts</span>
+│   ├── <span class="dir">middleware/</span>
+│   │   ├── <span class="file">auth.middleware.ts</span>         <span class="comment"># Verifie x-auth-token JWT</span>
+│   │   ├── <span class="file">authorization.middleware.ts</span> <span class="comment"># requireRole(USER/DRIVER/ADMIN)</span>
+│   │   ├── <span class="file">error-handler.middleware.ts</span>
+│   │   └── <span class="file">request-logger.middleware.ts</span>
+│   └── <span class="dir">validators/</span>                <span class="comment"># Schemas Zod</span>
+│       ├── <span class="file">auth.validator.ts</span>
+│       ├── <span class="file">user.validator.ts</span>
+│       ├── <span class="file">driver.validator.ts</span>
+│       ├── <span class="file">brand.validator.ts</span>
+│       ├── <span class="file">car.validator.ts</span>
+│       ├── <span class="file">city.validator.ts</span>
+│       ├── <span class="file">color.validator.ts</span>
+│       ├── <span class="file">inscription.validator.ts</span>
+│       └── <span class="file">route.validator.ts</span>
 │
-├── <span class="file">index.ts</span>                   <span class="comment"># Point d'entrée Hono</span>
-└── <span class="file">container.ts</span>               <span class="comment"># Injection de dépendances</span>
-
-<span class="dir">prisma/</span>
-└── <span class="file">schema.prisma</span>              <span class="comment"># Schéma BDD Neon PostgreSQL</span>
-
-<span class="file">package.json</span>
-<span class="file">tsconfig.json</span>
-<span class="file">.env</span>                            <span class="comment"># DATABASE_URL, JWT_SECRET</span>
+└── <span class="dir">lib/</span>                               <span class="comment"># Utilitaires partages</span>
+    ├── <span class="dir">errors/</span>                        <span class="comment"># Systeme d erreurs type</span>
+    │   ├── <span class="file">domain.errors.ts</span>
+    │   ├── <span class="file">repository.errors.ts</span>
+    │   ├── <span class="file">error-registry.ts</span>
+    │   └── <span class="file">error.types.ts</span>
+    ├── <span class="dir">logging/</span>                       <span class="comment"># Logger structure</span>
+    │   └── <span class="file">logger.ts</span>
+    └── <span class="dir">shared/</span>
+        ├── <span class="dir">di/</span>
+        │   ├── <span class="file">container.ts</span>           <span class="comment"># Injection de dependances</span>
+        │   └── <span class="file">tokens.ts</span>              <span class="comment"># Tokens DI</span>
+        ├── <span class="dir">types/</span>
+        │   └── <span class="file">result.ts</span>              <span class="comment"># Type Result monadique</span>
+        └── <span class="dir">utils/</span>
+            ├── <span class="file">pagination.util.ts</span>
+            └── <span class="file">result-response.util.ts</span>
   </div>
 
-  <h3>Principes SOLID appliqués</h3>
+  <h3>Principes SOLID appliques</h3>
   <div class="arch-grid">
     <div class="arch-card">
       <h4>S — Single Responsibility</h4>
-      <p>Chaque use case a une seule responsabilité. <code>BookRouteUseCase</code> ne fait que la réservation.</p>
+      <p>Chaque use case a une seule responsabilite. <code>create-inscription.use-case.ts</code> ne fait que la reservation.</p>
     </div>
     <div class="arch-card">
       <h4>O — Open/Closed</h4>
-      <p>Les repositories sont ouverts à l'extension (nouvelles implémentations) sans modifier le domaine.</p>
+      <p>Les repositories sont ouverts a l'extension (nouvelles implementations) sans modifier le domaine.</p>
     </div>
     <div class="arch-card">
       <h4>L — Liskov Substitution</h4>
-      <p><code>PrismaUserRepository</code> est substituable à <code>IUserRepository</code> sans casser le comportement.</p>
+      <p><code>ArgonPasswordService</code> est substituable a <code>PasswordService</code> sans casser le comportement.</p>
     </div>
     <div class="arch-card">
       <h4>I — Interface Segregation</h4>
-      <p>Interfaces spécifiques par entité plutôt qu'un seul <code>IRepository</code> générique.</p>
+      <p>Interfaces specifiques par entite : <code>auth.repository.ts</code>, <code>user.repository.ts</code>, <code>travel.repository.ts</code>, etc.</p>
     </div>
     <div class="arch-card">
       <h4>D — Dependency Inversion</h4>
-      <p>Le domaine dépend d'abstractions (interfaces), pas de Prisma directement. Injection via <code>container.ts</code>.</p>
+      <p>Le domaine depend d'abstractions (interfaces), pas de Prisma directement. Injection via <code>container.ts</code> + <code>tokens.ts</code>.</p>
     </div>
   </div>
 </div>
 </section>
 
 <div style="padding:40px;text-align:center;color:var(--text-dim);font-size:0.82rem;">
-  Analyse UML — API REST Covoiturage GRETA • Hono + Prisma + Neon PostgreSQL • Clean Architecture + SOLID
+  Analyse UML — API REST Covoiturage • Hono + Prisma + Neon PostgreSQL • Clean Architecture + SOLID + RGPD
 </div>
 
 <script>
