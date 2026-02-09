@@ -147,6 +147,7 @@ model Model {
   cars   Car[]
   colors ColorModel[]
 
+  @@unique([name, brandRefId])
   @@map("models")
 }
 
