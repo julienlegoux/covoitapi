@@ -17,7 +17,7 @@ jobs:
 
     env:
       DATABASE_URL: "prisma://mock-accelerate"
-      JWT_SECRET: "ci-test-secret-key-at-least-32-chars"
+      JWT_SECRET: "ci-test-secret-key-at-least-32-characters-long"
       JWT_EXPIRES_IN: "24h"
 
     steps:
@@ -27,7 +27,7 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 9
+          version: 10
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
