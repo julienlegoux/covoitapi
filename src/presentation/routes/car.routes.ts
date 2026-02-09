@@ -7,7 +7,7 @@ const carRoutes = new Hono();
 
 carRoutes.use('*', authMiddleware);
 
-carRoutes.get('/', requireRole('DRIVER'), listCars);
+carRoutes.get('/', requireRole('DRIVER'), listCars); //TODO : change to admin only and make a separate route for drivers to list their own cars by :id 
 carRoutes.post('/', requireRole('DRIVER'), createCar);
 carRoutes.put('/:id', requireRole('DRIVER'), updateCar);
 carRoutes.patch('/:id', requireRole('DRIVER'), patchCar);
