@@ -6,9 +6,6 @@ describe('registerSchema', () => {
 		email: 'test@example.com',
 		password: 'Password123',
 		confirmPassword: 'Password123',
-		firstName: 'John',
-		lastName: 'Doe',
-		phone: '+33612345678',
 	};
 
 	describe('email validation', () => {
@@ -101,68 +98,9 @@ describe('registerSchema', () => {
 		});
 	});
 
-	describe('firstName/lastName validation', () => {
-		it('should accept valid names', () => {
-			const result = registerSchema.safeParse(validInput);
-			expect(result.success).toBe(true);
-		});
-
-		it('should reject empty firstName', () => {
-			const result = registerSchema.safeParse({ ...validInput, firstName: '' });
-			expect(result.success).toBe(false);
-			if (!result.success) {
-				const firstNameIssue = result.error.issues.find((i) => i.path.includes('firstName'));
-				expect(firstNameIssue).toBeDefined();
-			}
-		});
-
-		it('should reject empty lastName', () => {
-			const result = registerSchema.safeParse({ ...validInput, lastName: '' });
-			expect(result.success).toBe(false);
-			if (!result.success) {
-				const lastNameIssue = result.error.issues.find((i) => i.path.includes('lastName'));
-				expect(lastNameIssue).toBeDefined();
-			}
-		});
-	});
-
-	describe('phone validation', () => {
-		it('should accept French phone format +33', () => {
-			const result = registerSchema.safeParse({ ...validInput, phone: '+33612345678' });
-			expect(result.success).toBe(true);
-		});
-
-		it('should accept French phone format starting with 0', () => {
-			const result = registerSchema.safeParse({ ...validInput, phone: '0612345678' });
-			expect(result.success).toBe(true);
-		});
-
-		it('should reject invalid phone format', () => {
-			const result = registerSchema.safeParse({ ...validInput, phone: '123456789' });
-			expect(result.success).toBe(false);
-			if (!result.success) {
-				const phoneIssue = result.error.issues.find((i) => i.path.includes('phone'));
-				expect(phoneIssue?.message).toBe('Invalid phone number format');
-			}
-		});
-
-		it('should reject phone with wrong length', () => {
-			const result = registerSchema.safeParse({ ...validInput, phone: '+3361234567' });
-			expect(result.success).toBe(false);
-		});
-
-		it('should reject phone starting with 00', () => {
-			const result = registerSchema.safeParse({ ...validInput, phone: '0012345678' });
-			expect(result.success).toBe(false);
-		});
-
-		it('should accept different valid French mobile prefixes', () => {
-			const validPhones = ['0612345678', '0712345678', '0112345678', '0912345678'];
-			for (const phone of validPhones) {
-				const result = registerSchema.safeParse({ ...validInput, phone });
-				expect(result.success).toBe(true);
-			}
-		});
+	it('should not require firstName, lastName, or phone', () => {
+		const result = registerSchema.safeParse(validInput);
+		expect(result.success).toBe(true);
 	});
 });
 

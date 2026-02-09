@@ -1,15 +1,16 @@
 import { inject, injectable } from 'tsyringe';
 import type { CarEntity } from '../../../domain/entities/car.entity.js';
-import { CarAlreadyExistsError } from '../../../domain/errors/domain.errors.js';
+import { CarAlreadyExistsError, BrandNotFoundError } from '../../../lib/errors/domain.errors.js';
 import type { CarRepository } from '../../../domain/repositories/car.repository.js';
 import type { ModelRepository } from '../../../domain/repositories/model.repository.js';
-import type { RepositoryError } from '../../../infrastructure/errors/repository.errors.js';
+import type { BrandRepository } from '../../../domain/repositories/brand.repository.js';
+import type { RepositoryError } from '../../../lib/errors/repository.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import type { Result } from '../../../lib/shared/types/result.js';
 import { err } from '../../../lib/shared/types/result.js';
 import type { CreateCarInput } from '../../dtos/car.dto.js';
 
-type CreateCarError = CarAlreadyExistsError | RepositoryError;
+type CreateCarError = CarAlreadyExistsError | BrandNotFoundError | RepositoryError;
 
 @injectable()
 export class CreateCarUseCase {
@@ -18,6 +19,8 @@ export class CreateCarUseCase {
 		private readonly carRepository: CarRepository,
 		@inject(TOKENS.ModelRepository)
 		private readonly modelRepository: ModelRepository,
+		@inject(TOKENS.BrandRepository)
+		private readonly brandRepository: BrandRepository,
 	) {}
 
 	async execute(input: CreateCarInput): Promise<Result<CarEntity, CreateCarError>> {
@@ -30,29 +33,38 @@ export class CreateCarUseCase {
 			return err(new CarAlreadyExistsError(input.immatriculation));
 		}
 
-		// Find or create model
-		const modelResult = await this.modelRepository.findByNameAndBrand(input.modele, input.marqueId);
+		// Resolve brand UUID to refId
+		const brandResult = await this.brandRepository.findById(input.marqueId);
+		if (!brandResult.success) {
+			return brandResult;
+		}
+		if (!brandResult.value) {
+			return err(new BrandNotFoundError(input.marqueId));
+		}
+
+		// Find or create model using brand refId
+		const modelResult = await this.modelRepository.findByNameAndBrand(input.modele, brandResult.value.refId);
 		if (!modelResult.success) {
 			return modelResult;
 		}
 
-		let modelId: string;
+		let modelRefId: number;
 		if (modelResult.value) {
-			modelId = modelResult.value.id;
+			modelRefId = modelResult.value.refId;
 		} else {
 			const createModelResult = await this.modelRepository.create({
 				name: input.modele,
-				brandId: input.marqueId,
+				brandRefId: brandResult.value.refId,
 			});
 			if (!createModelResult.success) {
 				return createModelResult;
 			}
-			modelId = createModelResult.value.id;
+			modelRefId = createModelResult.value.refId;
 		}
 
 		return this.carRepository.create({
 			immat: input.immatriculation,
-			modelId,
+			modelRefId,
 		});
 	}
 }

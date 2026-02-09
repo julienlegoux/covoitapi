@@ -4,13 +4,18 @@ import { CreateCarUseCase } from '../../application/use-cases/car/create-car.use
 import { DeleteCarUseCase } from '../../application/use-cases/car/delete-car.use-case.js';
 import { ListCarsUseCase } from '../../application/use-cases/car/list-cars.use-case.js';
 import { UpdateCarUseCase } from '../../application/use-cases/car/update-car.use-case.js';
-import { container } from '../../infrastructure/di/container.js';
+import { container } from '../../lib/shared/di/container.js';
+import { paginationSchema } from '../../lib/shared/utils/pagination.util.js';
 import { resultToResponse } from '../../lib/shared/utils/result-response.util.js';
 import { createCarSchema, updateCarSchema, patchCarSchema } from '../validators/car.validator.js';
 
 export async function listCars(c: Context): Promise<Response> {
+	const pagination = paginationSchema.parse({
+		page: c.req.query('page'),
+		limit: c.req.query('limit'),
+	});
 	const useCase = container.resolve(ListCarsUseCase);
-	const result = await useCase.execute();
+	const result = await useCase.execute(pagination);
 	return resultToResponse(c, result);
 }
 
@@ -19,9 +24,9 @@ export async function createCar(c: Context): Promise<Response> {
 	const validated = createCarSchema.parse(body);
 
 	const input: CreateCarInput = {
-		modele: validated.modele,
-		marqueId: validated.marqueId,
-		immatriculation: validated.immatriculation,
+		modele: validated.model,
+		marqueId: validated.brandId,
+		immatriculation: validated.licensePlate,
 	};
 
 	const useCase = container.resolve(CreateCarUseCase);
@@ -35,9 +40,9 @@ export async function updateCar(c: Context): Promise<Response> {
 	const validated = updateCarSchema.parse(body);
 
 	const input: UpdateCarInput = {
-		modele: validated.modele,
-		marqueId: validated.marqueId,
-		immatriculation: validated.immatriculation,
+		modele: validated.model,
+		marqueId: validated.brandId,
+		immatriculation: validated.licensePlate,
 	};
 
 	const useCase = container.resolve(UpdateCarUseCase);
@@ -51,9 +56,9 @@ export async function patchCar(c: Context): Promise<Response> {
 	const validated = patchCarSchema.parse(body);
 
 	const input: UpdateCarInput = {
-		modele: validated.modele,
-		marqueId: validated.marqueId,
-		immatriculation: validated.immatriculation,
+		modele: validated.model,
+		marqueId: validated.brandId,
+		immatriculation: validated.licensePlate,
 	};
 
 	const useCase = container.resolve(UpdateCarUseCase);
@@ -65,5 +70,8 @@ export async function deleteCar(c: Context): Promise<Response> {
 	const id = c.req.param('id');
 	const useCase = container.resolve(DeleteCarUseCase);
 	const result = await useCase.execute(id);
-	return resultToResponse(c, result);
+	if (!result.success) {
+		return resultToResponse(c, result);
+	}
+	return c.body(null, 204);
 }

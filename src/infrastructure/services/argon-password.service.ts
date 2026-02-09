@@ -3,7 +3,7 @@ import { injectable } from 'tsyringe';
 import type { PasswordService } from '../../domain/services/password.service.js';
 import type { Result } from '../../lib/shared/types/result.js';
 import { ok, err } from '../../lib/shared/types/result.js';
-import { HashingError, HashVerificationError } from '../errors/password.errors.js';
+import { HashingError, HashVerificationError } from '../../lib/errors/password.errors.js';
 
 @injectable()
 export class ArgonPasswordService implements PasswordService {

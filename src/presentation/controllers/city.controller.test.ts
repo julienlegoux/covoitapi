@@ -6,16 +6,20 @@ import { ListCitiesUseCase } from '../../application/use-cases/city/list-cities.
 import { CreateCityUseCase } from '../../application/use-cases/city/create-city.use-case.js';
 import { DeleteCityUseCase } from '../../application/use-cases/city/delete-city.use-case.js';
 import { ok, err } from '../../lib/shared/types/result.js';
-import { CityNotFoundError } from '../../domain/errors/domain.errors.js';
+import { CityNotFoundError } from '../../lib/errors/domain.errors.js';
 
-function createMockContext(overrides?: { jsonBody?: unknown; params?: Record<string, string> }) {
+function createMockContext(overrides?: { jsonBody?: unknown; params?: Record<string, string>; queryParams?: Record<string, string> }) {
 	const jsonMock = vi.fn((body, status) => ({ body, status }));
+	const bodyMock = vi.fn((body, status) => new Response(body, { status }));
+	const queryParams = overrides?.queryParams ?? {};
 	return {
 		req: {
 			json: vi.fn().mockResolvedValue(overrides?.jsonBody ?? {}),
 			param: vi.fn((name: string) => overrides?.params?.[name]),
+			query: vi.fn((name: string) => queryParams[name]),
 		},
 		json: jsonMock,
+		body: bodyMock,
 		_getJsonCall: () => jsonMock.mock.calls[0],
 	} as unknown as Context & { _getJsonCall: () => [unknown, number] };
 }
@@ -29,14 +33,17 @@ describe('City Controller', () => {
 			container.register(ListCitiesUseCase, { useValue: mockUseCase as unknown as ListCitiesUseCase });
 		});
 
-		it('should return 200 with list of cities', async () => {
-			const cities = [{ id: '1', cityName: 'Paris', zipcode: '75000' }];
-			mockUseCase.execute.mockResolvedValue(ok(cities));
+		it('should return 200 with paginated list of cities', async () => {
+			const paginatedResult = {
+				data: [{ id: '1', cityName: 'Paris', zipcode: '75000' }],
+				meta: { page: 1, limit: 20, total: 1, totalPages: 1 },
+			};
+			mockUseCase.execute.mockResolvedValue(ok(paginatedResult));
 			const ctx = createMockContext();
 			await listCities(ctx);
 			const [response, status] = ctx._getJsonCall();
 			expect(status).toBe(200);
-			expect(response).toEqual({ success: true, data: cities });
+			expect(response).toEqual({ success: true, data: paginatedResult });
 		});
 	});
 
@@ -51,16 +58,16 @@ describe('City Controller', () => {
 		it('should return 201 with city on success', async () => {
 			const city = { id: '1', cityName: 'Paris', zipcode: '75000' };
 			mockUseCase.execute.mockResolvedValue(ok(city));
-			const ctx = createMockContext({ jsonBody: { ville: 'Paris', cp: '75000' } });
+			const ctx = createMockContext({ jsonBody: { cityName: 'Paris', zipcode: '75000' } });
 			await createCity(ctx);
 			const [response, status] = ctx._getJsonCall();
 			expect(status).toBe(201);
 			expect(response).toEqual({ success: true, data: city });
 		});
 
-		it('should map ville to cityName and cp to zipcode', async () => {
+		it('should map cityName and zipcode correctly', async () => {
 			mockUseCase.execute.mockResolvedValue(ok({ id: '1', cityName: 'Lyon', zipcode: '69000' }));
-			const ctx = createMockContext({ jsonBody: { ville: 'Lyon', cp: '69000' } });
+			const ctx = createMockContext({ jsonBody: { cityName: 'Lyon', zipcode: '69000' } });
 			await createCity(ctx);
 			expect(mockUseCase.execute).toHaveBeenCalledWith({ cityName: 'Lyon', zipcode: '69000' });
 		});
@@ -79,12 +86,11 @@ describe('City Controller', () => {
 			container.register(DeleteCityUseCase, { useValue: mockUseCase as unknown as DeleteCityUseCase });
 		});
 
-		it('should return 200 on successful delete', async () => {
+		it('should return 204 on successful delete', async () => {
 			mockUseCase.execute.mockResolvedValue(ok(undefined));
 			const ctx = createMockContext({ params: { id: '1' } });
-			await deleteCity(ctx);
-			const [response, status] = ctx._getJsonCall();
-			expect(status).toBe(200);
+			const response = await deleteCity(ctx);
+			expect(response.status).toBe(204);
 		});
 
 		it('should return error when city not found', async () => {

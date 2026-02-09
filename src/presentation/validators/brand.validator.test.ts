@@ -3,22 +3,22 @@ import { createBrandSchema } from './brand.validator.js';
 
 describe('createBrandSchema', () => {
 	it('should accept valid brand name', () => {
-		const result = createBrandSchema.safeParse({ nom: 'Toyota' });
+		const result = createBrandSchema.safeParse({ name: 'Toyota' });
 		expect(result.success).toBe(true);
 	});
 
-	it('should reject missing nom field', () => {
+	it('should reject missing name field', () => {
 		const result = createBrandSchema.safeParse({});
 		expect(result.success).toBe(false);
 	});
 
-	it('should reject empty nom string', () => {
-		const result = createBrandSchema.safeParse({ nom: '' });
+	it('should reject empty name string', () => {
+		const result = createBrandSchema.safeParse({ name: '' });
 		expect(result.success).toBe(false);
 	});
 
-	it('should reject non-string nom', () => {
-		const result = createBrandSchema.safeParse({ nom: 123 });
+	it('should reject non-string name', () => {
+		const result = createBrandSchema.safeParse({ name: 123 });
 		expect(result.success).toBe(false);
 	});
 });

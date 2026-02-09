@@ -377,7 +377,7 @@ export const TOKENS = {
 };
 ```
 
-**Container Registration** (`src/infrastructure/di/container.ts`):
+**Container Registration** (`src/lib/shared/di/container.ts`):
 ```typescript
 // Singleton instances
 container.registerSingleton<PrismaClient>(TOKENS.PrismaClient, ...);
@@ -1172,7 +1172,7 @@ pnpm db:push          # Push schema to database
 | User Entity | `src/domain/entities/user.entity.ts` |
 | Database Schema | `src/infrastructure/database/prisma/schema.prisma` |
 | Use Cases | `src/application/use_cases/auth/` |
-| DI Container | `src/infrastructure/di/container.ts` |
+| DI Container | `src/lib/shared/di/container.ts` |
 | Error Handlers | `src/presentation/middleware/error_handler.middleware.ts` |
 
 ### Environment Setup

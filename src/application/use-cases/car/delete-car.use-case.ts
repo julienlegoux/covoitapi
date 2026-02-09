@@ -1,7 +1,7 @@
 import { inject, injectable } from 'tsyringe';
-import { CarNotFoundError } from '../../../domain/errors/domain.errors.js';
+import { CarNotFoundError } from '../../../lib/errors/domain.errors.js';
 import type { CarRepository } from '../../../domain/repositories/car.repository.js';
-import type { RepositoryError } from '../../../infrastructure/errors/repository.errors.js';
+import type { RepositoryError } from '../../../lib/errors/repository.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import type { Result } from '../../../lib/shared/types/result.js';
 import { err } from '../../../lib/shared/types/result.js';

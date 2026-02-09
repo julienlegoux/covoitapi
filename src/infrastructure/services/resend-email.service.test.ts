@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import type { EmailService } from '../../domain/services/email.service.js';
-import { EmailDeliveryError } from '../errors/email.errors.js';
+import { EmailDeliveryError } from '../../lib/errors/email.errors.js';
 
 const mockSend = vi.fn();
 
@@ -66,7 +66,7 @@ describe('ResendEmailService', () => {
 			expect(result.success).toBe(false);
 			if (!result.success) {
 				expect(result.error).toBeInstanceOf(EmailDeliveryError);
-				expect(result.error.recipient).toBe('user@example.com');
+				expect((result.error as EmailDeliveryError).recipient).toBe('user@example.com');
 			}
 		});
 	});
@@ -127,7 +127,7 @@ describe('ResendEmailService', () => {
 
 			expect(result.success).toBe(false);
 			if (!result.success) {
-				expect(result.error.recipient).toBe('bounce@example.com');
+				expect((result.error as EmailDeliveryError).recipient).toBe('bounce@example.com');
 			}
 		});
 	});

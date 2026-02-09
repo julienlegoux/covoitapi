@@ -20,12 +20,12 @@ export function jsonHeaders(): Headers {
 	return new Headers({ 'Content-Type': 'application/json' });
 }
 
-export function registerMockJwtService() {
+export function registerMockJwtService(role = 'ADMIN') {
 	const mockJwtService = {
 		sign: vi.fn().mockResolvedValue(ok('signed-token')),
 		verify: vi.fn().mockImplementation(async (token: string) => {
 			if (token === AUTH_TOKEN) {
-				return ok({ userId: 'test-user-id' });
+				return ok({ userId: 'test-user-id', role });
 			}
 			return { success: false, error: { code: 'TOKEN_INVALID', message: 'Invalid token' } };
 		}),

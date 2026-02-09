@@ -22,8 +22,8 @@ describe('GET /api/health', () => {
 		expect(body).toHaveProperty('timestamp');
 	});
 
-	it('should return 401 without auth token', async () => {
+	it('should return 200 without auth token (health is public)', async () => {
 		const res = await app.request('/api/health');
-		expect(res.status).toBe(401);
+		expect(res.status).toBe(200);
 	});
 });
