@@ -12,8 +12,7 @@ import { driverRoutes } from './driver.routes.js';
 import { travelRoutes } from './travel.routes.js';
 import { inscriptionRoutes } from './inscription.routes.js';
 import { userRoutes } from './user.routes.js';
-import { listUserInscriptions } from '../controllers/inscription.controller.js';
-import { listRoutePassengers } from '../controllers/inscription.controller.js';
+import { listUserInscriptions, listRoutePassengers } from '../controllers/inscription.controller.js';
 
 const app = new Hono().basePath('/api');
 
