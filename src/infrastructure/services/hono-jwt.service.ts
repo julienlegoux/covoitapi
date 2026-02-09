@@ -44,17 +44,21 @@ export class HonoJwtService implements JwtService {
 
 			return ok({ userId: decoded.userId, role: (decoded.role as string) ?? 'USER' });
 		} catch (e) {
-			const error = e instanceof Error ? e : new Error(String(e));
-			const message = error.message.toLowerCase();
-
-			if (message.includes('expired')) {
-				return err(new TokenExpiredError(e));
-			}
-			if (message.includes('malformed') || message.includes('invalid token')) {
-				return err(new TokenMalformedError(e));
-			}
-			return err(new TokenInvalidError(e));
+			return err(this.classifyJwtError(e));
 		}
+	}
+
+	private classifyJwtError(e: unknown): TokenExpiredError | TokenMalformedError | TokenInvalidError {
+		const error = e instanceof Error ? e : new Error(String(e));
+		const message = error.message.toLowerCase();
+
+		if (message.includes('expired')) {
+			return new TokenExpiredError(e);
+		}
+		if (message.includes('malformed') || message.includes('invalid token')) {
+			return new TokenMalformedError(e);
+		}
+		return new TokenInvalidError(e);
 	}
 
 	private calculateExpiration(): number {
