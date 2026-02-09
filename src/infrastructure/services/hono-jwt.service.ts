@@ -63,7 +63,7 @@ export class HonoJwtService implements JwtService {
 
 	private calculateExpiration(): number {
 		const now = Math.floor(Date.now() / 1000);
-		const match = this.expiresIn.match(/^(\d+)[hdm]$/);
+		const match = this.expiresIn.match(/^(\d+)([hdm])$/);
 
 		if (!match) {
 			return now + 24 * 60 * 60;
