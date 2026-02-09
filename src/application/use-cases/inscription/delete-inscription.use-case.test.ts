@@ -1,10 +1,10 @@
 import { container } from 'tsyringe';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { createMockInscriptionRepository } from '../../../../tests/setup.js';
-import { InscriptionNotFoundError } from '../../../domain/errors/domain.errors.js';
+import { InscriptionNotFoundError } from '../../../lib/errors/domain.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import { ok, err } from '../../../lib/shared/types/result.js';
-import { DatabaseError } from '../../../infrastructure/errors/repository.errors.js';
+import { DatabaseError } from '../../../lib/errors/repository.errors.js';
 import { DeleteInscriptionUseCase } from './delete-inscription.use-case.js';
 
 describe('DeleteInscriptionUseCase', () => {

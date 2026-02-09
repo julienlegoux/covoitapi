@@ -1,10 +1,11 @@
+import crypto from 'node:crypto';
 import { inject, injectable } from 'tsyringe';
-import type { CreateUserData, PublicUserEntity, UpdateUserData, UserEntity } from '../../../domain/entities/user.entity.js';
+import type { CreateUserData, PublicUserEntity, UpdateUserData } from '../../../domain/entities/user.entity.js';
 import type { UserRepository } from '../../../domain/repositories/user.repository.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import type { Result } from '../../../lib/shared/types/result.js';
 import { ok, err } from '../../../lib/shared/types/result.js';
-import { DatabaseError } from '../../errors/repository.errors.js';
+import { DatabaseError } from '../../../lib/errors/repository.errors.js';
 import type { PrismaClient } from '../generated/prisma/client.js';
 
 @injectable()
@@ -17,9 +18,9 @@ export class PrismaUserRepository implements UserRepository {
 	async findAll(): Promise<Result<PublicUserEntity[], DatabaseError>> {
 		try {
 			const users = await this.prisma.user.findMany({
-				omit: { password: true },
+				include: { auth: { select: { email: true } } },
 			});
-			return ok(users);
+			return ok(users.map((u) => ({ ...u, email: u.auth.email })));
 		} catch (e) {
 			return err(new DatabaseError('Failed to find all users', e));
 		}
@@ -29,22 +30,25 @@ export class PrismaUserRepository implements UserRepository {
 		try {
 			const user = await this.prisma.user.findUnique({
 				where: { id },
-				omit: { password: true },
+				include: { auth: { select: { email: true } } },
 			});
-			return ok(user);
+			if (!user) return ok(null);
+			return ok({ ...user, email: user.auth.email });
 		} catch (e) {
 			return err(new DatabaseError('Failed to find user by id', e));
 		}
 	}
 
-	async findByEmail(email: string): Promise<Result<UserEntity | null, DatabaseError>> {
+	async findByAuthRefId(authRefId: number): Promise<Result<PublicUserEntity | null, DatabaseError>> {
 		try {
 			const user = await this.prisma.user.findUnique({
-				where: { email },
+				where: { authRefId },
+				include: { auth: { select: { email: true } } },
 			});
-			return ok(user);
+			if (!user) return ok(null);
+			return ok({ ...user, email: user.auth.email });
 		} catch (e) {
-			return err(new DatabaseError('Failed to find user by email', e));
+			return err(new DatabaseError('Failed to find user by auth ref id', e));
 		}
 	}
 
@@ -52,15 +56,14 @@ export class PrismaUserRepository implements UserRepository {
 		try {
 			const user = await this.prisma.user.create({
 				data: {
-					email: data.email,
-					password: data.password,
 					firstName: data.firstName,
 					lastName: data.lastName,
 					phone: data.phone,
+					authRefId: data.authRefId,
 				},
-				omit: { password: true },
+				include: { auth: { select: { email: true } } },
 			});
-			return ok(user);
+			return ok({ ...user, email: user.auth.email });
 		} catch (e) {
 			return err(new DatabaseError('Failed to create user', e));
 		}
@@ -71,9 +74,9 @@ export class PrismaUserRepository implements UserRepository {
 			const user = await this.prisma.user.update({
 				where: { id },
 				data,
-				omit: { password: true },
+				include: { auth: { select: { email: true } } },
 			});
-			return ok(user);
+			return ok({ ...user, email: user.auth.email });
 		} catch (e) {
 			return err(new DatabaseError('Failed to update user', e));
 		}
@@ -90,14 +93,52 @@ export class PrismaUserRepository implements UserRepository {
 		}
 	}
 
-	async existsByEmail(email: string): Promise<Result<boolean, DatabaseError>> {
+	async anonymize(id: string): Promise<Result<void, DatabaseError>> {
 		try {
-			const count = await this.prisma.user.count({
-				where: { email },
+			await this.prisma.$transaction(async (tx) => {
+				const user = await tx.user.findUniqueOrThrow({
+					where: { id },
+				});
+
+				// 1. Anonymize auth (email, password)
+				await tx.auth.update({
+					where: { refId: user.authRefId },
+					data: {
+						email: `deleted-${crypto.randomUUID()}@anonymized.local`,
+						password: crypto.randomUUID(),
+						anonymizedAt: new Date(),
+					},
+				});
+
+				// 2. Anonymize user profile
+				await tx.user.update({
+					where: { id },
+					data: {
+						firstName: null,
+						lastName: null,
+						phone: null,
+						anonymizedAt: new Date(),
+					},
+				});
+
+				// 3. Anonymize driver if exists
+				await tx.driver.updateMany({
+					where: { userRefId: user.refId },
+					data: {
+						driverLicense: `ANONYMIZED-${crypto.randomUUID()}`,
+						anonymizedAt: new Date(),
+					},
+				});
+
+				// 4. Mark inscriptions as ANONYMIZED
+				await tx.inscription.updateMany({
+					where: { userRefId: user.refId },
+					data: { status: 'ANONYMIZED' },
+				});
 			});
-			return ok(count > 0);
+			return ok(undefined);
 		} catch (e) {
-			return err(new DatabaseError('Failed to check if user exists', e));
+			return err(new DatabaseError('Failed to anonymize user', e));
 		}
 	}
 }

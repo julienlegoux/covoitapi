@@ -8,7 +8,7 @@ import {
 	TokenInvalidError,
 	TokenMalformedError,
 	TokenSigningError,
-} from '../errors/jwt.errors.js';
+} from '../../lib/errors/jwt.errors.js';
 
 @injectable()
 export class HonoJwtService implements JwtService {
@@ -37,7 +37,12 @@ export class HonoJwtService implements JwtService {
 	async verify(token: string): Promise<Result<JwtPayload, TokenExpiredError | TokenInvalidError | TokenMalformedError>> {
 		try {
 			const decoded = await honoVerify(token, this.secret, 'HS256');
-			return ok({ userId: decoded.userId as string });
+
+			if (!decoded.userId || typeof decoded.userId !== 'string') {
+				return err(new TokenInvalidError('Token payload missing userId'));
+			}
+
+			return ok({ userId: decoded.userId, role: (decoded.role as string) ?? 'USER' });
 		} catch (e) {
 			const error = e instanceof Error ? e : new Error(String(e));
 			const message = error.message.toLowerCase();
@@ -54,13 +59,13 @@ export class HonoJwtService implements JwtService {
 
 	private calculateExpiration(): number {
 		const now = Math.floor(Date.now() / 1000);
-		const match = this.expiresIn.match(/^(\d+)(h|d|m)$/);
+		const match = this.expiresIn.match(/^(\d+)[hdm]$/);
 
 		if (!match) {
 			return now + 24 * 60 * 60;
 		}
 
-		const value = parseInt(match[1], 10);
+		const value = Number.parseInt(match[1], 10);
 		const unit = match[2];
 
 		switch (unit) {

@@ -6,16 +6,20 @@ import { ListBrandsUseCase } from '../../application/use-cases/brand/list-brands
 import { CreateBrandUseCase } from '../../application/use-cases/brand/create-brand.use-case.js';
 import { DeleteBrandUseCase } from '../../application/use-cases/brand/delete-brand.use-case.js';
 import { ok, err } from '../../lib/shared/types/result.js';
-import { BrandNotFoundError } from '../../domain/errors/domain.errors.js';
+import { BrandNotFoundError } from '../../lib/errors/domain.errors.js';
 
-function createMockContext(overrides?: { jsonBody?: unknown; params?: Record<string, string> }) {
+function createMockContext(overrides?: { jsonBody?: unknown; params?: Record<string, string>; queryParams?: Record<string, string> }) {
 	const jsonMock = vi.fn((body, status) => ({ body, status }));
+	const bodyMock = vi.fn((body, status) => new Response(body, { status }));
+	const queryParams = overrides?.queryParams ?? {};
 	return {
 		req: {
 			json: vi.fn().mockResolvedValue(overrides?.jsonBody ?? {}),
 			param: vi.fn((name: string) => overrides?.params?.[name]),
+			query: vi.fn((name: string) => queryParams[name]),
 		},
 		json: jsonMock,
+		body: bodyMock,
 		_getJsonCall: () => jsonMock.mock.calls[0],
 	} as unknown as Context & { _getJsonCall: () => [unknown, number] };
 }
@@ -30,14 +34,17 @@ describe('Brand Controller', () => {
 			container.register(ListBrandsUseCase, { useValue: mockUseCase as unknown as ListBrandsUseCase });
 		});
 
-		it('should return 200 with list of brands', async () => {
-			const brands = [{ id: '1', name: 'Toyota' }];
-			mockUseCase.execute.mockResolvedValue(ok(brands));
+		it('should return 200 with paginated list of brands', async () => {
+			const paginatedResult = {
+				data: [{ id: '1', name: 'Toyota' }],
+				meta: { page: 1, limit: 20, total: 1, totalPages: 1 },
+			};
+			mockUseCase.execute.mockResolvedValue(ok(paginatedResult));
 			const ctx = createMockContext();
 			await listBrands(ctx);
 			const [response, status] = ctx._getJsonCall();
 			expect(status).toBe(200);
-			expect(response).toEqual({ success: true, data: brands });
+			expect(response).toEqual({ success: true, data: paginatedResult });
 		});
 
 		it('should return error response when use case fails', async () => {
@@ -61,16 +68,16 @@ describe('Brand Controller', () => {
 		it('should return 201 with brand on success', async () => {
 			const brand = { id: '1', name: 'Toyota' };
 			mockUseCase.execute.mockResolvedValue(ok(brand));
-			const ctx = createMockContext({ jsonBody: { nom: 'Toyota' } });
+			const ctx = createMockContext({ jsonBody: { name: 'Toyota' } });
 			await createBrand(ctx);
 			const [response, status] = ctx._getJsonCall();
 			expect(status).toBe(201);
 			expect(response).toEqual({ success: true, data: brand });
 		});
 
-		it('should map validated.nom to input.name', async () => {
+		it('should map validated.name to input.name', async () => {
 			mockUseCase.execute.mockResolvedValue(ok({ id: '1', name: 'Honda' }));
-			const ctx = createMockContext({ jsonBody: { nom: 'Honda' } });
+			const ctx = createMockContext({ jsonBody: { name: 'Honda' } });
 			await createBrand(ctx);
 			expect(mockUseCase.execute).toHaveBeenCalledWith({ name: 'Honda' });
 		});
@@ -90,12 +97,11 @@ describe('Brand Controller', () => {
 			container.register(DeleteBrandUseCase, { useValue: mockUseCase as unknown as DeleteBrandUseCase });
 		});
 
-		it('should return 200 on successful delete', async () => {
+		it('should return 204 on successful delete', async () => {
 			mockUseCase.execute.mockResolvedValue(ok(undefined));
 			const ctx = createMockContext({ params: { id: '1' } });
-			await deleteBrand(ctx);
-			const [response, status] = ctx._getJsonCall();
-			expect(status).toBe(200);
+			const response = await deleteBrand(ctx);
+			expect(response.status).toBe(204);
 		});
 
 		it('should return error response when brand not found', async () => {

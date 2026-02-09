@@ -4,7 +4,7 @@ import { container } from 'tsyringe';
 import { authMiddleware } from './auth.middleware.js';
 import { TOKENS } from '../../lib/shared/di/tokens.js';
 import { ok, err } from '../../lib/shared/types/result.js';
-import { TokenExpiredError, TokenInvalidError, TokenMalformedError } from '../../infrastructure/errors/jwt.errors.js';
+import { TokenExpiredError, TokenInvalidError, TokenMalformedError } from '../../lib/errors/jwt.errors.js';
 
 function createMockContext(token?: string) {
 	const jsonMock = vi.fn((body, status) => ({ body, status }));

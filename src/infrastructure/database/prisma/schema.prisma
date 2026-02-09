@@ -7,16 +7,50 @@ datasource db {
   provider = "postgresql"
 }
 
-model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  password  String
-  firstName String   @map("first_name")
-  lastName  String   @map("last_name")
-  phone     String
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+enum Role {
+  USER
+  DRIVER
+  ADMIN
+}
 
+enum CityTravelType {
+  DEPARTURE
+  ARRIVAL
+}
+
+enum InscriptionStatus {
+  ACTIVE
+  CANCELLED
+  ANONYMIZED
+}
+
+model Auth {
+  id           String    @id @default(uuid())
+  refId        Int       @unique @default(autoincrement()) @map("ref_id")
+  email        String    @unique
+  password     String
+  role         Role      @default(USER)
+  anonymizedAt DateTime? @map("anonymized_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  user User?
+
+  @@map("auths")
+}
+
+model User {
+  id           String    @id @default(uuid())
+  refId        Int       @unique @default(autoincrement()) @map("ref_id")
+  firstName    String?   @map("first_name")
+  lastName     String?   @map("last_name")
+  phone        String?
+  authRefId    Int       @unique @map("auth_ref_id")
+  anonymizedAt DateTime? @map("anonymized_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  auth         Auth           @relation(fields: [authRefId], references: [refId], onDelete: Cascade)
   driver       Driver?
   inscriptions Inscription[]
 
@@ -24,92 +58,103 @@ model User {
 }
 
 model Driver {
-  id            String @id @default(uuid())
-  driverLicense String @unique @map("driver_license")
-  userId        String @unique @map("user_id")
+  id            String    @id @default(uuid())
+  refId         Int       @unique @default(autoincrement()) @map("ref_id")
+  driverLicense String    @unique @map("driver_license")
+  userRefId     Int       @unique @map("user_ref_id")
+  anonymizedAt  DateTime? @map("anonymized_at")
 
-  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  routes Route[]
+  user    User     @relation(fields: [userRefId], references: [refId], onDelete: Cascade)
+  travels Travel[]
 
   @@map("drivers")
 }
 
-model Route {
-  id        String   @id @default(uuid())
-  dateRoute DateTime @map("date_route")
-  kms       Int
-  seats     Int
-  driverId  String   @map("driver_id")
-  carId     String   @map("car_id")
+model Travel {
+  id           String   @id @default(uuid())
+  refId        Int      @unique @default(autoincrement()) @map("ref_id")
+  dateRoute    DateTime @map("date_route")
+  kms          Int
+  seats        Int
+  driverRefId  Int      @map("driver_ref_id")
+  carRefId     Int      @map("car_ref_id")
 
-  driver       Driver        @relation(fields: [driverId], references: [id], onDelete: Cascade)
-  car          Car           @relation(fields: [carId], references: [id], onDelete: Restrict)
+  driver       Driver          @relation(fields: [driverRefId], references: [refId], onDelete: Cascade)
+  car          Car             @relation(fields: [carRefId], references: [refId], onDelete: Restrict)
   inscriptions Inscription[]
-  cities       CityRoute[]
+  cities       CityTravel[]
 
   @@map("routes")
 }
 
 model Inscription {
-  id        String   @id @default(uuid())
-  createdAt DateTime @default(now()) @map("created_at")
-  userId    String   @map("user_id")
-  routeId   String   @map("route_id")
+  id           String            @id @default(uuid())
+  refId        Int               @unique @default(autoincrement()) @map("ref_id")
+  createdAt    DateTime          @default(now()) @map("created_at")
+  userRefId    Int               @map("user_ref_id")
+  routeRefId   Int               @map("route_ref_id")
+  status       InscriptionStatus @default(ACTIVE)
 
-  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  route Route @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userRefId], references: [refId], onDelete: Cascade)
+  travel Travel @relation(fields: [routeRefId], references: [refId], onDelete: Cascade)
 
-  @@unique([userId, routeId])
+  @@unique([userRefId, routeRefId])
   @@map("inscriptions")
 }
 
 model City {
   id       String @id @default(uuid())
+  refId    Int    @unique @default(autoincrement()) @map("ref_id")
   cityName String @map("city_name")
   zipcode  String
 
-  routes CityRoute[]
+  travels CityTravel[]
 
   @@map("cities")
 }
 
-model CityRoute {
-  routeId String @map("route_id")
-  cityId  String @map("city_id")
+model CityTravel {
+  routeRefId Int            @map("route_ref_id")
+  cityRefId  Int            @map("city_ref_id")
+  type       CityTravelType
 
-  route Route @relation(fields: [routeId], references: [id], onDelete: Cascade)
-  city  City  @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  travel Travel @relation(fields: [routeRefId], references: [refId], onDelete: Cascade)
+  city   City   @relation(fields: [cityRefId], references: [refId], onDelete: Cascade)
 
-  @@id([routeId, cityId])
+  @@id([routeRefId, cityRefId])
   @@map("city_routes")
 }
 
 model Car {
-  id      String @id @default(uuid())
-  immat   String @unique
-  modelId String @map("model_id")
+  id         String @id @default(uuid())
+  refId      Int    @unique @default(autoincrement()) @map("ref_id")
+  immat      String @unique
+  modelRefId Int    @map("model_ref_id")
 
-  model  Model   @relation(fields: [modelId], references: [id], onDelete: Cascade)
-  routes Route[]
+  model   Model    @relation(fields: [modelRefId], references: [refId], onDelete: Restrict)
+  travels Travel[]
 
   @@map("cars")
 }
 
 model Model {
-  id      String @id @default(uuid())
-  name    String
-  brandId String @map("brand_id")
+  id         String @id @default(uuid())
+  refId      Int    @unique @default(autoincrement()) @map("ref_id")
+  name       String
+  brandRefId Int    @map("brand_ref_id")
 
-  brand  Brand        @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  brand  Brand        @relation(fields: [brandRefId], references: [refId], onDelete: Restrict)
   cars   Car[]
   colors ColorModel[]
 
+  @@unique([name, brandRefId])
   @@map("models")
 }
 
 model Brand {
-  id   String @id @default(uuid())
-  name String
+  id    String @id @default(uuid())
+  refId Int    @unique @default(autoincrement()) @map("ref_id")
+  name  String
 
   models Model[]
 
@@ -117,9 +162,10 @@ model Brand {
 }
 
 model Color {
-  id   String @id @default(uuid())
-  name String
-  hex  String
+  id    String @id @default(uuid())
+  refId Int    @unique @default(autoincrement()) @map("ref_id")
+  name  String
+  hex   String
 
   models ColorModel[]
 
@@ -127,12 +173,12 @@ model Color {
 }
 
 model ColorModel {
-  colorId String @map("color_id")
-  modelId String @map("model_id")
+  colorRefId Int @map("color_ref_id")
+  modelRefId Int @map("model_ref_id")
 
-  color Color @relation(fields: [colorId], references: [id], onDelete: Cascade)
-  model Model @relation(fields: [modelId], references: [id], onDelete: Cascade)
+  color Color @relation(fields: [colorRefId], references: [refId], onDelete: Cascade)
+  model Model @relation(fields: [modelRefId], references: [refId], onDelete: Cascade)
 
-  @@id([colorId, modelId])
+  @@id([colorRefId, modelRefId])
   @@map("color_models")
 }

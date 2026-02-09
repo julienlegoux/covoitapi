@@ -1,8 +1,8 @@
 import 'reflect-metadata';
 import 'dotenv/config';
 import { Hono } from 'hono';
-import './infrastructure/di/container.js';
-import { logger } from './lib/shared/utils/logger.util.js';
+import './lib/shared/di/container.js';
+import { logger } from './lib/logging/logger.js';
 import { app } from './presentation/routes/index.js';
 
 // Required for Vercel to detect this as a Hono app

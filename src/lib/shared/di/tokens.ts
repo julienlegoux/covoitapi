@@ -1,4 +1,7 @@
+const TravelRepositoryToken = Symbol('TravelRepository');
+
 export const TOKENS = {
+	AuthRepository: Symbol('AuthRepository'),
 	UserRepository: Symbol('UserRepository'),
 	BrandRepository: Symbol('BrandRepository'),
 	ColorRepository: Symbol('ColorRepository'),
@@ -6,7 +9,9 @@ export const TOKENS = {
 	ModelRepository: Symbol('ModelRepository'),
 	CarRepository: Symbol('CarRepository'),
 	DriverRepository: Symbol('DriverRepository'),
-	RouteRepository: Symbol('RouteRepository'),
+	TravelRepository: TravelRepositoryToken,
+	/** @deprecated Use TravelRepository instead. Kept for backward compatibility. */
+	RouteRepository: TravelRepositoryToken,
 	InscriptionRepository: Symbol('InscriptionRepository'),
 	EmailService: Symbol('EmailService'),
 	PasswordService: Symbol('PasswordService'),

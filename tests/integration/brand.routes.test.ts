@@ -4,7 +4,7 @@ import { ListBrandsUseCase } from '../../src/application/use-cases/brand/list-br
 import { CreateBrandUseCase } from '../../src/application/use-cases/brand/create-brand.use-case.js';
 import { DeleteBrandUseCase } from '../../src/application/use-cases/brand/delete-brand.use-case.js';
 import { ok, err } from '../../src/lib/shared/types/result.js';
-import { BrandNotFoundError } from '../../src/domain/errors/domain.errors.js';
+import { BrandNotFoundError } from '../../src/lib/errors/domain.errors.js';
 import { authHeaders, registerMockJwtService, registerMockUseCase } from './helpers.js';
 
 vi.mock('../../src/infrastructure/database/generated/prisma/client.js', () => ({
@@ -26,29 +26,29 @@ describe('Brand Routes', () => {
 		deleteMock = registerMockUseCase(DeleteBrandUseCase);
 	});
 
-	describe('GET /api/listBrands', () => {
+	describe('GET /api/brands', () => {
 		it('should return 200 with brands', async () => {
 			const brands = [{ id: '1', name: 'Toyota' }];
 			listMock.execute.mockResolvedValue(ok(brands));
-			const res = await app.request('/api/listBrands', { headers: authHeaders() });
+			const res = await app.request('/api/brands', { headers: authHeaders() });
 			expect(res.status).toBe(200);
 			const body = await res.json();
 			expect(body).toEqual({ success: true, data: brands });
 		});
 
 		it('should return 401 without auth token', async () => {
-			const res = await app.request('/api/listBrands');
+			const res = await app.request('/api/brands');
 			expect(res.status).toBe(401);
 		});
 	});
 
-	describe('POST /api/brand', () => {
+	describe('POST /api/brands', () => {
 		it('should return 201 on success', async () => {
 			const brand = { id: '1', name: 'Toyota' };
 			createMock.execute.mockResolvedValue(ok(brand));
-			const res = await app.request('/api/brand', {
+			const res = await app.request('/api/brands', {
 				method: 'POST',
-				body: JSON.stringify({ nom: 'Toyota' }),
+				body: JSON.stringify({ name: 'Toyota' }),
 				headers: authHeaders(),
 			});
 			expect(res.status).toBe(201);
@@ -57,7 +57,7 @@ describe('Brand Routes', () => {
 		});
 
 		it('should reject invalid input', async () => {
-			const res = await app.request('/api/brand', {
+			const res = await app.request('/api/brands', {
 				method: 'POST',
 				body: JSON.stringify({}),
 				headers: authHeaders(),
@@ -65,30 +65,30 @@ describe('Brand Routes', () => {
 			expect(res.ok).toBe(false);
 		});
 
-		it('should map nom to name', async () => {
+		it('should pass name field', async () => {
 			createMock.execute.mockResolvedValue(ok({ id: '1', name: 'Honda' }));
-			await app.request('/api/brand', {
+			await app.request('/api/brands', {
 				method: 'POST',
-				body: JSON.stringify({ nom: 'Honda' }),
+				body: JSON.stringify({ name: 'Honda' }),
 				headers: authHeaders(),
 			});
 			expect(createMock.execute).toHaveBeenCalledWith({ name: 'Honda' });
 		});
 	});
 
-	describe('DELETE /api/brand/:id', () => {
-		it('should return 200 on success', async () => {
+	describe('DELETE /api/brands/:id', () => {
+		it('should return 204 on success', async () => {
 			deleteMock.execute.mockResolvedValue(ok(undefined));
-			const res = await app.request('/api/brand/b1', {
+			const res = await app.request('/api/brands/b1', {
 				method: 'DELETE',
 				headers: authHeaders(),
 			});
-			expect(res.status).toBe(200);
+			expect(res.status).toBe(204);
 		});
 
 		it('should return 404 when not found', async () => {
 			deleteMock.execute.mockResolvedValue(err(new BrandNotFoundError('b1')));
-			const res = await app.request('/api/brand/b1', {
+			const res = await app.request('/api/brands/b1', {
 				method: 'DELETE',
 				headers: authHeaders(),
 			});

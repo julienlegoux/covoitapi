@@ -1,0 +1,30 @@
+import { inject, injectable } from 'tsyringe';
+import { UserNotFoundError } from '../../../lib/errors/domain.errors.js';
+import type { UserRepository } from '../../../domain/repositories/user.repository.js';
+import type { RepositoryError } from '../../../lib/errors/repository.errors.js';
+import { TOKENS } from '../../../lib/shared/di/tokens.js';
+import type { Result } from '../../../lib/shared/types/result.js';
+import { err } from '../../../lib/shared/types/result.js';
+
+type DeleteUserError = UserNotFoundError | RepositoryError;
+
+@injectable()
+export class DeleteUserUseCase {
+	constructor(
+		@inject(TOKENS.UserRepository)
+		private readonly userRepository: UserRepository,
+	) {}
+
+	async execute(id: string): Promise<Result<void, DeleteUserError>> {
+		const findResult = await this.userRepository.findById(id);
+		if (!findResult.success) {
+			return findResult;
+		}
+
+		if (!findResult.value) {
+			return err(new UserNotFoundError(id));
+		}
+
+		return this.userRepository.delete(id);
+	}
+}

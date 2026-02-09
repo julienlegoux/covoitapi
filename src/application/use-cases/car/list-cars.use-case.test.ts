@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { createMockCarRepository } from '../../../../tests/setup.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import { ok, err } from '../../../lib/shared/types/result.js';
-import { DatabaseError } from '../../../infrastructure/errors/repository.errors.js';
+import { DatabaseError } from '../../../lib/errors/repository.errors.js';
 import { ListCarsUseCase } from './list-cars.use-case.js';
 
 describe('ListCarsUseCase', () => {
@@ -16,26 +16,38 @@ describe('ListCarsUseCase', () => {
 		useCase = container.resolve(ListCarsUseCase);
 	});
 
-	it('should return list of cars', async () => {
+	it('should return paginated list of cars', async () => {
 		const cars = [{ id: '1', immat: 'AB-123-CD', modelId: 'm1' }];
-		mockCarRepository.findAll.mockResolvedValue(ok(cars));
+		mockCarRepository.findAll.mockResolvedValue(ok({ data: cars, total: 1 }));
 
 		const result = await useCase.execute();
 
 		expect(result.success).toBe(true);
-		if (result.success) expect(result.value).toEqual(cars);
+		if (result.success) {
+			expect(result.value.data).toEqual(cars);
+			expect(result.value.meta).toEqual({ page: 1, limit: 20, total: 1, totalPages: 1 });
+		}
 	});
 
 	it('should return empty array', async () => {
-		mockCarRepository.findAll.mockResolvedValue(ok([]));
+		mockCarRepository.findAll.mockResolvedValue(ok({ data: [], total: 0 }));
 		const result = await useCase.execute();
 		expect(result.success).toBe(true);
-		if (result.success) expect(result.value).toEqual([]);
+		if (result.success) {
+			expect(result.value.data).toEqual([]);
+			expect(result.value.meta).toEqual({ page: 1, limit: 20, total: 0, totalPages: 0 });
+		}
 	});
 
 	it('should propagate repository error', async () => {
 		mockCarRepository.findAll.mockResolvedValue(err(new DatabaseError('db error')));
 		const result = await useCase.execute();
 		expect(result.success).toBe(false);
+	});
+
+	it('should pass pagination params to repository', async () => {
+		mockCarRepository.findAll.mockResolvedValue(ok({ data: [], total: 0 }));
+		await useCase.execute({ page: 2, limit: 10 });
+		expect(mockCarRepository.findAll).toHaveBeenCalledWith({ skip: 10, take: 10 });
 	});
 });

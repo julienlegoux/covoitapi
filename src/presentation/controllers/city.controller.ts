@@ -3,13 +3,18 @@ import type { CreateCityInput } from '../../application/dtos/city.dto.js';
 import { CreateCityUseCase } from '../../application/use-cases/city/create-city.use-case.js';
 import { DeleteCityUseCase } from '../../application/use-cases/city/delete-city.use-case.js';
 import { ListCitiesUseCase } from '../../application/use-cases/city/list-cities.use-case.js';
-import { container } from '../../infrastructure/di/container.js';
+import { container } from '../../lib/shared/di/container.js';
+import { paginationSchema } from '../../lib/shared/utils/pagination.util.js';
 import { resultToResponse } from '../../lib/shared/utils/result-response.util.js';
 import { createCitySchema } from '../validators/city.validator.js';
 
 export async function listCities(c: Context): Promise<Response> {
+	const pagination = paginationSchema.parse({
+		page: c.req.query('page'),
+		limit: c.req.query('limit'),
+	});
 	const useCase = container.resolve(ListCitiesUseCase);
-	const result = await useCase.execute();
+	const result = await useCase.execute(pagination);
 	return resultToResponse(c, result);
 }
 
@@ -18,8 +23,8 @@ export async function createCity(c: Context): Promise<Response> {
 	const validated = createCitySchema.parse(body);
 
 	const input: CreateCityInput = {
-		cityName: validated.ville,
-		zipcode: validated.cp,
+		cityName: validated.cityName,
+		zipcode: validated.zipcode,
 	};
 
 	const useCase = container.resolve(CreateCityUseCase);
@@ -31,5 +36,8 @@ export async function deleteCity(c: Context): Promise<Response> {
 	const id = c.req.param('id');
 	const useCase = container.resolve(DeleteCityUseCase);
 	const result = await useCase.execute(id);
-	return resultToResponse(c, result);
+	if (!result.success) {
+		return resultToResponse(c, result);
+	}
+	return c.body(null, 204);
 }
