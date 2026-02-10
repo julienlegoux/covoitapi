@@ -2,17 +2,19 @@
 import "dotenv/config";
 import { readFileSync } from "fs";
 import { resolve } from "path";
+import { neonConfig } from "@neondatabase/serverless";
+import { PrismaNeon } from "@prisma/adapter-neon";
+import ws from "ws";
 import { PrismaClient } from "../generated/prisma/client.js";
-import { withAccelerate } from "@prisma/extension-accelerate";
 
 const databaseUrl = process.env.DATABASE_URL;
 if (!databaseUrl) {
 	throw new Error('DATABASE_URL environment variable is required');
 }
 
-const prisma = new PrismaClient({
-	accelerateUrl: databaseUrl,
-}).$extends(withAccelerate());
+neonConfig.webSocketConstructor = ws;
+const adapter = new PrismaNeon({ connectionString: databaseUrl });
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
   const csvPath = resolve(process.cwd(), "all-vehicles-model.csv");

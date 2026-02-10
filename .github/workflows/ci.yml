@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      DATABASE_URL: "prisma://accelerate.prisma-data.net/?api_key=dummy-test-key-for-ci"
+      DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
       JWT_SECRET: "ci-test-secret-key-at-least-32-characters-long"
       JWT_EXPIRES_IN: "24h"
 
