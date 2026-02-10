@@ -1,6 +1,8 @@
 import 'reflect-metadata';
 import 'dotenv/config';
-import { withAccelerate } from '@prisma/extension-accelerate';
+import { neonConfig } from '@neondatabase/serverless';
+import { PrismaNeon } from '@prisma/adapter-neon';
+import ws from 'ws';
 import { container } from 'tsyringe';
 import { TOKENS } from './tokens.js';
 import { PrismaClient } from '../../../infrastructure/database/generated/prisma/client.js';
@@ -23,9 +25,9 @@ if (!databaseUrl) {
 	throw new Error('DATABASE_URL environment variable is required');
 }
 
-const prismaClient = new PrismaClient({
-	accelerateUrl: databaseUrl,
-}).$extends(withAccelerate());
+neonConfig.webSocketConstructor = ws;
+const adapter = new PrismaNeon({ connectionString: databaseUrl });
+const prismaClient = new PrismaClient({ adapter });
 
 container.registerInstance(TOKENS.PrismaClient, prismaClient);
 

@@ -4,7 +4,7 @@ import { TOKENS } from '../../src/lib/shared/di/tokens.js';
 import { ok } from '../../src/lib/shared/types/result.js';
 
 // Set DATABASE_URL before container module loads
-process.env.DATABASE_URL ??= 'prisma://mock-accelerate';
+process.env.DATABASE_URL ??= 'postgresql://mock:mock@localhost:5432/mock';
 
 export const AUTH_TOKEN = 'valid-test-token';
 

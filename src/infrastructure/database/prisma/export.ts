@@ -1,6 +1,8 @@
 import "dotenv/config";
+import { neonConfig } from "@neondatabase/serverless";
+import { PrismaNeon } from "@prisma/adapter-neon";
+import ws from "ws";
 import { PrismaClient } from "../generated/prisma/client.js";
-import { withAccelerate } from "@prisma/extension-accelerate";
 import { writeFileSync } from "fs";
 
 const databaseUrl = process.env.DATABASE_URL;
@@ -8,9 +10,9 @@ if (!databaseUrl) {
   throw new Error("DATABASE_URL environment variable is required");
 }
 
-const prisma = new PrismaClient({
-  accelerateUrl: databaseUrl,
-}).$extends(withAccelerate());
+neonConfig.webSocketConstructor = ws;
+const adapter = new PrismaNeon({ connectionString: databaseUrl });
+const prisma = new PrismaClient({ adapter });
 
 function escapeStr(val: string) {
   return val.replace(/'/g, "''");
