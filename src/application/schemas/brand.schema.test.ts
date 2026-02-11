@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createBrandSchema } from './brand.validator.js';
+import { createBrandSchema } from './brand.schema.js';
 
 describe('createBrandSchema', () => {
 	it('should accept valid brand name', () => {

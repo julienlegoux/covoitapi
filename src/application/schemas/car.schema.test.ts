@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createCarSchema, updateCarSchema, patchCarSchema } from './car.validator.js';
+import { createCarSchema, updateCarSchema, patchCarSchema } from './car.schema.js';
 
 describe('createCarSchema', () => {
 	const validInput = { model: 'Corolla', brandId: 'brand-1', licensePlate: 'AB-123-CD' };

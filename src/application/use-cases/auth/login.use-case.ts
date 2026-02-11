@@ -10,7 +10,7 @@ import type { JwtError } from '../../../lib/errors/jwt.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import type { Result } from '../../../lib/shared/types/result.js';
 import { ok, err } from '../../../lib/shared/types/result.js';
-import type { AuthResponse, LoginInput } from '../../dtos/auth.dto.js';
+import type { LoginSchemaType, AuthResponseType } from '../../schemas/auth.schema.js';
 
 type LoginError = InvalidCredentialsError | RepositoryError | PasswordError | JwtError;
 
@@ -27,7 +27,7 @@ export class LoginUseCase {
 		private readonly jwtService: JwtService,
 	) {}
 
-	async execute(input: LoginInput): Promise<Result<AuthResponse, LoginError>> {
+	async execute(input: LoginSchemaType): Promise<Result<AuthResponseType, LoginError>> {
 		// Find auth by email
 		const authResult = await this.authRepository.findByEmail(input.email);
 		if (!authResult.success) {

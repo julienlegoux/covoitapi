@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createColorSchema, updateColorSchema } from './color.validator.js';
+import { createColorSchema, updateColorSchema } from './color.schema.js';
 
 describe('createColorSchema', () => {
 	it('should accept valid color with name and hex', () => {

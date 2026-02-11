@@ -10,6 +10,3 @@ export { app } from './routes/index.js';
 
 // Types
 export type { ErrorResponse } from '../lib/errors/error.types.js';
-
-// Validators
-export * from './validators/auth.validator.js';

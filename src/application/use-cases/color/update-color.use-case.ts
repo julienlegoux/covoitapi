@@ -7,8 +7,9 @@ import type { RepositoryError } from '../../../lib/errors/repository.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import type { Result } from '../../../lib/shared/types/result.js';
 import { err } from '../../../lib/shared/types/result.js';
+import type { UpdateColorSchemaType } from '../../schemas/color.schema.js';
 
-type UpdateColorInput = { id: string; name?: string; hex?: string };
+type UpdateColorInput = { id: string } & UpdateColorSchemaType;
 type UpdateColorError = ColorNotFoundError | RepositoryError;
 
 @injectable()

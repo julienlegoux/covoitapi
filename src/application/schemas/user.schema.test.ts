@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { profileSchema } from './user.validator.js';
+import { profileSchema } from './user.schema.js';
 
 describe('profileSchema', () => {
 	const validInput = {

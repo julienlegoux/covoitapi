@@ -8,7 +8,8 @@ import type { RepositoryError } from '../../../lib/errors/repository.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import type { Result } from '../../../lib/shared/types/result.js';
 import { err } from '../../../lib/shared/types/result.js';
-import type { CreateDriverInput } from '../../dtos/driver.dto.js';
+import type { CreateDriverSchemaType } from '../../schemas/driver.schema.js';
+import type { WithAuthContext } from '../../../lib/shared/types/auth-context.js';
 
 type CreateDriverError = DriverAlreadyExistsError | UserNotFoundError | RepositoryError;
 
@@ -23,7 +24,7 @@ export class CreateDriverUseCase {
 		private readonly authRepository: AuthRepository,
 	) {}
 
-	async execute(input: CreateDriverInput): Promise<Result<DriverEntity, CreateDriverError>> {
+	async execute(input: WithAuthContext<CreateDriverSchemaType>): Promise<Result<DriverEntity, CreateDriverError>> {
 		// Look up user to get refId
 		const userResult = await this.userRepository.findById(input.userId);
 		if (!userResult.success) {

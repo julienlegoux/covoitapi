@@ -1,7 +1,7 @@
 export type CarEntity = {
 	id: string;
 	refId: number;
-	immat: string;
+	licensePlate: string;
 	modelRefId: number;
 };
 

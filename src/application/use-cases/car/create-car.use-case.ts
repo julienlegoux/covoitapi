@@ -8,7 +8,7 @@ import type { RepositoryError } from '../../../lib/errors/repository.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import type { Result } from '../../../lib/shared/types/result.js';
 import { err } from '../../../lib/shared/types/result.js';
-import type { CreateCarInput } from '../../dtos/car.dto.js';
+import type { CreateCarSchemaType } from '../../schemas/car.schema.js';
 
 type CreateCarError = CarAlreadyExistsError | BrandNotFoundError | RepositoryError;
 
@@ -23,27 +23,27 @@ export class CreateCarUseCase {
 		private readonly brandRepository: BrandRepository,
 	) {}
 
-	async execute(input: CreateCarInput): Promise<Result<CarEntity, CreateCarError>> {
-		const existsResult = await this.carRepository.existsByImmat(input.immatriculation);
+	async execute(input: CreateCarSchemaType): Promise<Result<CarEntity, CreateCarError>> {
+		const existsResult = await this.carRepository.existsByLicensePlate(input.licensePlate);
 		if (!existsResult.success) {
 			return existsResult;
 		}
 
 		if (existsResult.value) {
-			return err(new CarAlreadyExistsError(input.immatriculation));
+			return err(new CarAlreadyExistsError(input.licensePlate));
 		}
 
 		// Resolve brand UUID to refId
-		const brandResult = await this.brandRepository.findById(input.marqueId);
+		const brandResult = await this.brandRepository.findById(input.brandId);
 		if (!brandResult.success) {
 			return brandResult;
 		}
 		if (!brandResult.value) {
-			return err(new BrandNotFoundError(input.marqueId));
+			return err(new BrandNotFoundError(input.brandId));
 		}
 
 		// Find or create model using brand refId
-		const modelResult = await this.modelRepository.findByNameAndBrand(input.modele, brandResult.value.refId);
+		const modelResult = await this.modelRepository.findByNameAndBrand(input.model, brandResult.value.refId);
 		if (!modelResult.success) {
 			return modelResult;
 		}
@@ -53,7 +53,7 @@ export class CreateCarUseCase {
 			modelRefId = modelResult.value.refId;
 		} else {
 			const createModelResult = await this.modelRepository.create({
-				name: input.modele,
+				name: input.model,
 				brandRefId: brandResult.value.refId,
 			});
 			if (!createModelResult.success) {
@@ -63,7 +63,7 @@ export class CreateCarUseCase {
 		}
 
 		return this.carRepository.create({
-			immat: input.immatriculation,
+			licensePlate: input.licensePlate,
 			modelRefId,
 		});
 	}

@@ -31,7 +31,7 @@ describe('Car Routes', () => {
 
 	describe('GET /api/cars', () => {
 		it('should return 200 with cars', async () => {
-			const cars = [{ id: '1', immat: 'AB-123-CD' }];
+			const cars = [{ id: '1', licensePlate: 'AB-123-CD' }];
 			listMock.execute.mockResolvedValue(ok(cars));
 			const res = await app.request('/api/cars', { headers: authHeaders() });
 			expect(res.status).toBe(200);
@@ -49,7 +49,7 @@ describe('Car Routes', () => {
 		const validBody = { model: 'Corolla', brandId: 'b1', licensePlate: 'AB-123-CD' };
 
 		it('should return 201 on success', async () => {
-			createMock.execute.mockResolvedValue(ok({ id: '1', immat: 'AB-123-CD' }));
+			createMock.execute.mockResolvedValue(ok({ id: '1', licensePlate: 'AB-123-CD' }));
 			const res = await app.request('/api/cars', {
 				method: 'POST',
 				body: JSON.stringify(validBody),
@@ -82,7 +82,7 @@ describe('Car Routes', () => {
 		const validBody = { model: 'Yaris', brandId: 'b1', licensePlate: 'XY-999-ZZ' };
 
 		it('should return 200 on success', async () => {
-			updateMock.execute.mockResolvedValue(ok({ id: '1', immat: 'XY-999-ZZ' }));
+			updateMock.execute.mockResolvedValue(ok({ id: '1', licensePlate: 'XY-999-ZZ' }));
 			const res = await app.request('/api/cars/1', {
 				method: 'PUT',
 				body: JSON.stringify(validBody),
@@ -104,7 +104,7 @@ describe('Car Routes', () => {
 
 	describe('PATCH /api/cars/:id', () => {
 		it('should return 200 on success', async () => {
-			updateMock.execute.mockResolvedValue(ok({ id: '1', immat: 'AB-123-CD' }));
+			updateMock.execute.mockResolvedValue(ok({ id: '1', licensePlate: 'AB-123-CD' }));
 			const res = await app.request('/api/cars/1', {
 				method: 'PATCH',
 				body: JSON.stringify({ licensePlate: 'XY-999-ZZ' }),

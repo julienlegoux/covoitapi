@@ -10,7 +10,8 @@ import type { RepositoryError } from '../../../lib/errors/repository.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import type { Result } from '../../../lib/shared/types/result.js';
 import { err } from '../../../lib/shared/types/result.js';
-import type { CreateTravelInput } from '../../dtos/travel.dto.js';
+import type { CreateTravelSchemaType } from '../../schemas/travel.schema.js';
+import type { WithAuthContext } from '../../../lib/shared/types/auth-context.js';
 
 type CreateTravelError = DriverNotFoundError | CarNotFoundError | RepositoryError;
 
@@ -29,7 +30,7 @@ export class CreateTravelUseCase {
 		private readonly carRepository: CarRepository,
 	) {}
 
-	async execute(input: CreateTravelInput): Promise<Result<TravelEntity, CreateTravelError>> {
+	async execute(input: WithAuthContext<CreateTravelSchemaType>): Promise<Result<TravelEntity, CreateTravelError>> {
 		// Resolve user UUID to get driver
 		const userResult = await this.userRepository.findById(input.userId);
 		if (!userResult.success) {

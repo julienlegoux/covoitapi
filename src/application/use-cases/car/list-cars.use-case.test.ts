@@ -17,7 +17,7 @@ describe('ListCarsUseCase', () => {
 	});
 
 	it('should return paginated list of cars', async () => {
-		const cars = [{ id: '1', immat: 'AB-123-CD', modelId: 'm1' }];
+		const cars = [{ id: '1', licensePlate: 'AB-123-CD', modelId: 'm1' }];
 		mockCarRepository.findAll.mockResolvedValue(ok({ data: cars, total: 1 }));
 
 		const result = await useCase.execute();

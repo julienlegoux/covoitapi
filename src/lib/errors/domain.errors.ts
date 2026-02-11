@@ -51,8 +51,8 @@ export class CarNotFoundError extends DomainError {
 }
 
 export class CarAlreadyExistsError extends DomainError {
-	constructor(immat: string) {
-		super(`A car with immatriculation "${immat}" already exists`, 'CAR_ALREADY_EXISTS');
+	constructor(licensePlate: string) {
+		super(`A car with license plate "${licensePlate}" already exists`, 'CAR_ALREADY_EXISTS');
 		this.name = 'CarAlreadyExistsError';
 	}
 }
@@ -77,9 +77,6 @@ export class TravelNotFoundError extends DomainError {
 		this.name = 'TravelNotFoundError';
 	}
 }
-
-/** @deprecated Use TravelNotFoundError instead. Kept for backward compatibility. */
-export const RouteNotFoundError = TravelNotFoundError;
 
 export class InscriptionNotFoundError extends DomainError {
 	constructor(identifier: string) {
