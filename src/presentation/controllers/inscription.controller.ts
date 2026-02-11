@@ -1,5 +1,4 @@
 import type { Context } from 'hono';
-import type { CreateInscriptionInput } from '../../application/dtos/inscription.dto.js';
 import { CreateInscriptionUseCase } from '../../application/use-cases/inscription/create-inscription.use-case.js';
 import { DeleteInscriptionUseCase } from '../../application/use-cases/inscription/delete-inscription.use-case.js';
 import { ListInscriptionsUseCase } from '../../application/use-cases/inscription/list-inscriptions.use-case.js';
@@ -8,7 +7,9 @@ import { ListUserInscriptionsUseCase } from '../../application/use-cases/inscrip
 import { container } from '../../lib/shared/di/container.js';
 import { paginationSchema } from '../../lib/shared/utils/pagination.util.js';
 import { resultToResponse } from '../../lib/shared/utils/result-response.util.js';
-import { createInscriptionSchema } from '../validators/inscription.validator.js';
+import { createInscriptionSchema } from '../../application/schemas/inscription.schema.js';
+import type { CreateInscriptionSchemaType } from '../../application/schemas/inscription.schema.js';
+import type { WithAuthContext } from '../../lib/shared/types/auth-context.js';
 
 export async function listInscriptions(c: Context): Promise<Response> {
 	const pagination = paginationSchema.parse({
@@ -46,9 +47,9 @@ export async function createInscription(c: Context): Promise<Response> {
 	const body = await c.req.json();
 	const validated = createInscriptionSchema.parse(body);
 
-	const input: CreateInscriptionInput = {
+	const input: WithAuthContext<CreateInscriptionSchemaType> = {
+		...validated,
 		userId: c.get('userId'),
-		travelId: validated.travelId,
 	};
 
 	const useCase = container.resolve(CreateInscriptionUseCase);

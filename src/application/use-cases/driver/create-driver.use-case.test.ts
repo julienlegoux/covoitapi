@@ -9,7 +9,8 @@ import { DriverAlreadyExistsError } from '../../../lib/errors/domain.errors.js';
 import { DatabaseError } from '../../../lib/errors/repository.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import { ok, err } from '../../../lib/shared/types/result.js';
-import type { CreateDriverInput } from '../../dtos/driver.dto.js';
+import type { CreateDriverSchemaType } from '../../schemas/driver.schema.js';
+import type { WithAuthContext } from '../../../lib/shared/types/auth-context.js';
 import { CreateDriverUseCase } from './create-driver.use-case.js';
 
 describe('CreateDriverUseCase', () => {
@@ -18,7 +19,7 @@ describe('CreateDriverUseCase', () => {
 	let mockUserRepository: ReturnType<typeof createMockUserRepository>;
 	let mockAuthRepository: ReturnType<typeof createMockAuthRepository>;
 
-	const validInput: CreateDriverInput = {
+	const validInput: WithAuthContext<CreateDriverSchemaType> = {
 		driverLicense: 'DL-123456',
 		userId: 'user-id-1',
 	};

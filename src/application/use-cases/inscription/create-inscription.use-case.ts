@@ -8,7 +8,8 @@ import type { RepositoryError } from '../../../lib/errors/repository.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import type { Result } from '../../../lib/shared/types/result.js';
 import { err } from '../../../lib/shared/types/result.js';
-import type { CreateInscriptionInput } from '../../dtos/inscription.dto.js';
+import type { CreateInscriptionSchemaType } from '../../schemas/inscription.schema.js';
+import type { WithAuthContext } from '../../../lib/shared/types/auth-context.js';
 
 type CreateInscriptionError = UserNotFoundError | TravelNotFoundError | AlreadyInscribedError | NoSeatsAvailableError | RepositoryError;
 
@@ -23,7 +24,7 @@ export class CreateInscriptionUseCase {
 		private readonly userRepository: UserRepository,
 	) {}
 
-	async execute(input: CreateInscriptionInput): Promise<Result<InscriptionEntity, CreateInscriptionError>> {
+	async execute(input: WithAuthContext<CreateInscriptionSchemaType>): Promise<Result<InscriptionEntity, CreateInscriptionError>> {
 		// Resolve user UUID to refId
 		const userResult = await this.userRepository.findById(input.userId);
 		if (!userResult.success) {

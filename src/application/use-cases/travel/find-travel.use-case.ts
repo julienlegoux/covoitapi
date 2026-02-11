@@ -4,7 +4,7 @@ import type { TravelRepository } from '../../../domain/repositories/travel.repos
 import type { RepositoryError } from '../../../lib/errors/repository.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import type { Result } from '../../../lib/shared/types/result.js';
-import type { FindTravelInput } from '../../dtos/travel.dto.js';
+import type { FindTravelQueryType } from '../../schemas/travel.schema.js';
 
 @injectable()
 export class FindTravelUseCase {
@@ -13,7 +13,7 @@ export class FindTravelUseCase {
 		private readonly travelRepository: TravelRepository,
 	) {}
 
-	async execute(input: FindTravelInput): Promise<Result<TravelEntity[], RepositoryError>> {
+	async execute(input: FindTravelQueryType): Promise<Result<TravelEntity[], RepositoryError>> {
 		return this.travelRepository.findByFilters({
 			departureCity: input.departureCity,
 			arrivalCity: input.arrivalCity,

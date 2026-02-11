@@ -1,61 +1,57 @@
 import type { Context } from 'hono';
-import type { CreateRouteInput, FindRouteInput } from '../../application/dtos/route.dto.js';
-import { CreateRouteUseCase } from '../../application/use-cases/route/create-route.use-case.js';
-import { DeleteRouteUseCase } from '../../application/use-cases/route/delete-route.use-case.js';
-import { FindRouteUseCase } from '../../application/use-cases/route/find-route.use-case.js';
-import { GetRouteUseCase } from '../../application/use-cases/route/get-route.use-case.js';
-import { ListRoutesUseCase } from '../../application/use-cases/route/list-routes.use-case.js';
+import { CreateTravelUseCase } from '../../application/use-cases/travel/create-travel.use-case.js';
+import { DeleteTravelUseCase } from '../../application/use-cases/travel/delete-travel.use-case.js';
+import { FindTravelUseCase } from '../../application/use-cases/travel/find-travel.use-case.js';
+import { GetTravelUseCase } from '../../application/use-cases/travel/get-travel.use-case.js';
+import { ListTravelsUseCase } from '../../application/use-cases/travel/list-travels.use-case.js';
 import { container } from '../../lib/shared/di/container.js';
 import { resultToResponse } from '../../lib/shared/utils/result-response.util.js';
-import { createRouteSchema } from '../validators/route.validator.js';
+import { createTravelSchema, findTravelQuerySchema } from '../../application/schemas/travel.schema.js';
+import type { CreateTravelSchemaType } from '../../application/schemas/travel.schema.js';
+import type { WithAuthContext } from '../../lib/shared/types/auth-context.js';
 
 export async function listRoutes(c: Context): Promise<Response> {
-	const useCase = container.resolve(ListRoutesUseCase);
+	const useCase = container.resolve(ListTravelsUseCase);
 	const result = await useCase.execute();
 	return resultToResponse(c, result);
 }
 
 export async function getRoute(c: Context): Promise<Response> {
 	const id = c.req.param('id');
-	const useCase = container.resolve(GetRouteUseCase);
+	const useCase = container.resolve(GetTravelUseCase);
 	const result = await useCase.execute(id);
 	return resultToResponse(c, result);
 }
 
 export async function findRoute(c: Context): Promise<Response> {
-	const input: FindRouteInput = {
+	const validated = findTravelQuerySchema.parse({
 		departureCity: c.req.query('departureCity'),
 		arrivalCity: c.req.query('arrivalCity'),
 		date: c.req.query('date'),
-	};
+	});
 
-	const useCase = container.resolve(FindRouteUseCase);
-	const result = await useCase.execute(input);
+	const useCase = container.resolve(FindTravelUseCase);
+	const result = await useCase.execute(validated);
 	return resultToResponse(c, result);
 }
 
 export async function createRoute(c: Context): Promise<Response> {
 	const body = await c.req.json();
-	const validated = createRouteSchema.parse(body);
+	const validated = createTravelSchema.parse(body);
 
-	const input: CreateRouteInput = {
-		kms: validated.kms,
+	const input: WithAuthContext<CreateTravelSchemaType> = {
+		...validated,
 		userId: c.get('userId'),
-		date: validated.date,
-		departureCity: validated.departureCity,
-		arrivalCity: validated.arrivalCity,
-		seats: validated.seats,
-		carId: validated.carId,
 	};
 
-	const useCase = container.resolve(CreateRouteUseCase);
+	const useCase = container.resolve(CreateTravelUseCase);
 	const result = await useCase.execute(input);
 	return resultToResponse(c, result, 201);
 }
 
 export async function deleteRoute(c: Context): Promise<Response> {
 	const id = c.req.param('id');
-	const useCase = container.resolve(DeleteRouteUseCase);
+	const useCase = container.resolve(DeleteTravelUseCase);
 	const result = await useCase.execute(id);
 	if (!result.success) {
 		return resultToResponse(c, result);

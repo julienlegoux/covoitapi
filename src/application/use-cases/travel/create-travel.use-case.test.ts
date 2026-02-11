@@ -18,7 +18,7 @@ describe('CreateTravelUseCase', () => {
 	const validInput = { kms: 150, userId: 'user-1', date: '2025-06-15', departureCity: 'Paris', arrivalCity: 'Lyon', seats: 3, carId: 'car-1' };
 	const user = { id: 'user-1', refId: 1, authRefId: 10, firstName: 'John', lastName: 'Doe', phone: '0612345678', email: 'test@example.com', anonymizedAt: null, createdAt: new Date(), updatedAt: new Date() };
 	const driver = { id: 'driver-1', refId: 2, driverLicense: 'DL123', userRefId: 1, anonymizedAt: null };
-	const car = { id: 'car-1', refId: 3, immat: 'AB-123-CD', modelRefId: 10 };
+	const car = { id: 'car-1', refId: 3, licensePlate: 'AB-123-CD', modelRefId: 10 };
 
 	beforeEach(() => {
 		mockTravelRepo = createMockTravelRepository();

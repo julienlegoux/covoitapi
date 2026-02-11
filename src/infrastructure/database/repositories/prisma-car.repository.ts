@@ -14,6 +14,10 @@ export class PrismaCarRepository implements CarRepository {
 		private readonly prisma: PrismaClient,
 	) {}
 
+	private toEntity(car: { id: string; refId: number; immat: string; modelRefId: number }): CarEntity {
+		return { id: car.id, refId: car.refId, licensePlate: car.immat, modelRefId: car.modelRefId };
+	}
+
 	async findAll(params?: { skip: number; take: number }): Promise<Result<{ data: CarEntity[]; total: number }, DatabaseError>> {
 		try {
 			const [data, total] = await Promise.all([
@@ -22,7 +26,7 @@ export class PrismaCarRepository implements CarRepository {
 				}),
 				this.prisma.car.count(),
 			]);
-			return ok({ data, total });
+			return ok({ data: data.map((c) => this.toEntity(c)), total });
 		} catch (e) {
 			return err(new DatabaseError('Failed to find all cars', e));
 		}
@@ -33,7 +37,7 @@ export class PrismaCarRepository implements CarRepository {
 			const car = await this.prisma.car.findUnique({
 				where: { id },
 			});
-			return ok(car);
+			return ok(car ? this.toEntity(car) : null);
 		} catch (e) {
 			return err(new DatabaseError('Failed to find car by id', e));
 		}
@@ -43,11 +47,11 @@ export class PrismaCarRepository implements CarRepository {
 		try {
 			const car = await this.prisma.car.create({
 				data: {
-					immat: data.immat,
+					immat: data.licensePlate,
 					modelRefId: data.modelRefId,
 				},
 			});
-			return ok(car);
+			return ok(this.toEntity(car));
 		} catch (e) {
 			return err(new DatabaseError('Failed to create car', e));
 		}
@@ -57,9 +61,12 @@ export class PrismaCarRepository implements CarRepository {
 		try {
 			const car = await this.prisma.car.update({
 				where: { id },
-				data,
+				data: {
+					...(data.licensePlate !== undefined && { immat: data.licensePlate }),
+					...(data.modelRefId !== undefined && { modelRefId: data.modelRefId }),
+				},
 			});
-			return ok(car);
+			return ok(this.toEntity(car));
 		} catch (e) {
 			return err(new DatabaseError('Failed to update car', e));
 		}
@@ -76,10 +83,10 @@ export class PrismaCarRepository implements CarRepository {
 		}
 	}
 
-	async existsByImmat(immat: string): Promise<Result<boolean, DatabaseError>> {
+	async existsByLicensePlate(licensePlate: string): Promise<Result<boolean, DatabaseError>> {
 		try {
 			const count = await this.prisma.car.count({
-				where: { immat },
+				where: { immat: licensePlate },
 			});
 			return ok(count > 0);
 		} catch (e) {

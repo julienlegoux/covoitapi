@@ -18,7 +18,7 @@ describe('DeleteCarUseCase', () => {
 	});
 
 	it('should delete car successfully', async () => {
-		mockCarRepository.findById.mockResolvedValue(ok({ id: '1', immat: 'AB-123-CD', modelId: 'm1' }));
+		mockCarRepository.findById.mockResolvedValue(ok({ id: '1', licensePlate: 'AB-123-CD', modelId: 'm1' }));
 		mockCarRepository.delete.mockResolvedValue(ok(undefined));
 
 		const result = await useCase.execute('1');

@@ -6,8 +6,8 @@ import type { RepositoryError } from '../../../lib/errors/repository.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import type { Result } from '../../../lib/shared/types/result.js';
 import { err } from '../../../lib/shared/types/result.js';
+import type { CreateColorSchemaType } from '../../schemas/color.schema.js';
 
-type CreateColorInput = { name: string; hex: string };
 type CreateColorError = ColorAlreadyExistsError | RepositoryError;
 
 @injectable()
@@ -17,7 +17,7 @@ export class CreateColorUseCase {
 		private readonly colorRepository: ColorRepository,
 	) {}
 
-	async execute(input: CreateColorInput): Promise<Result<ColorEntity, CreateColorError>> {
+	async execute(input: CreateColorSchemaType): Promise<Result<ColorEntity, CreateColorError>> {
 		const existingResult = await this.colorRepository.findByName(input.name);
 		if (!existingResult.success) {
 			return existingResult;

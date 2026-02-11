@@ -15,7 +15,6 @@ export {
 	InscriptionNotFoundError,
 	InvalidCredentialsError,
 	NoSeatsAvailableError,
-	RouteNotFoundError,
 	TravelNotFoundError,
 	UserAlreadyExistsError,
 	UserNotFoundError,

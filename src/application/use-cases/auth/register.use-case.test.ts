@@ -9,7 +9,7 @@ import {
 import { UserAlreadyExistsError } from '../../../lib/errors/domain.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import { ok } from '../../../lib/shared/types/result.js';
-import type { RegisterInput } from '../../dtos/auth.dto.js';
+import type { RegisterSchemaType } from '../../schemas/auth.schema.js';
 import { RegisterUseCase } from './register.use-case.js';
 
 describe('RegisterUseCase', () => {
@@ -19,7 +19,7 @@ describe('RegisterUseCase', () => {
 	let mockEmailService: ReturnType<typeof createMockEmailService>;
 	let mockJwtService: ReturnType<typeof createMockJwtService>;
 
-	const validInput: RegisterInput = {
+	const validInput: RegisterSchemaType = {
 		email: 'test@example.com',
 		password: 'Password123!',
 		confirmPassword: 'Password123!',

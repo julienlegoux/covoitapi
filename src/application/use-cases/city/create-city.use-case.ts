@@ -4,7 +4,7 @@ import type { CityRepository } from '../../../domain/repositories/city.repositor
 import type { RepositoryError } from '../../../lib/errors/repository.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import type { Result } from '../../../lib/shared/types/result.js';
-import type { CreateCityInput } from '../../dtos/city.dto.js';
+import type { CreateCitySchemaType } from '../../schemas/city.schema.js';
 
 @injectable()
 export class CreateCityUseCase {
@@ -13,7 +13,7 @@ export class CreateCityUseCase {
 		private readonly cityRepository: CityRepository,
 	) {}
 
-	async execute(input: CreateCityInput): Promise<Result<CityEntity, RepositoryError>> {
+	async execute(input: CreateCitySchemaType): Promise<Result<CityEntity, RepositoryError>> {
 		return this.cityRepository.create({
 			cityName: input.cityName,
 			zipcode: input.zipcode,

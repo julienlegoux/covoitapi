@@ -5,7 +5,7 @@ import { ListUsersUseCase } from '../../application/use-cases/user/list-users.us
 import { UpdateUserUseCase } from '../../application/use-cases/user/update-user.use-case.js';
 import { container } from '../../lib/shared/di/container.js';
 import { resultToResponse } from '../../lib/shared/utils/result-response.util.js';
-import { profileSchema } from '../validators/user.validator.js';
+import { profileSchema } from '../../application/schemas/user.schema.js';
 
 export async function listUsers(c: Context): Promise<Response> {
 	const useCase = container.resolve(ListUsersUseCase);

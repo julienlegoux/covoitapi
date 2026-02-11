@@ -8,7 +8,7 @@ import type { RepositoryError } from '../../../lib/errors/repository.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import type { Result } from '../../../lib/shared/types/result.js';
 import { err } from '../../../lib/shared/types/result.js';
-import type { UpdateCarInput } from '../../dtos/car.dto.js';
+import type { PatchCarSchemaType } from '../../schemas/car.schema.js';
 
 type UpdateCarError = CarNotFoundError | BrandNotFoundError | RepositoryError;
 
@@ -23,7 +23,7 @@ export class UpdateCarUseCase {
 		private readonly brandRepository: BrandRepository,
 	) {}
 
-	async execute(id: string, input: UpdateCarInput): Promise<Result<CarEntity, UpdateCarError>> {
+	async execute(id: string, input: PatchCarSchemaType): Promise<Result<CarEntity, UpdateCarError>> {
 		const findResult = await this.carRepository.findById(id);
 		if (!findResult.success) {
 			return findResult;
@@ -35,12 +35,12 @@ export class UpdateCarUseCase {
 
 		const updateData: UpdateCarData = {};
 
-		if (input.immatriculation) {
-			updateData.immat = input.immatriculation;
+		if (input.licensePlate) {
+			updateData.licensePlate = input.licensePlate;
 		}
 
-		if (input.modele && input.marqueId) {
-			const modelRefIdResult = await this.resolveModelRefId(input.modele, input.marqueId);
+		if (input.model && input.brandId) {
+			const modelRefIdResult = await this.resolveModelRefId(input.model, input.brandId);
 			if (!modelRefIdResult.success) {
 				return modelRefIdResult;
 			}

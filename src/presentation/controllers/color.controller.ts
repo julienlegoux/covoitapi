@@ -6,7 +6,7 @@ import { UpdateColorUseCase } from '../../application/use-cases/color/update-col
 import { container } from '../../lib/shared/di/container.js';
 import { paginationSchema } from '../../lib/shared/utils/pagination.util.js';
 import { resultToResponse } from '../../lib/shared/utils/result-response.util.js';
-import { createColorSchema, updateColorSchema } from '../validators/color.validator.js';
+import { createColorSchema, updateColorSchema } from '../../application/schemas/color.schema.js';
 
 export async function listColors(c: Context): Promise<Response> {
 	const pagination = paginationSchema.parse({
@@ -23,7 +23,7 @@ export async function createColor(c: Context): Promise<Response> {
 	const validated = createColorSchema.parse(body);
 
 	const useCase = container.resolve(CreateColorUseCase);
-	const result = await useCase.execute({ name: validated.name, hex: validated.hex });
+	const result = await useCase.execute(validated);
 	return resultToResponse(c, result, 201);
 }
 
@@ -33,7 +33,7 @@ export async function updateColor(c: Context): Promise<Response> {
 	const validated = updateColorSchema.parse(body);
 
 	const useCase = container.resolve(UpdateColorUseCase);
-	const result = await useCase.execute({ id, name: validated.name, hex: validated.hex });
+	const result = await useCase.execute({ id, ...validated });
 	return resultToResponse(c, result);
 }
 

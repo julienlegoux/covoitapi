@@ -9,7 +9,7 @@ import {
 import { InvalidCredentialsError } from '../../../lib/errors/domain.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import { ok } from '../../../lib/shared/types/result.js';
-import type { LoginInput } from '../../dtos/auth.dto.js';
+import type { LoginSchemaType } from '../../schemas/auth.schema.js';
 import { LoginUseCase } from './login.use-case.js';
 
 describe('LoginUseCase', () => {
@@ -19,7 +19,7 @@ describe('LoginUseCase', () => {
 	let mockPasswordService: ReturnType<typeof createMockPasswordService>;
 	let mockJwtService: ReturnType<typeof createMockJwtService>;
 
-	const validInput: LoginInput = {
+	const validInput: LoginSchemaType = {
 		email: 'test@example.com',
 		password: 'Password123!',
 	};

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createInscriptionSchema } from './inscription.validator.js';
+import { createInscriptionSchema } from './inscription.schema.js';
 
 describe('createInscriptionSchema', () => {
 	const validInput = { travelId: 'route-1' };

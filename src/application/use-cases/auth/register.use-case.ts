@@ -10,7 +10,7 @@ import type { JwtError } from '../../../lib/errors/jwt.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import type { Result } from '../../../lib/shared/types/result.js';
 import { ok, err } from '../../../lib/shared/types/result.js';
-import type { AuthResponse, RegisterInput } from '../../dtos/auth.dto.js';
+import type { RegisterSchemaType, AuthResponseType } from '../../schemas/auth.schema.js';
 import { logger } from '../../../lib/logging/logger.js';
 
 export type RegisterError = UserAlreadyExistsError | RepositoryError | PasswordError | JwtError;
@@ -28,7 +28,7 @@ export class RegisterUseCase {
 		private readonly jwtService: JwtService,
 	) {}
 
-	async execute(input: RegisterInput): Promise<Result<AuthResponse, RegisterError>> {
+	async execute(input: RegisterSchemaType): Promise<Result<AuthResponseType, RegisterError>> {
 		// Check if email already exists
 		const existsResult = await this.authRepository.existsByEmail(input.email);
 		if (!existsResult.success) {

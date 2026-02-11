@@ -10,8 +10,6 @@ export const TOKENS = {
 	CarRepository: Symbol('CarRepository'),
 	DriverRepository: Symbol('DriverRepository'),
 	TravelRepository: TravelRepositoryToken,
-	/** @deprecated Use TravelRepository instead. Kept for backward compatibility. */
-	RouteRepository: TravelRepositoryToken,
 	InscriptionRepository: Symbol('InscriptionRepository'),
 	EmailService: Symbol('EmailService'),
 	PasswordService: Symbol('PasswordService'),

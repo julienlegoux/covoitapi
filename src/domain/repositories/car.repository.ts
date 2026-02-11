@@ -8,5 +8,5 @@ export interface CarRepository {
 	create(data: CreateCarData): Promise<Result<CarEntity, RepositoryError>>;
 	update(id: string, data: UpdateCarData): Promise<Result<CarEntity, RepositoryError>>;
 	delete(id: string): Promise<Result<void, RepositoryError>>;
-	existsByImmat(immat: string): Promise<Result<boolean, RepositoryError>>;
+	existsByLicensePlate(licensePlate: string): Promise<Result<boolean, RepositoryError>>;
 }

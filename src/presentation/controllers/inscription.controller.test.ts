@@ -8,7 +8,7 @@ import { ListRoutePassengersUseCase } from '../../application/use-cases/inscript
 import { CreateInscriptionUseCase } from '../../application/use-cases/inscription/create-inscription.use-case.js';
 import { DeleteInscriptionUseCase } from '../../application/use-cases/inscription/delete-inscription.use-case.js';
 import { ok, err } from '../../lib/shared/types/result.js';
-import { InscriptionNotFoundError, RouteNotFoundError } from '../../lib/errors/domain.errors.js';
+import { InscriptionNotFoundError, TravelNotFoundError } from '../../lib/errors/domain.errors.js';
 
 function createMockContext(overrides?: { jsonBody?: unknown; params?: Record<string, string>; queryParams?: Record<string, string>; userId?: string }) {
 	const jsonMock = vi.fn((body, status) => ({ body, status }));
@@ -116,7 +116,7 @@ describe('Inscription Controller', () => {
 		});
 
 		it('should return error when route not found', async () => {
-			mockUseCase.execute.mockResolvedValue(err(new RouteNotFoundError('r1')));
+			mockUseCase.execute.mockResolvedValue(err(new TravelNotFoundError('r1')));
 			const ctx = createMockContext({ jsonBody: { travelId: 'r1' }, userId: 'u1' });
 			await createInscription(ctx);
 			const [response] = ctx._getJsonCall();

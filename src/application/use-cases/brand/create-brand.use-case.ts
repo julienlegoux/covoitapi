@@ -4,7 +4,7 @@ import type { BrandRepository } from '../../../domain/repositories/brand.reposit
 import type { RepositoryError } from '../../../lib/errors/repository.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import type { Result } from '../../../lib/shared/types/result.js';
-import type { CreateBrandInput } from '../../dtos/brand.dto.js';
+import type { CreateBrandSchemaType } from '../../schemas/brand.schema.js';
 
 @injectable()
 export class CreateBrandUseCase {
@@ -13,7 +13,7 @@ export class CreateBrandUseCase {
 		private readonly brandRepository: BrandRepository,
 	) {}
 
-	async execute(input: CreateBrandInput): Promise<Result<BrandEntity, RepositoryError>> {
+	async execute(input: CreateBrandSchemaType): Promise<Result<BrandEntity, RepositoryError>> {
 		return this.brandRepository.create({ name: input.name });
 	}
 }
