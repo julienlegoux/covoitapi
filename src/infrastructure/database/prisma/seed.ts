@@ -115,22 +115,22 @@ async function main() {
   const adminEmail = "admin@covoitapi.test";
   const adminPassword = await argon2.hash("AdminPassword1");
 
-  await prisma.$executeRawUnsafe(`
-    INSERT INTO auths (id, email, password, role)
-    VALUES (gen_random_uuid(), '${adminEmail}', '${adminPassword}', 'ADMIN')
-    ON CONFLICT (email) DO NOTHING
-  `);
+  const existingAdmin = await prisma.auth.findUnique({ where: { email: adminEmail } });
 
-  const adminAuth = await prisma.$queryRawUnsafe<{ ref_id: number }[]>(
-    `SELECT ref_id FROM auths WHERE email = '${adminEmail}'`
-  );
-
-  if (adminAuth.length > 0) {
-    await prisma.$executeRawUnsafe(`
-      INSERT INTO users (id, first_name, last_name, auth_ref_id)
-      VALUES (gen_random_uuid(), 'Admin', 'Admin', ${adminAuth[0].ref_id})
-      ON CONFLICT (auth_ref_id) DO NOTHING
-    `);
+  if (!existingAdmin) {
+    await prisma.auth.create({
+      data: {
+        email: adminEmail,
+        password: adminPassword,
+        role: "ADMIN",
+        user: {
+          create: {
+            firstName: "Admin",
+            lastName: "Admin",
+          },
+        },
+      },
+    });
   }
 
   console.log("✅ Admin user seeded");

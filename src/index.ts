@@ -9,4 +9,6 @@ void Hono;
 
 logger.info('Server initialized', { environment: process.env.NODE_ENV });
 
-export { app } from './presentation/index.js';
+import { app } from './presentation/index.js';
+
+export default app;
