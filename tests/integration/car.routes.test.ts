@@ -50,7 +50,7 @@ describe('Car Routes', () => {
 
 		it('should return 201 on success', async () => {
 			createMock.execute.mockResolvedValue(ok({ id: '1', licensePlate: 'AB-123-CD' }));
-			const res = await app.request('/api/cars', {
+			const res = await app.request('/api/v1/cars', {
 				method: 'POST',
 				body: JSON.stringify(validBody),
 				headers: authHeaders(),
@@ -83,7 +83,7 @@ describe('Car Routes', () => {
 
 		it('should return 200 on success', async () => {
 			updateMock.execute.mockResolvedValue(ok({ id: '1', licensePlate: 'XY-999-ZZ' }));
-			const res = await app.request('/api/cars/1', {
+			const res = await app.request('/api/v1/cars/1', {
 				method: 'PUT',
 				body: JSON.stringify(validBody),
 				headers: authHeaders(),
@@ -105,7 +105,7 @@ describe('Car Routes', () => {
 	describe('PATCH /api/v1/cars/:id', () => {
 		it('should return 200 on success', async () => {
 			updateMock.execute.mockResolvedValue(ok({ id: '1', licensePlate: 'AB-123-CD' }));
-			const res = await app.request('/api/cars/1', {
+			const res = await app.request('/api/v1/cars/1', {
 				method: 'PATCH',
 				body: JSON.stringify({ licensePlate: 'XY-999-ZZ' }),
 				headers: authHeaders(),
