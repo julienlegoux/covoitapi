@@ -142,7 +142,7 @@ describe('PrismaTravelRepository', () => {
         it('should build date filter conditions', async () => {
             mockPrisma.travel.findMany.mockResolvedValue([]);
 
-            await repository.findByFilters({ date: '2025-06-15' });
+            await repository.findByFilters({ date: new Date('2025-06-15') });
 
             expect(mockPrisma.travel.findMany).toHaveBeenCalledWith(expect.objectContaining({
                 where: expect.objectContaining({
