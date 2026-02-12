@@ -149,7 +149,7 @@ export function createMockHonoContext(overrides?: Partial<{
 	return {
 		req: {
 			method: overrides?.method ?? 'POST',
-			path: overrides?.path ?? '/api/auth/login',
+			path: overrides?.path ?? '/api/v1/auth/login',
 			json: vi.fn().mockResolvedValue(overrides?.jsonBody ?? {}),
 			header: vi.fn((name: string) => headers[name]),
 			param: vi.fn((name: string) => params[name]),

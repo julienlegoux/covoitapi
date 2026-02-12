@@ -26,27 +26,27 @@ describe('Brand Routes', () => {
 		deleteMock = registerMockUseCase(DeleteBrandUseCase);
 	});
 
-	describe('GET /api/brands', () => {
+	describe('GET /api/v1/brands', () => {
 		it('should return 200 with brands', async () => {
 			const brands = [{ id: '1', name: 'Toyota' }];
 			listMock.execute.mockResolvedValue(ok(brands));
-			const res = await app.request('/api/brands', { headers: authHeaders() });
+			const res = await app.request('/api/v1/brands', { headers: authHeaders() });
 			expect(res.status).toBe(200);
 			const body = await res.json();
 			expect(body).toEqual({ success: true, data: brands });
 		});
 
 		it('should return 401 without auth token', async () => {
-			const res = await app.request('/api/brands');
+			const res = await app.request('/api/v1/brands');
 			expect(res.status).toBe(401);
 		});
 	});
 
-	describe('POST /api/brands', () => {
+	describe('POST /api/v1/brands', () => {
 		it('should return 201 on success', async () => {
 			const brand = { id: '1', name: 'Toyota' };
 			createMock.execute.mockResolvedValue(ok(brand));
-			const res = await app.request('/api/brands', {
+			const res = await app.request('/api/v1/brands', {
 				method: 'POST',
 				body: JSON.stringify({ name: 'Toyota' }),
 				headers: authHeaders(),
@@ -57,7 +57,7 @@ describe('Brand Routes', () => {
 		});
 
 		it('should reject invalid input', async () => {
-			const res = await app.request('/api/brands', {
+			const res = await app.request('/api/v1/brands', {
 				method: 'POST',
 				body: JSON.stringify({}),
 				headers: authHeaders(),
@@ -67,7 +67,7 @@ describe('Brand Routes', () => {
 
 		it('should pass name field', async () => {
 			createMock.execute.mockResolvedValue(ok({ id: '1', name: 'Honda' }));
-			await app.request('/api/brands', {
+			await app.request('/api/v1/brands', {
 				method: 'POST',
 				body: JSON.stringify({ name: 'Honda' }),
 				headers: authHeaders(),
@@ -76,10 +76,10 @@ describe('Brand Routes', () => {
 		});
 	});
 
-	describe('DELETE /api/brands/:id', () => {
+	describe('DELETE /api/v1/brands/:id', () => {
 		it('should return 204 on success', async () => {
 			deleteMock.execute.mockResolvedValue(ok(undefined));
-			const res = await app.request('/api/brands/b1', {
+			const res = await app.request('/api/v1/brands/b1', {
 				method: 'DELETE',
 				headers: authHeaders(),
 			});
@@ -88,7 +88,7 @@ describe('Brand Routes', () => {
 
 		it('should return 404 when not found', async () => {
 			deleteMock.execute.mockResolvedValue(err(new BrandNotFoundError('b1')));
-			const res = await app.request('/api/brands/b1', {
+			const res = await app.request('/api/v1/brands/b1', {
 				method: 'DELETE',
 				headers: authHeaders(),
 			});

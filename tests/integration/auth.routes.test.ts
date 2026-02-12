@@ -23,7 +23,7 @@ describe('Auth Routes', () => {
 		loginMock = registerMockUseCase(LoginUseCase);
 	});
 
-	describe('POST /api/auth/register', () => {
+	describe('POST /api/v1/auth/register', () => {
 		const validBody = {
 			email: 'test@test.com',
 			password: 'Password1',
@@ -35,7 +35,7 @@ describe('Auth Routes', () => {
 
 		it('should return 201 on successful registration', async () => {
 			registerMock.execute.mockResolvedValue(ok({ id: 'u1', email: 'test@test.com' }));
-			const res = await app.request('/api/auth/register', {
+			const res = await app.request('/api/v1/auth/register', {
 				method: 'POST',
 				body: JSON.stringify(validBody),
 				headers: jsonHeaders(),
@@ -46,7 +46,7 @@ describe('Auth Routes', () => {
 		});
 
 		it('should reject invalid input', async () => {
-			const res = await app.request('/api/auth/register', {
+			const res = await app.request('/api/v1/auth/register', {
 				method: 'POST',
 				body: JSON.stringify({}),
 				headers: jsonHeaders(),
@@ -56,7 +56,7 @@ describe('Auth Routes', () => {
 
 		it('should return 409 when user already exists', async () => {
 			registerMock.execute.mockResolvedValue(err(new UserAlreadyExistsError('test@test.com')));
-			const res = await app.request('/api/auth/register', {
+			const res = await app.request('/api/v1/auth/register', {
 				method: 'POST',
 				body: JSON.stringify(validBody),
 				headers: jsonHeaders(),
@@ -67,12 +67,12 @@ describe('Auth Routes', () => {
 		});
 	});
 
-	describe('POST /api/auth/login', () => {
+	describe('POST /api/v1/auth/login', () => {
 		const validBody = { email: 'test@test.com', password: 'Password1' };
 
 		it('should return 200 on successful login', async () => {
 			loginMock.execute.mockResolvedValue(ok({ token: 'jwt-token' }));
-			const res = await app.request('/api/auth/login', {
+			const res = await app.request('/api/v1/auth/login', {
 				method: 'POST',
 				body: JSON.stringify(validBody),
 				headers: jsonHeaders(),
@@ -84,7 +84,7 @@ describe('Auth Routes', () => {
 
 		it('should return 401 for invalid credentials', async () => {
 			loginMock.execute.mockResolvedValue(err(new InvalidCredentialsError()));
-			const res = await app.request('/api/auth/login', {
+			const res = await app.request('/api/v1/auth/login', {
 				method: 'POST',
 				body: JSON.stringify(validBody),
 				headers: jsonHeaders(),
@@ -95,7 +95,7 @@ describe('Auth Routes', () => {
 		});
 
 		it('should reject missing fields', async () => {
-			const res = await app.request('/api/auth/login', {
+			const res = await app.request('/api/v1/auth/login', {
 				method: 'POST',
 				body: JSON.stringify({}),
 				headers: jsonHeaders(),
