@@ -17,6 +17,10 @@ vi.mock('../../src/infrastructure/database/generated/prisma/client.js', () => ({
 
 import { app } from '../../src/presentation/routes/index.js';
 
+const TEST_UUID = '550e8400-e29b-41d4-a716-446655440000';
+const TEST_USER_UUID = '660e8400-e29b-41d4-a716-446655440001';
+const TEST_ROUTE_UUID = '770e8400-e29b-41d4-a716-446655440002';
+
 describe('Inscription Routes', () => {
 	let listMock: { execute: ReturnType<typeof vi.fn> };
 	let listUserMock: { execute: ReturnType<typeof vi.fn> };
@@ -54,18 +58,18 @@ describe('Inscription Routes', () => {
 	describe('GET /api/v1/users/:id/inscriptions', () => {
 		it('should return 200 and pass id param', async () => {
 			listUserMock.execute.mockResolvedValue(ok([]));
-			const res = await app.request('/api/v1/users/user-1/inscriptions', { headers: authHeaders() });
+			const res = await app.request(`/api/v1/users/${TEST_USER_UUID}/inscriptions`, { headers: authHeaders() });
 			expect(res.status).toBe(200);
-			expect(listUserMock.execute).toHaveBeenCalledWith('user-1', { page: 1, limit: 20 });
+			expect(listUserMock.execute).toHaveBeenCalledWith(TEST_USER_UUID, { page: 1, limit: 20 });
 		});
 	});
 
 	describe('GET /api/v1/travels/:id/passengers', () => {
 		it('should return 200 and pass id param', async () => {
 			listPassengersMock.execute.mockResolvedValue(ok([]));
-			const res = await app.request('/api/v1/travels/route-1/passengers', { headers: authHeaders() });
+			const res = await app.request(`/api/v1/travels/${TEST_ROUTE_UUID}/passengers`, { headers: authHeaders() });
 			expect(res.status).toBe(200);
-			expect(listPassengersMock.execute).toHaveBeenCalledWith('route-1', { page: 1, limit: 20 });
+			expect(listPassengersMock.execute).toHaveBeenCalledWith(TEST_ROUTE_UUID, { page: 1, limit: 20 });
 		});
 	});
 
@@ -128,7 +132,7 @@ describe('Inscription Routes', () => {
 	describe('DELETE /api/v1/inscriptions/:id', () => {
 		it('should return 204 on success', async () => {
 			deleteMock.execute.mockResolvedValue(ok(undefined));
-			const res = await app.request('/api/v1/inscriptions/1', {
+			const res = await app.request(`/api/v1/inscriptions/${TEST_UUID}`, {
 				method: 'DELETE',
 				headers: authHeaders(),
 			});
@@ -136,8 +140,8 @@ describe('Inscription Routes', () => {
 		});
 
 		it('should return 404 when not found', async () => {
-			deleteMock.execute.mockResolvedValue(err(new InscriptionNotFoundError('1')));
-			const res = await app.request('/api/v1/inscriptions/1', {
+			deleteMock.execute.mockResolvedValue(err(new InscriptionNotFoundError(TEST_UUID)));
+			const res = await app.request(`/api/v1/inscriptions/${TEST_UUID}`, {
 				method: 'DELETE',
 				headers: authHeaders(),
 			});

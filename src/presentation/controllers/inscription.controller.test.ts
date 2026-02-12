@@ -17,13 +17,19 @@ import { DeleteInscriptionUseCase } from '../../application/use-cases/inscriptio
 import { ok, err } from '../../lib/shared/types/result.js';
 import { InscriptionNotFoundError, TravelNotFoundError } from '../../lib/errors/domain.errors.js';
 
-function createMockContext(overrides?: { jsonBody?: unknown; params?: Record<string, string>; queryParams?: Record<string, string>; userId?: string }) {
+const TEST_UUID = '550e8400-e29b-41d4-a716-446655440000';
+const TEST_USER_ID = '660e8400-e29b-41d4-a716-446655440001';
+
+function createMockContext(overrides?: { jsonBody?: unknown; params?: Record<string, string>; queryParams?: Record<string, string>; userId?: string; role?: string }) {
 	const jsonMock = vi.fn((body, status) => ({ body, status }));
 	const bodyMock = vi.fn((body, status) => new Response(body, { status }));
 	const queryParams = overrides?.queryParams ?? {};
 	const contextValues: Record<string, unknown> = {};
 	if (overrides?.userId) {
 		contextValues['userId'] = overrides.userId;
+	}
+	if (overrides?.role) {
+		contextValues['role'] = overrides.role;
 	}
 	return {
 		req: {
@@ -74,9 +80,9 @@ describe('Inscription Controller', () => {
 		it('should return 200 and extract id from params with pagination', async () => {
 			const paginatedResult = { data: [], meta: { page: 1, limit: 20, total: 0, totalPages: 0 } };
 			mockUseCase.execute.mockResolvedValue(ok(paginatedResult));
-			const ctx = createMockContext({ params: { id: 'user-1' } });
+			const ctx = createMockContext({ params: { id: TEST_USER_ID }, userId: TEST_USER_ID, role: 'USER' });
 			await listUserInscriptions(ctx);
-			expect(mockUseCase.execute).toHaveBeenCalledWith('user-1', { page: 1, limit: 20 });
+			expect(mockUseCase.execute).toHaveBeenCalledWith(TEST_USER_ID, { page: 1, limit: 20 });
 			const [, status] = ctx._getJsonCall();
 			expect(status).toBe(200);
 		});
@@ -94,9 +100,9 @@ describe('Inscription Controller', () => {
 		it('should return 200 and extract id from params with pagination', async () => {
 			const paginatedResult = { data: [], meta: { page: 1, limit: 20, total: 0, totalPages: 0 } };
 			mockUseCase.execute.mockResolvedValue(ok(paginatedResult));
-			const ctx = createMockContext({ params: { id: 'route-1' } });
+			const ctx = createMockContext({ params: { id: TEST_UUID } });
 			await listRoutePassengers(ctx);
-			expect(mockUseCase.execute).toHaveBeenCalledWith('route-1', { page: 1, limit: 20 });
+			expect(mockUseCase.execute).toHaveBeenCalledWith(TEST_UUID, { page: 1, limit: 20 });
 			const [, status] = ctx._getJsonCall();
 			expect(status).toBe(200);
 		});
@@ -114,21 +120,21 @@ describe('Inscription Controller', () => {
 		it('should return 201 on success and use userId from context', async () => {
 			const inscription = { id: '1', createdAt: new Date(), userId: 'u1', routeId: 'r1' };
 			mockUseCase.execute.mockResolvedValue(ok(inscription));
-			const ctx = createMockContext({ jsonBody: { travelId: 'r1' }, userId: 'u1' });
+			const ctx = createMockContext({ jsonBody: { travelId: 'r1' }, userId: TEST_USER_ID });
 			await createInscription(ctx);
 			const [response, status] = ctx._getJsonCall();
 			expect(status).toBe(201);
-			expect(mockUseCase.execute).toHaveBeenCalledWith({ userId: 'u1', travelId: 'r1' });
+			expect(mockUseCase.execute).toHaveBeenCalledWith({ userId: TEST_USER_ID, travelId: 'r1' });
 		});
 
 		it('should throw ZodError for invalid input', async () => {
-			const ctx = createMockContext({ jsonBody: {}, userId: 'u1' });
+			const ctx = createMockContext({ jsonBody: {}, userId: TEST_USER_ID });
 			await expect(createInscription(ctx)).rejects.toThrow();
 		});
 
 		it('should return error when route not found', async () => {
 			mockUseCase.execute.mockResolvedValue(err(new TravelNotFoundError('r1')));
-			const ctx = createMockContext({ jsonBody: { travelId: 'r1' }, userId: 'u1' });
+			const ctx = createMockContext({ jsonBody: { travelId: 'r1' }, userId: TEST_USER_ID });
 			await createInscription(ctx);
 			const [response] = ctx._getJsonCall();
 			expect(response).toHaveProperty('success', false);
@@ -146,14 +152,14 @@ describe('Inscription Controller', () => {
 
 		it('should return 204 on successful delete', async () => {
 			mockUseCase.execute.mockResolvedValue(ok(undefined));
-			const ctx = createMockContext({ params: { id: '1' } });
+			const ctx = createMockContext({ params: { id: TEST_UUID }, userId: TEST_USER_ID });
 			const response = await deleteInscription(ctx);
 			expect(response.status).toBe(204);
 		});
 
 		it('should return error when not found', async () => {
-			mockUseCase.execute.mockResolvedValue(err(new InscriptionNotFoundError('1')));
-			const ctx = createMockContext({ params: { id: '1' } });
+			mockUseCase.execute.mockResolvedValue(err(new InscriptionNotFoundError(TEST_UUID)));
+			const ctx = createMockContext({ params: { id: TEST_UUID }, userId: TEST_USER_ID });
 			await deleteInscription(ctx);
 			const [response] = ctx._getJsonCall();
 			expect(response).toHaveProperty('success', false);

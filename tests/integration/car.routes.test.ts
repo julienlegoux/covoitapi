@@ -16,6 +16,8 @@ vi.mock('../../src/infrastructure/database/generated/prisma/client.js', () => ({
 
 import { app } from '../../src/presentation/routes/index.js';
 
+const TEST_UUID = '550e8400-e29b-41d4-a716-446655440000';
+
 describe('Car Routes', () => {
 	let listMock: { execute: ReturnType<typeof vi.fn> };
 	let createMock: { execute: ReturnType<typeof vi.fn> };
@@ -89,7 +91,7 @@ describe('Car Routes', () => {
 
 		it('should return 200 on success', async () => {
 			updateMock.execute.mockResolvedValue(ok({ id: '1', licensePlate: 'XY-999-ZZ' }));
-			const res = await app.request('/api/v1/cars/1', {
+			const res = await app.request(`/api/v1/cars/${TEST_UUID}`, {
 				method: 'PUT',
 				body: JSON.stringify(validBody),
 				headers: authHeaders(),
@@ -99,7 +101,7 @@ describe('Car Routes', () => {
 
 		it('should return 404 when not found', async () => {
 			updateMock.execute.mockResolvedValue(err(new CarNotFoundError('1')));
-			const res = await app.request('/api/v1/cars/1', {
+			const res = await app.request(`/api/v1/cars/${TEST_UUID}`, {
 				method: 'PUT',
 				body: JSON.stringify(validBody),
 				headers: authHeaders(),
@@ -111,7 +113,7 @@ describe('Car Routes', () => {
 	describe('PATCH /api/v1/cars/:id', () => {
 		it('should return 200 on success', async () => {
 			updateMock.execute.mockResolvedValue(ok({ id: '1', licensePlate: 'AB-123-CD' }));
-			const res = await app.request('/api/v1/cars/1', {
+			const res = await app.request(`/api/v1/cars/${TEST_UUID}`, {
 				method: 'PATCH',
 				body: JSON.stringify({ licensePlate: 'XY-999-ZZ' }),
 				headers: authHeaders(),
@@ -123,7 +125,7 @@ describe('Car Routes', () => {
 	describe('DELETE /api/v1/cars/:id', () => {
 		it('should return 204 on success', async () => {
 			deleteMock.execute.mockResolvedValue(ok(undefined));
-			const res = await app.request('/api/v1/cars/1', {
+			const res = await app.request(`/api/v1/cars/${TEST_UUID}`, {
 				method: 'DELETE',
 				headers: authHeaders(),
 			});
@@ -132,7 +134,7 @@ describe('Car Routes', () => {
 
 		it('should return 404 when not found', async () => {
 			deleteMock.execute.mockResolvedValue(err(new CarNotFoundError('1')));
-			const res = await app.request('/api/v1/cars/1', {
+			const res = await app.request(`/api/v1/cars/${TEST_UUID}`, {
 				method: 'DELETE',
 				headers: authHeaders(),
 			});

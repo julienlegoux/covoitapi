@@ -19,6 +19,7 @@ import { resultToResponse } from '../../lib/shared/utils/result-response.util.js
 import { createInscriptionSchema } from '../../application/schemas/inscription.schema.js';
 import type { CreateInscriptionSchemaType } from '../../application/schemas/inscription.schema.js';
 import type { WithAuthContext } from '../../lib/shared/types/auth-context.js';
+import { uuidSchema } from '../../application/schemas/common.schema.js';
 
 /**
  * Lists all inscriptions with pagination.
@@ -40,15 +41,27 @@ export async function listInscriptions(c: Context): Promise<Response> {
 
 /**
  * Lists all inscriptions for a specific user with pagination.
+ * Users can only view their own inscriptions unless they have ADMIN role.
  *
- * **GET /api/users/:id/inscriptions** -- Auth required, USER+
+ * **GET /api/users/:id/inscriptions** -- Auth required, USER+ (own inscriptions or ADMIN)
  *
  * @param c - Hono request context with `id` route parameter (user UUID)
  *            and optional `page`/`limit` query params
- * @returns 200 with `{ success: true, data: { data: Inscription[], meta: PaginationMeta } }`
+ * @returns 200 with `{ success: true, data: { data: Inscription[], meta: PaginationMeta } }`,
+ *          or 403 if requesting another user's inscriptions without ADMIN role.
  */
 export async function listUserInscriptions(c: Context): Promise<Response> {
-	const userId = c.req.param('id');
+	const userId = uuidSchema.parse(c.req.param('id'));
+	const requestingUserId = c.get('userId');
+	const role = c.get('role');
+
+	if (userId !== requestingUserId && role !== 'ADMIN') {
+		return c.json(
+			{ success: false, error: { code: 'FORBIDDEN', message: 'Insufficient permissions' } },
+			403,
+		);
+	}
+
 	const pagination = paginationSchema.parse({
 		page: c.req.query('page'),
 		limit: c.req.query('limit'),
@@ -68,7 +81,7 @@ export async function listUserInscriptions(c: Context): Promise<Response> {
  * @returns 200 with `{ success: true, data: { data: Passenger[], meta: PaginationMeta } }`
  */
 export async function listRoutePassengers(c: Context): Promise<Response> {
-	const routeId = c.req.param('id');
+	const routeId = uuidSchema.parse(c.req.param('id'));
 	const pagination = paginationSchema.parse({
 		page: c.req.query('page'),
 		limit: c.req.query('limit'),
@@ -117,9 +130,9 @@ export async function createInscription(c: Context): Promise<Response> {
  *          or an error response (e.g. 404 INSCRIPTION_NOT_FOUND).
  */
 export async function deleteInscription(c: Context): Promise<Response> {
-	const id = c.req.param('id');
+	const id = uuidSchema.parse(c.req.param('id'));
 	const useCase = container.resolve(DeleteInscriptionUseCase);
-	const result = await useCase.execute(id);
+	const result = await useCase.execute({ id, userId: c.get('userId') });
 	if (!result.success) {
 		return resultToResponse(c, result);
 	}

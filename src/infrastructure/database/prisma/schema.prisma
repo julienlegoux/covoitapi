@@ -66,6 +66,7 @@ model Driver {
 
   user    User     @relation(fields: [userRefId], references: [refId], onDelete: Cascade)
   travels Travel[]
+  cars    Car[]
 
   @@map("drivers")
 }
@@ -126,12 +127,14 @@ model CityTravel {
 }
 
 model Car {
-  id         String @id @default(uuid())
-  refId      Int    @unique @default(autoincrement()) @map("ref_id")
-  immat      String @unique
-  modelRefId Int    @map("model_ref_id")
+  id          String @id @default(uuid())
+  refId       Int    @unique @default(autoincrement()) @map("ref_id")
+  immat       String @unique
+  modelRefId  Int    @map("model_ref_id")
+  driverRefId Int    @map("driver_ref_id")
 
   model   Model    @relation(fields: [modelRefId], references: [refId], onDelete: Restrict)
+  driver  Driver   @relation(fields: [driverRefId], references: [refId], onDelete: Cascade)
   travels Travel[]
 
   @@map("cars")

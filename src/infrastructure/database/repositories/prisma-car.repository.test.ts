@@ -30,7 +30,7 @@ describe('PrismaCarRepository', () => {
     let repository: PrismaCarRepository;
     let mockPrisma: ReturnType<typeof createMockPrisma>;
 
-    const mockPrismaCar = { id: 'car-1', refId: 1, immat: 'AB-123-CD', modelRefId: 1 };
+    const mockPrismaCar = { id: 'car-1', refId: 1, immat: 'AB-123-CD', modelRefId: 1, driverRefId: 1 };
 
     beforeEach(() => {
         container.clearInstances();
@@ -49,7 +49,7 @@ describe('PrismaCarRepository', () => {
 
             expect(result.success).toBe(true);
             if (result.success) {
-                expect(result.value.data).toEqual([{ id: 'car-1', refId: 1, licensePlate: 'AB-123-CD', modelRefId: 1 }]);
+                expect(result.value.data).toEqual([{ id: 'car-1', refId: 1, licensePlate: 'AB-123-CD', modelRefId: 1, driverRefId: 1 }]);
                 expect(result.value.total).toBe(1);
             }
         });
@@ -83,7 +83,7 @@ describe('PrismaCarRepository', () => {
 
             expect(result.success).toBe(true);
             if (result.success) {
-                expect(result.value).toEqual({ id: 'car-1', refId: 1, licensePlate: 'AB-123-CD', modelRefId: 1 });
+                expect(result.value).toEqual({ id: 'car-1', refId: 1, licensePlate: 'AB-123-CD', modelRefId: 1, driverRefId: 1 });
             }
         });
 
@@ -114,21 +114,21 @@ describe('PrismaCarRepository', () => {
         it('should map licensePlate to immat and return ok(car)', async () => {
             mockPrisma.car.create.mockResolvedValue(mockPrismaCar);
 
-            const result = await repository.create({ licensePlate: 'AB-123-CD', modelRefId: 1 });
+            const result = await repository.create({ licensePlate: 'AB-123-CD', modelRefId: 1, driverRefId: 1 });
 
             expect(result.success).toBe(true);
             if (result.success) {
                 expect(result.value.licensePlate).toBe('AB-123-CD');
             }
             expect(mockPrisma.car.create).toHaveBeenCalledWith({
-                data: { immat: 'AB-123-CD', modelRefId: 1 },
+                data: { immat: 'AB-123-CD', modelRefId: 1, driverRefId: 1 },
             });
         });
 
         it('should return err(DatabaseError) on Prisma error', async () => {
             mockPrisma.car.create.mockRejectedValue(new Error('Unique constraint'));
 
-            const result = await repository.create({ licensePlate: 'AB-123-CD', modelRefId: 1 });
+            const result = await repository.create({ licensePlate: 'AB-123-CD', modelRefId: 1, driverRefId: 1 });
 
             expect(result.success).toBe(false);
             if (!result.success) {

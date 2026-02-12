@@ -15,6 +15,8 @@ vi.mock('../../src/infrastructure/database/generated/prisma/client.js', () => ({
 
 import { app } from '../../src/presentation/routes/index.js';
 
+const TEST_UUID = '550e8400-e29b-41d4-a716-446655440000';
+
 describe('Brand Routes', () => {
 	let listMock: { execute: ReturnType<typeof vi.fn> };
 	let createMock: { execute: ReturnType<typeof vi.fn> };
@@ -82,7 +84,7 @@ describe('Brand Routes', () => {
 	describe('DELETE /api/v1/brands/:id', () => {
 		it('should return 204 on success', async () => {
 			deleteMock.execute.mockResolvedValue(ok(undefined));
-			const res = await app.request('/api/v1/brands/b1', {
+			const res = await app.request(`/api/v1/brands/${TEST_UUID}`, {
 				method: 'DELETE',
 				headers: authHeaders(),
 			});
@@ -90,8 +92,8 @@ describe('Brand Routes', () => {
 		});
 
 		it('should return 404 when not found', async () => {
-			deleteMock.execute.mockResolvedValue(err(new BrandNotFoundError('b1')));
-			const res = await app.request('/api/v1/brands/b1', {
+			deleteMock.execute.mockResolvedValue(err(new BrandNotFoundError(TEST_UUID)));
+			const res = await app.request(`/api/v1/brands/${TEST_UUID}`, {
 				method: 'DELETE',
 				headers: authHeaders(),
 			});

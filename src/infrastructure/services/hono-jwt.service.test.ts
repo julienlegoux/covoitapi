@@ -64,20 +64,29 @@ describe('HonoJwtService', () => {
 			}
 		});
 
-		it('should pass payload with exp and secret to hono sign', async () => {
+		it('should pass payload with exp, iat, iss, aud and secret to hono sign', async () => {
 			mockSign.mockResolvedValue('token');
 			const now = Math.floor(Date.now() / 1000);
 
 			await jwtService.sign({ userId: 'user-123', role: 'ADMIN' });
 
 			expect(mockSign).toHaveBeenCalledWith(
-				expect.objectContaining({ userId: 'user-123', role: 'ADMIN', exp: expect.any(Number) }),
+				expect.objectContaining({
+					userId: 'user-123',
+					role: 'ADMIN',
+					exp: expect.any(Number),
+					iat: expect.any(Number),
+					iss: 'covoitapi',
+					aud: 'covoitapi',
+				}),
 				'test-secret',
 				'HS256',
 			);
-			const passedExp = mockSign.mock.calls[0][0].exp;
-			expect(passedExp).toBeGreaterThanOrEqual(now + 24 * 60 * 60 - 1);
-			expect(passedExp).toBeLessThanOrEqual(now + 24 * 60 * 60 + 1);
+			const passedPayload = mockSign.mock.calls[0][0];
+			expect(passedPayload.exp).toBeGreaterThanOrEqual(now + 24 * 60 * 60 - 1);
+			expect(passedPayload.exp).toBeLessThanOrEqual(now + 24 * 60 * 60 + 1);
+			expect(passedPayload.iat).toBeGreaterThanOrEqual(now - 1);
+			expect(passedPayload.iat).toBeLessThanOrEqual(now + 1);
 		});
 
 		it('should return TokenSigningError when hono sign throws', async () => {
@@ -92,10 +101,10 @@ describe('HonoJwtService', () => {
 		});
 	});
 
-	// Verifies verify() extracts payload, validates userId, and classifies JWT errors
+	// Verifies verify() extracts payload, validates userId, iss/aud, and classifies JWT errors
 	describe('verify()', () => {
 		it('should return payload with userId and role', async () => {
-			mockVerify.mockResolvedValue({ userId: 'user-789', role: 'ADMIN' });
+			mockVerify.mockResolvedValue({ userId: 'user-789', role: 'ADMIN', iss: 'covoitapi', aud: 'covoitapi' });
 
 			const result = await jwtService.verify('valid-token');
 
@@ -106,7 +115,7 @@ describe('HonoJwtService', () => {
 		});
 
 		it('should default role to USER when missing from decoded token', async () => {
-			mockVerify.mockResolvedValue({ userId: 'user-123' });
+			mockVerify.mockResolvedValue({ userId: 'user-123', iss: 'covoitapi', aud: 'covoitapi' });
 
 			const result = await jwtService.verify('token');
 
@@ -116,8 +125,30 @@ describe('HonoJwtService', () => {
 			}
 		});
 
+		it('should return TokenInvalidError when iss does not match', async () => {
+			mockVerify.mockResolvedValue({ userId: 'user-123', role: 'USER', iss: 'wrong', aud: 'covoitapi' });
+
+			const result = await jwtService.verify('token');
+
+			expect(result.success).toBe(false);
+			if (!result.success) {
+				expect(result.error).toBeInstanceOf(TokenInvalidError);
+			}
+		});
+
+		it('should return TokenInvalidError when aud does not match', async () => {
+			mockVerify.mockResolvedValue({ userId: 'user-123', role: 'USER', iss: 'covoitapi', aud: 'wrong' });
+
+			const result = await jwtService.verify('token');
+
+			expect(result.success).toBe(false);
+			if (!result.success) {
+				expect(result.error).toBeInstanceOf(TokenInvalidError);
+			}
+		});
+
 		it('should return TokenInvalidError when userId is missing', async () => {
-			mockVerify.mockResolvedValue({ role: 'USER' });
+			mockVerify.mockResolvedValue({ role: 'USER', iss: 'covoitapi', aud: 'covoitapi' });
 
 			const result = await jwtService.verify('token');
 
@@ -128,7 +159,7 @@ describe('HonoJwtService', () => {
 		});
 
 		it('should return TokenInvalidError when userId is not a string', async () => {
-			mockVerify.mockResolvedValue({ userId: 123, role: 'USER' });
+			mockVerify.mockResolvedValue({ userId: 123, role: 'USER', iss: 'covoitapi', aud: 'covoitapi' });
 
 			const result = await jwtService.verify('token');
 
@@ -194,7 +225,7 @@ describe('HonoJwtService', () => {
 		});
 
 		it('should pass token and secret to hono verify', async () => {
-			mockVerify.mockResolvedValue({ userId: 'u', role: 'USER' });
+			mockVerify.mockResolvedValue({ userId: 'u', role: 'USER', iss: 'covoitapi', aud: 'covoitapi' });
 
 			await jwtService.verify('my-token');
 

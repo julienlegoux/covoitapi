@@ -12,6 +12,7 @@ import { container } from '../../lib/shared/di/container.js';
 import { paginationSchema } from '../../lib/shared/utils/pagination.util.js';
 import { resultToResponse } from '../../lib/shared/utils/result-response.util.js';
 import { createCitySchema } from '../../application/schemas/city.schema.js';
+import { uuidSchema } from '../../application/schemas/common.schema.js';
 
 /**
  * Lists all cities with pagination.
@@ -61,7 +62,7 @@ export async function createCity(c: Context): Promise<Response> {
  *          or an error response (e.g. 404 CITY_NOT_FOUND).
  */
 export async function deleteCity(c: Context): Promise<Response> {
-	const id = c.req.param('id');
+	const id = uuidSchema.parse(c.req.param('id'));
 	const useCase = container.resolve(DeleteCityUseCase);
 	const result = await useCase.execute(id);
 	if (!result.success) {

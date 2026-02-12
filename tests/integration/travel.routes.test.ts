@@ -17,6 +17,8 @@ vi.mock('../../src/infrastructure/database/generated/prisma/client.js', () => ({
 
 import { app } from '../../src/presentation/routes/index.js';
 
+const TEST_UUID = '550e8400-e29b-41d4-a716-446655440000';
+
 describe('Travel Routes', () => {
 	let listMock: { execute: ReturnType<typeof vi.fn> };
 	let getMock: { execute: ReturnType<typeof vi.fn> };
@@ -53,16 +55,16 @@ describe('Travel Routes', () => {
 
 	describe('GET /api/v1/travels/:id', () => {
 		it('should return 200 with route', async () => {
-			const route = { id: 'r1', kms: 100 };
+			const route = { id: TEST_UUID, kms: 100 };
 			getMock.execute.mockResolvedValue(ok(route));
-			const res = await app.request('/api/v1/travels/r1', { headers: authHeaders() });
+			const res = await app.request(`/api/v1/travels/${TEST_UUID}`, { headers: authHeaders() });
 			expect(res.status).toBe(200);
-			expect(getMock.execute).toHaveBeenCalledWith('r1');
+			expect(getMock.execute).toHaveBeenCalledWith(TEST_UUID);
 		});
 
 		it('should return 404 when not found', async () => {
-			getMock.execute.mockResolvedValue(err(new TravelNotFoundError('r1')));
-			const res = await app.request('/api/travels/r1', { headers: authHeaders() });
+			getMock.execute.mockResolvedValue(err(new TravelNotFoundError(TEST_UUID)));
+			const res = await app.request(`/api/v1/travels/${TEST_UUID}`, { headers: authHeaders() });
 			expect(res.status).toBe(404);
 		});
 	});
@@ -112,7 +114,7 @@ describe('Travel Routes', () => {
 	describe('DELETE /api/v1/travels/:id', () => {
 		it('should return 204 on success', async () => {
 			deleteMock.execute.mockResolvedValue(ok(undefined));
-			const res = await app.request('/api/v1/travels/r1', {
+			const res = await app.request(`/api/v1/travels/${TEST_UUID}`, {
 				method: 'DELETE',
 				headers: authHeaders(),
 			});
@@ -120,8 +122,8 @@ describe('Travel Routes', () => {
 		});
 
 		it('should return 404 when not found', async () => {
-			deleteMock.execute.mockResolvedValue(err(new TravelNotFoundError('r1')));
-			const res = await app.request('/api/travels/r1', {
+			deleteMock.execute.mockResolvedValue(err(new TravelNotFoundError(TEST_UUID)));
+			const res = await app.request(`/api/v1/travels/${TEST_UUID}`, {
 				method: 'DELETE',
 				headers: authHeaders(),
 			});

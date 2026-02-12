@@ -15,6 +15,8 @@ vi.mock('../../src/infrastructure/database/generated/prisma/client.js', () => ({
 
 import { app } from '../../src/presentation/routes/index.js';
 
+const TEST_UUID = '550e8400-e29b-41d4-a716-446655440000';
+
 describe('City Routes', () => {
 	let listMock: { execute: ReturnType<typeof vi.fn> };
 	let createMock: { execute: ReturnType<typeof vi.fn> };
@@ -82,7 +84,7 @@ describe('City Routes', () => {
 	describe('DELETE /api/v1/cities/:id', () => {
 		it('should return 204 on success', async () => {
 			deleteMock.execute.mockResolvedValue(ok(undefined));
-			const res = await app.request('/api/v1/cities/1', {
+			const res = await app.request(`/api/v1/cities/${TEST_UUID}`, {
 				method: 'DELETE',
 				headers: authHeaders(),
 			});
@@ -90,8 +92,8 @@ describe('City Routes', () => {
 		});
 
 		it('should return 404 when not found', async () => {
-			deleteMock.execute.mockResolvedValue(err(new CityNotFoundError('1')));
-			const res = await app.request('/api/v1/cities/1', {
+			deleteMock.execute.mockResolvedValue(err(new CityNotFoundError(TEST_UUID)));
+			const res = await app.request(`/api/v1/cities/${TEST_UUID}`, {
 				method: 'DELETE',
 				headers: authHeaders(),
 			});

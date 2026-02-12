@@ -186,3 +186,15 @@ export class ColorAlreadyExistsError extends DomainError {
 		this.name = 'ColorAlreadyExistsError';
 	}
 }
+
+/**
+ * Thrown when a user attempts to access or modify a resource they do not own.
+ * @param resource - The type of resource (e.g. "Car", "Travel").
+ * @param id - The UUID of the resource.
+ */
+export class ForbiddenError extends DomainError {
+	constructor(resource: string, id: string) {
+		super(`You do not have permission to access ${resource}: ${id}`, 'FORBIDDEN');
+		this.name = 'ForbiddenError';
+	}
+}

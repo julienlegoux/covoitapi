@@ -17,6 +17,7 @@ export type CarEntity = {
 	refId: number;
 	licensePlate: string;
 	modelRefId: number;
+	driverRefId: number;
 };
 
 /**
@@ -27,6 +28,6 @@ export type CreateCarData = Omit<CarEntity, 'id' | 'refId'>;
 
 /**
  * Partial update payload for modifying car fields.
- * Any subset of CreateCarData fields can be provided.
+ * Ownership (driverRefId) is immutable and excluded from updates.
  */
-export type UpdateCarData = Partial<CreateCarData>;
+export type UpdateCarData = Partial<Pick<CarEntity, 'licensePlate' | 'modelRefId'>>;

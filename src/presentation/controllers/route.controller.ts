@@ -16,6 +16,7 @@ import { resultToResponse } from '../../lib/shared/utils/result-response.util.js
 import { createTravelSchema, findTravelQuerySchema } from '../../application/schemas/travel.schema.js';
 import type { CreateTravelSchemaType } from '../../application/schemas/travel.schema.js';
 import type { WithAuthContext } from '../../lib/shared/types/auth-context.js';
+import { uuidSchema } from '../../application/schemas/common.schema.js';
 
 /**
  * Lists all available travel routes.
@@ -41,7 +42,7 @@ export async function listRoutes(c: Context): Promise<Response> {
  *          or an error response (e.g. 404 TRAVEL_NOT_FOUND).
  */
 export async function getRoute(c: Context): Promise<Response> {
-	const id = c.req.param('id');
+	const id = uuidSchema.parse(c.req.param('id'));
 	const useCase = container.resolve(GetTravelUseCase);
 	const result = await useCase.execute(id);
 	return resultToResponse(c, result);
@@ -106,9 +107,9 @@ export async function createRoute(c: Context): Promise<Response> {
  *          or an error response (e.g. 404 TRAVEL_NOT_FOUND).
  */
 export async function deleteRoute(c: Context): Promise<Response> {
-	const id = c.req.param('id');
+	const id = uuidSchema.parse(c.req.param('id'));
 	const useCase = container.resolve(DeleteTravelUseCase);
-	const result = await useCase.execute(id);
+	const result = await useCase.execute({ id, userId: c.get('userId') });
 	if (!result.success) {
 		return resultToResponse(c, result);
 	}

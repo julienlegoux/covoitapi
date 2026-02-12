@@ -12,6 +12,7 @@ import { container } from '../../lib/shared/di/container.js';
 import { paginationSchema } from '../../lib/shared/utils/pagination.util.js';
 import { resultToResponse } from '../../lib/shared/utils/result-response.util.js';
 import { createBrandSchema } from '../../application/schemas/brand.schema.js';
+import { uuidSchema } from '../../application/schemas/common.schema.js';
 
 /**
  * Lists all car brands with pagination.
@@ -61,7 +62,7 @@ export async function createBrand(c: Context): Promise<Response> {
  *          or an error response (e.g. 404 BRAND_NOT_FOUND).
  */
 export async function deleteBrand(c: Context): Promise<Response> {
-	const id = c.req.param('id');
+	const id = uuidSchema.parse(c.req.param('id'));
 	const useCase = container.resolve(DeleteBrandUseCase);
 	const result = await useCase.execute(id);
 	if (!result.success) {
