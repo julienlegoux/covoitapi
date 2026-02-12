@@ -25,49 +25,49 @@
 ## 2. Ce qui est CONFORME
 
 ### 2.1 Authentification
-- **POST /api/auth/register** — inscription avec email, password, confirmPassword
-- **POST /api/auth/login** — connexion avec email, password, retour d'un token JWT
+- **POST /api/v1/auth/register** — inscription avec email, password, confirmPassword
+- **POST /api/v1/auth/login** — connexion avec email, password, retour d'un token JWT
 - **Token dans le header `x-auth-token`** — conforme a la spec
 - **Validation du mot de passe** — confirmation password, min 8 caracteres, regex (majuscule, minuscule, chiffre)
 - **Roles** — USER, DRIVER, ADMIN sont bien definis
 
 ### 2.2 Trajets (CRUD)
-- **GET /api/travels/** — liste de tous les trajets
-- **GET /api/travels/:id** — detail d'un trajet
-- **GET /api/travels/search** — recherche par ville depart, ville arrivee, date
-- **POST /api/travels/** — creation d'un trajet (role DRIVER requis)
-- **DELETE /api/travels/:id** — suppression d'un trajet (role DRIVER requis)
+- **GET /api/v1/travels/** — liste de tous les trajets
+- **GET /api/v1/travels/:id** — detail d'un trajet
+- **GET /api/v1/travels/search** — recherche par ville depart, ville arrivee, date
+- **POST /api/v1/travels/** — creation d'un trajet (role DRIVER requis)
+- **DELETE /api/v1/travels/:id** — suppression d'un trajet (role DRIVER requis)
 - **Champs conformes** : kms, date, ville de depart, ville d'arrivee, nombre de places
 
 ### 2.3 Reservations
-- **POST /api/inscriptions/** — reserver une place
-- **DELETE /api/inscriptions/:id** — annuler une reservation
-- **GET /api/inscriptions/** — lister les reservations
-- **GET /api/users/:id/inscriptions** — reservations d'un utilisateur
-- **GET /api/travels/:id/passengers** — passagers d'un trajet
+- **POST /api/v1/inscriptions/** — reserver une place
+- **DELETE /api/v1/inscriptions/:id** — annuler une reservation
+- **GET /api/v1/inscriptions/** — lister les reservations
+- **GET /api/v1/users/:id/inscriptions** — reservations d'un utilisateur
+- **GET /api/v1/travels/:id/passengers** — passagers d'un trajet
 - **Controle du nombre de places** — verifie que seats > inscriptions avant reservation
 - **Controle de doublon** — empeche une double inscription sur le meme trajet
 - **Suppression en cascade** — suppression d'un trajet supprime toutes les inscriptions (via `onDelete: Cascade` en DB)
 
 ### 2.4 Marques
-- **GET /api/brands/** — liste des marques
-- **POST /api/brands/** — creation (ADMIN)
-- **DELETE /api/brands/:id** — suppression (ADMIN)
+- **GET /api/v1/brands/** — liste des marques
+- **POST /api/v1/brands/** — creation (ADMIN)
+- **DELETE /api/v1/brands/:id** — suppression (ADMIN)
 
 ### 2.5 Villes
-- **GET /api/cities/** — liste des villes
-- **POST /api/cities/** — creation
-- **DELETE /api/cities/:id** — suppression (ADMIN)
+- **GET /api/v1/cities/** — liste des villes
+- **POST /api/v1/cities/** — creation
+- **DELETE /api/v1/cities/:id** — suppression (ADMIN)
 
 ### 2.6 Voitures (CRUD de base)
-- **POST /api/cars/** — creation
-- **PUT /api/cars/:id** — mise a jour complete
-- **PATCH /api/cars/:id** — mise a jour partielle
-- **DELETE /api/cars/:id** — suppression
-- **GET /api/cars/** — liste
+- **POST /api/v1/cars/** — creation
+- **PUT /api/v1/cars/:id** — mise a jour complete
+- **PATCH /api/v1/cars/:id** — mise a jour partielle
+- **DELETE /api/v1/cars/:id** — suppression
+- **GET /api/v1/cars/** — liste
 
 ### 2.7 RGPD
-- **DELETE /api/users/me** — auto-suppression/anonymisation des donnees utilisateur
+- **DELETE /api/v1/users/me** — auto-suppression/anonymisation des donnees utilisateur
 
 ---
 
@@ -75,11 +75,11 @@
 
 ### 3.1 Detail du trajet — Passagers manquants dans la reponse
 **Spec** : Le detail du trajet doit inclure les noms et prenoms des passagers.
-**Actuel** : `GET /api/travels/:id` retourne uniquement les donnees du trajet (kms, date, seats, driver, car). Les passagers sont disponibles via un endpoint separe (`GET /api/travels/:id/passengers`), mais ne sont pas inclus dans la reponse du detail.
+**Actuel** : `GET /api/v1/travels/:id` retourne uniquement les donnees du trajet (kms, date, seats, driver, car). Les passagers sont disponibles via un endpoint separe (`GET /api/v1/travels/:id/passengers`), mais ne sont pas inclus dans la reponse du detail.
 
 ### 3.2 Profil utilisateur — Champ `address` manquant
 **Spec** : L'utilisateur peut modifier son adresse, telephone, nom et prenom.
-**Actuel** : Le modele User contient `firstName`, `lastName`, `phone` mais **pas de champ `address`**. La route `PATCH /api/users/me` ne permet donc pas de modifier une adresse.
+**Actuel** : Le modele User contient `firstName`, `lastName`, `phone` mais **pas de champ `address`**. La route `PATCH /api/v1/users/me` ne permet donc pas de modifier une adresse.
 
 ### 3.3 Voiture — Pas de champ `seats` (nombre de places)
 **Spec** : La voiture a un champ "nombre de places".
@@ -130,7 +130,7 @@ Le contenu attendu de l'email au conducteur lors d'une reservation :
 
 ### 4.4 GET /cars/:id — Detail d'une voiture
 **Spec** : Route `GET car` pour obtenir le detail d'une seule voiture.
-**Actuel** : Seule la liste (`GET /api/cars/`) est implementee. Pas de route pour un detail individuel.
+**Actuel** : Seule la liste (`GET /api/v1/cars/`) est implementee. Pas de route pour un detail individuel.
 
 ### 4.5 GET /postcodes — Liste des codes postaux
 **Spec** : Route pour lister les codes postaux.
@@ -138,7 +138,7 @@ Le contenu attendu de l'email au conducteur lors d'une reservation :
 
 ### 4.6 GET /drivers — Liste des conducteurs
 **Spec** : Route pour lister les conducteurs.
-**Actuel** : Seule la creation d'un conducteur (`POST /api/drivers/`) est implementee.
+**Actuel** : Seule la creation d'un conducteur (`POST /api/v1/drivers/`) est implementee.
 
 ### 4.7 POST /persons — Creation d'un utilisateur standalone
 **Spec** : Route pour creer un utilisateur independamment de l'inscription.

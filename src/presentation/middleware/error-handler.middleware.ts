@@ -19,7 +19,9 @@ import type { ContentfulStatusCode } from 'hono/utils/http-status';
 import { ZodError } from 'zod';
 import { DomainError } from '../../lib/errors/domain.errors.js';
 import { getHttpStatus, isErrorCode } from '../../lib/errors/error-registry.js';
-import { logger } from '../../lib/logging/logger.js';
+import type { Logger } from '../../lib/logging/logger.types.js';
+import { container } from '../../lib/shared/di/container.js';
+import { TOKENS } from '../../lib/shared/di/tokens.js';
 import type { ErrorResponse } from '../../lib/errors/error.types.js';
 
 /**
@@ -79,6 +81,7 @@ function buildErrorResponse(error: unknown): ErrorResponse {
 		};
 	}
 
+	const logger = container.resolve<Logger>(TOKENS.Logger);
 	logger.error('Unexpected error', error instanceof Error ? error : null);
 	return {
 		success: false,

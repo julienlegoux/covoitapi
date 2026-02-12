@@ -7,7 +7,7 @@
 
 import { container } from 'tsyringe';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { createMockBrandRepository } from '../../../../tests/setup.js';
+import { createMockBrandRepository, createMockLogger } from '../../../../tests/setup.js';
 import { BrandNotFoundError } from '../../../lib/errors/domain.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import { ok, err } from '../../../lib/shared/types/result.js';
@@ -22,6 +22,7 @@ describe('DeleteBrandUseCase', () => {
 	beforeEach(() => {
 		mockBrandRepository = createMockBrandRepository();
 		container.registerInstance(TOKENS.BrandRepository, mockBrandRepository);
+		container.registerInstance(TOKENS.Logger, createMockLogger());
 		useCase = container.resolve(DeleteBrandUseCase);
 	});
 

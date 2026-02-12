@@ -233,8 +233,8 @@ This is an impressively well-structured project for its stage. The clean archite
 
 ## API DESIGN (6/10)
 
-**28. No API versioning**
-- Base path is `/api` — no `/api/v1`. Hard to evolve without breaking clients.
+**28. API versioning** ~~FIXED~~
+- Base path is `/api/v1` — versioned routes allow future evolution without breaking clients.
 
 **29. Delete endpoints return 200 with data instead of 204**
 - REST convention: `DELETE` returns `204 No Content`. Current implementation returns `200` with `{ success: true, data: undefined }`.

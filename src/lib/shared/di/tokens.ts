@@ -6,8 +6,6 @@
  * category: repositories, services, and infrastructure clients.
  */
 
-const TravelRepositoryToken = Symbol('TravelRepository');
-
 /**
  * DI token registry mapping abstract interfaces to unique Symbols.
  *
@@ -33,12 +31,13 @@ export const TOKENS = {
 	ModelRepository: Symbol('ModelRepository'),
 	CarRepository: Symbol('CarRepository'),
 	DriverRepository: Symbol('DriverRepository'),
-	TravelRepository: TravelRepositoryToken,
+	TravelRepository: Symbol('TravelRepository'),
 	InscriptionRepository: Symbol('InscriptionRepository'),
 	EmailService: Symbol('EmailService'),
 	PasswordService: Symbol('PasswordService'),
 	JwtService: Symbol('JwtService'),
 	PrismaClient: Symbol('PrismaClient'),
+	Logger: Symbol('Logger'),
 } as const;
 
 /** Union type of all token names in the TOKENS registry. */

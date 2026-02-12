@@ -2,9 +2,11 @@ import 'reflect-metadata';
 import type { Context, Next } from 'hono';
 import { container } from 'tsyringe';
 import { beforeEach, vi } from 'vitest';
+import { TOKENS } from '../src/lib/shared/di/tokens.js';
 
 beforeEach(() => {
 	container.clearInstances();
+	container.registerInstance(TOKENS.Logger, createMockLogger());
 });
 
 // ─── Repository Mocks ───
@@ -149,7 +151,7 @@ export function createMockHonoContext(overrides?: Partial<{
 	return {
 		req: {
 			method: overrides?.method ?? 'POST',
-			path: overrides?.path ?? '/api/auth/login',
+			path: overrides?.path ?? '/api/v1/auth/login',
 			json: vi.fn().mockResolvedValue(overrides?.jsonBody ?? {}),
 			header: vi.fn((name: string) => headers[name]),
 			param: vi.fn((name: string) => params[name]),
@@ -184,6 +186,65 @@ export function createMockPrismaClient() {
 			update: vi.fn(),
 			count: vi.fn(),
 		},
+		car: {
+			findUnique: vi.fn(),
+			findMany: vi.fn(),
+			create: vi.fn(),
+			update: vi.fn(),
+			delete: vi.fn(),
+			count: vi.fn(),
+		},
+		brand: {
+			findUnique: vi.fn(),
+			findMany: vi.fn(),
+			create: vi.fn(),
+			delete: vi.fn(),
+			count: vi.fn(),
+		},
+		city: {
+			findUnique: vi.fn(),
+			findMany: vi.fn(),
+			create: vi.fn(),
+			delete: vi.fn(),
+			count: vi.fn(),
+		},
+		color: {
+			findUnique: vi.fn(),
+			findMany: vi.fn(),
+			create: vi.fn(),
+			update: vi.fn(),
+			delete: vi.fn(),
+			count: vi.fn(),
+		},
+		driver: {
+			findUnique: vi.fn(),
+			create: vi.fn(),
+			count: vi.fn(),
+		},
+		inscription: {
+			findUnique: vi.fn(),
+			findMany: vi.fn(),
+			create: vi.fn(),
+			delete: vi.fn(),
+			count: vi.fn(),
+		},
+		travel: {
+			findUnique: vi.fn(),
+			findMany: vi.fn(),
+			create: vi.fn(),
+			delete: vi.fn(),
+			count: vi.fn(),
+		},
+		model: {
+			findUnique: vi.fn(),
+			findMany: vi.fn(),
+			create: vi.fn(),
+			count: vi.fn(),
+		},
+		$transaction: vi.fn((fn: (tx: unknown) => Promise<unknown>) => fn({
+			auth: { create: vi.fn(), findUnique: vi.fn() },
+			user: { create: vi.fn(), findUnique: vi.fn() },
+		})),
 	};
 }
 
@@ -307,13 +368,15 @@ export function createMockDeleteColorUseCase() {
 // ─── Logger Mock ───
 
 export function createMockLogger() {
-	return {
+	const mockLogger = {
 		debug: vi.fn(),
 		info: vi.fn(),
 		warn: vi.fn(),
 		error: vi.fn(),
 		child: vi.fn(),
 	};
+	mockLogger.child.mockReturnValue(mockLogger);
+	return mockLogger;
 }
 
 // ─── Entity Data Factories ───
@@ -334,9 +397,9 @@ export function createMockUserData(overrides?: Partial<{
 		id: overrides?.id ?? 'user-id-1',
 		refId: overrides?.refId ?? 1,
 		authRefId: overrides?.authRefId ?? 1,
-		firstName: overrides?.firstName !== undefined ? overrides.firstName : 'John',
-		lastName: overrides?.lastName !== undefined ? overrides.lastName : 'Doe',
-		phone: overrides?.phone !== undefined ? overrides.phone : '0612345678',
+		firstName: overrides?.firstName === undefined ? 'John' : overrides.firstName,
+		lastName: overrides?.lastName === undefined ? 'Doe' : overrides.lastName,
+		phone: overrides?.phone === undefined ? '0612345678' : overrides.phone,
 		email: overrides?.email ?? 'test@example.com',
 		anonymizedAt: overrides?.anonymizedAt ?? null,
 		createdAt: overrides?.createdAt ?? new Date('2025-01-01'),

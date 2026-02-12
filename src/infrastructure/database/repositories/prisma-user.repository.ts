@@ -10,6 +10,7 @@ import crypto from 'node:crypto';
 import { inject, injectable } from 'tsyringe';
 import type { CreateUserData, PublicUserEntity, UpdateUserData } from '../../../domain/entities/user.entity.js';
 import type { UserRepository } from '../../../domain/repositories/user.repository.js';
+import type { Logger } from '../../../lib/logging/logger.types.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import type { Result } from '../../../lib/shared/types/result.js';
 import { ok, err } from '../../../lib/shared/types/result.js';
@@ -24,10 +25,15 @@ import type { PrismaClient } from '../generated/prisma/client.js';
  */
 @injectable()
 export class PrismaUserRepository implements UserRepository {
+	private readonly logger: Logger;
+
 	constructor(
 		@inject(TOKENS.PrismaClient)
 		private readonly prisma: PrismaClient,
-	) {}
+		@inject(TOKENS.Logger) logger: Logger,
+	) {
+		this.logger = logger.child({ repository: 'UserRepository' });
+	}
 
 	/**
 	 * Retrieves all user profiles with their associated email addresses.
@@ -41,6 +47,7 @@ export class PrismaUserRepository implements UserRepository {
 			});
 			return ok(users.map((u) => ({ ...u, email: u.auth.email })));
 		} catch (e) {
+			this.logger.error('Failed to find all users', e instanceof Error ? e : null, { operation: 'findAll' });
 			return err(new DatabaseError('Failed to find all users', e));
 		}
 	}
@@ -61,6 +68,7 @@ export class PrismaUserRepository implements UserRepository {
 			if (!user) return ok(null);
 			return ok({ ...user, email: user.auth.email });
 		} catch (e) {
+			this.logger.error('Failed to find user by ID', e instanceof Error ? e : null, { operation: 'findById', userId: id });
 			return err(new DatabaseError('Failed to find user by id', e));
 		}
 	}
@@ -82,6 +90,7 @@ export class PrismaUserRepository implements UserRepository {
 			if (!user) return ok(null);
 			return ok({ ...user, email: user.auth.email });
 		} catch (e) {
+			this.logger.error('Failed to find user by auth ref ID', e instanceof Error ? e : null, { operation: 'findByAuthRefId', authRefId });
 			return err(new DatabaseError('Failed to find user by auth ref id', e));
 		}
 	}
@@ -106,6 +115,7 @@ export class PrismaUserRepository implements UserRepository {
 			});
 			return ok({ ...user, email: user.auth.email });
 		} catch (e) {
+			this.logger.error('Failed to create user', e instanceof Error ? e : null, { operation: 'create', authRefId: data.authRefId });
 			return err(new DatabaseError('Failed to create user', e));
 		}
 	}
@@ -126,6 +136,7 @@ export class PrismaUserRepository implements UserRepository {
 			});
 			return ok({ ...user, email: user.auth.email });
 		} catch (e) {
+			this.logger.error('Failed to update user', e instanceof Error ? e : null, { operation: 'update', userId: id });
 			return err(new DatabaseError('Failed to update user', e));
 		}
 	}
@@ -142,6 +153,7 @@ export class PrismaUserRepository implements UserRepository {
 			});
 			return ok(undefined);
 		} catch (e) {
+			this.logger.error('Failed to delete user', e instanceof Error ? e : null, { operation: 'delete', userId: id });
 			return err(new DatabaseError('Failed to delete user', e));
 		}
 	}
@@ -207,6 +219,7 @@ export class PrismaUserRepository implements UserRepository {
 			});
 			return ok(undefined);
 		} catch (e) {
+			this.logger.error('Failed to anonymize user', e instanceof Error ? e : null, { operation: 'anonymize', userId: id });
 			return err(new DatabaseError('Failed to anonymize user', e));
 		}
 	}

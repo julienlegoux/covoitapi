@@ -8,6 +8,7 @@
 import { inject, injectable } from 'tsyringe';
 import type { PublicUserEntity } from '../../../domain/entities/user.entity.js';
 import { UserNotFoundError } from '../../../lib/errors/domain.errors.js';
+import type { Logger } from '../../../lib/logging/logger.types.js';
 import type { UserRepository } from '../../../domain/repositories/user.repository.js';
 import type { RepositoryError } from '../../../lib/errors/repository.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
@@ -34,10 +35,15 @@ type GetUserError = UserNotFoundError | RepositoryError;
  */
 @injectable()
 export class GetUserUseCase {
+	private readonly logger: Logger;
+
 	constructor(
 		@inject(TOKENS.UserRepository)
 		private readonly userRepository: UserRepository,
-	) {}
+		@inject(TOKENS.Logger) logger: Logger,
+	) {
+		this.logger = logger.child({ useCase: 'GetUserUseCase' });
+	}
 
 	/**
 	 * Retrieves the public profile of the user identified by UUID.

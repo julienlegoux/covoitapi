@@ -9,6 +9,7 @@
 import { inject, injectable } from 'tsyringe';
 import type { CreateInscriptionData, InscriptionEntity } from '../../../domain/entities/inscription.entity.js';
 import type { InscriptionRepository } from '../../../domain/repositories/inscription.repository.js';
+import type { Logger } from '../../../lib/logging/logger.types.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import type { Result } from '../../../lib/shared/types/result.js';
 import { ok, err } from '../../../lib/shared/types/result.js';
@@ -24,10 +25,15 @@ import type { PrismaClient } from '../generated/prisma/client.js';
  */
 @injectable()
 export class PrismaInscriptionRepository implements InscriptionRepository {
+	private readonly logger: Logger;
+
 	constructor(
 		@inject(TOKENS.PrismaClient)
 		private readonly prisma: PrismaClient,
-	) {}
+		@inject(TOKENS.Logger) logger: Logger,
+	) {
+		this.logger = logger.child({ repository: 'InscriptionRepository' });
+	}
 
 	/**
 	 * Retrieves all inscriptions with optional pagination.
@@ -50,6 +56,7 @@ export class PrismaInscriptionRepository implements InscriptionRepository {
 			]);
 			return ok({ data: inscriptions as unknown as InscriptionEntity[], total });
 		} catch (e) {
+			this.logger.error('Failed to find all inscriptions', e instanceof Error ? e : null, { operation: 'findAll' });
 			return err(new DatabaseError('Failed to find all inscriptions', e));
 		}
 	}
@@ -68,6 +75,7 @@ export class PrismaInscriptionRepository implements InscriptionRepository {
 			});
 			return ok(inscription as unknown as InscriptionEntity | null);
 		} catch (e) {
+			this.logger.error('Failed to find inscription by ID', e instanceof Error ? e : null, { operation: 'findById', inscriptionId: id });
 			return err(new DatabaseError('Failed to find inscription by id', e));
 		}
 	}
@@ -87,6 +95,7 @@ export class PrismaInscriptionRepository implements InscriptionRepository {
 			});
 			return ok(inscriptions as unknown as InscriptionEntity[]);
 		} catch (e) {
+			this.logger.error('Failed to find inscriptions by user ref ID', e instanceof Error ? e : null, { operation: 'findByUserRefId', userRefId });
 			return err(new DatabaseError('Failed to find inscriptions by user ref id', e));
 		}
 	}
@@ -106,6 +115,7 @@ export class PrismaInscriptionRepository implements InscriptionRepository {
 			});
 			return ok(inscriptions as unknown as InscriptionEntity[]);
 		} catch (e) {
+			this.logger.error('Failed to find inscriptions by route ref ID', e instanceof Error ? e : null, { operation: 'findByRouteRefId', routeRefId });
 			return err(new DatabaseError('Failed to find inscriptions by route ref id', e));
 		}
 	}
@@ -126,6 +136,7 @@ export class PrismaInscriptionRepository implements InscriptionRepository {
 			});
 			return ok(inscription);
 		} catch (e) {
+			this.logger.error('Failed to create inscription', e instanceof Error ? e : null, { operation: 'create', userRefId: data.userRefId, routeRefId: data.routeRefId });
 			return err(new DatabaseError('Failed to create inscription', e));
 		}
 	}
@@ -142,6 +153,7 @@ export class PrismaInscriptionRepository implements InscriptionRepository {
 			});
 			return ok(undefined);
 		} catch (e) {
+			this.logger.error('Failed to delete inscription', e instanceof Error ? e : null, { operation: 'delete', inscriptionId: id });
 			return err(new DatabaseError('Failed to delete inscription', e));
 		}
 	}
@@ -162,6 +174,7 @@ export class PrismaInscriptionRepository implements InscriptionRepository {
 			});
 			return ok(count > 0);
 		} catch (e) {
+			this.logger.error('Failed to check inscription existence', e instanceof Error ? e : null, { operation: 'existsByUserAndRoute', userRefId, routeRefId });
 			return err(new DatabaseError('Failed to check inscription existence', e));
 		}
 	}
@@ -179,6 +192,7 @@ export class PrismaInscriptionRepository implements InscriptionRepository {
 			});
 			return ok(count);
 		} catch (e) {
+			this.logger.error('Failed to count inscriptions for route', e instanceof Error ? e : null, { operation: 'countByRouteRefId', routeRefId });
 			return err(new DatabaseError('Failed to count inscriptions for route', e));
 		}
 	}

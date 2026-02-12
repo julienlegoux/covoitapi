@@ -17,6 +17,7 @@ import { resolve } from "path";
 import { neonConfig } from "@neondatabase/serverless";
 import { PrismaNeon } from "@prisma/adapter-neon";
 import ws from "ws";
+import argon2 from "argon2";
 import { PrismaClient } from "../generated/prisma/client.js";
 
 // Read DATABASE_URL from environment (loaded by dotenv)
@@ -54,7 +55,7 @@ async function main() {
   for (let i = 1; i < lines.length; i++) {
     const cols = lines[i].split(";");
     const make = cols[0]?.trim();
-    const baseModel = cols[cols.length - 1]?.trim().replace(/\r/, "");
+    const baseModel = cols.at(-1)?.trim().replace(/\r/, "");
 
     if (!make || !baseModel) continue;
 
@@ -109,6 +110,30 @@ async function main() {
   }
 
   console.log("✅ Models inserted");
+
+  // --- Seed admin user ---
+  const adminEmail = "admin@covoitapi.test";
+  const adminPassword = await argon2.hash("AdminPassword1");
+
+  await prisma.$executeRawUnsafe(`
+    INSERT INTO auths (id, email, password, role)
+    VALUES (gen_random_uuid(), '${adminEmail}', '${adminPassword}', 'ADMIN')
+    ON CONFLICT (email) DO NOTHING
+  `);
+
+  const adminAuth = await prisma.$queryRawUnsafe<{ ref_id: number }[]>(
+    `SELECT ref_id FROM auths WHERE email = '${adminEmail}'`
+  );
+
+  if (adminAuth.length > 0) {
+    await prisma.$executeRawUnsafe(`
+      INSERT INTO users (id, first_name, last_name, auth_ref_id)
+      VALUES (gen_random_uuid(), 'Admin', 'Admin', ${adminAuth[0].ref_id})
+      ON CONFLICT (auth_ref_id) DO NOTHING
+    `);
+  }
+
+  console.log("✅ Admin user seeded");
 }
 
 main()

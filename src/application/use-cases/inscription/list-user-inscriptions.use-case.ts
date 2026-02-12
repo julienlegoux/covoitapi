@@ -9,6 +9,7 @@
 import { inject, injectable } from 'tsyringe';
 import type { InscriptionEntity } from '../../../domain/entities/inscription.entity.js';
 import { UserNotFoundError } from '../../../lib/errors/domain.errors.js';
+import type { Logger } from '../../../lib/logging/logger.types.js';
 import type { InscriptionRepository } from '../../../domain/repositories/inscription.repository.js';
 import type { UserRepository } from '../../../domain/repositories/user.repository.js';
 import type { RepositoryError } from '../../../lib/errors/repository.errors.js';
@@ -37,12 +38,17 @@ type ListUserInscriptionsError = UserNotFoundError | RepositoryError;
  */
 @injectable()
 export class ListUserInscriptionsUseCase {
+	private readonly logger: Logger;
+
 	constructor(
 		@inject(TOKENS.InscriptionRepository)
 		private readonly inscriptionRepository: InscriptionRepository,
 		@inject(TOKENS.UserRepository)
 		private readonly userRepository: UserRepository,
-	) {}
+		@inject(TOKENS.Logger) logger: Logger,
+	) {
+		this.logger = logger.child({ useCase: 'ListUserInscriptionsUseCase' });
+	}
 
 	/**
 	 * Fetches a paginated list of inscriptions for the given user.

@@ -8,6 +8,7 @@
 import { inject, injectable } from 'tsyringe';
 import type { CityEntity, CreateCityData } from '../../../domain/entities/city.entity.js';
 import type { CityRepository } from '../../../domain/repositories/city.repository.js';
+import type { Logger } from '../../../lib/logging/logger.types.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import type { Result } from '../../../lib/shared/types/result.js';
 import { ok, err } from '../../../lib/shared/types/result.js';
@@ -23,10 +24,15 @@ import type { PrismaClient } from '../generated/prisma/client.js';
  */
 @injectable()
 export class PrismaCityRepository implements CityRepository {
+	private readonly logger: Logger;
+
 	constructor(
 		@inject(TOKENS.PrismaClient)
 		private readonly prisma: PrismaClient,
-	) {}
+		@inject(TOKENS.Logger) logger: Logger,
+	) {
+		this.logger = logger.child({ repository: 'CityRepository' });
+	}
 
 	/**
 	 * Retrieves all city records with optional pagination.
@@ -46,6 +52,7 @@ export class PrismaCityRepository implements CityRepository {
 			]);
 			return ok({ data, total });
 		} catch (e) {
+			this.logger.error('Failed to find all cities', e instanceof Error ? e : null, { operation: 'findAll' });
 			return err(new DatabaseError('Failed to find all cities', e));
 		}
 	}
@@ -63,6 +70,7 @@ export class PrismaCityRepository implements CityRepository {
 			});
 			return ok(city);
 		} catch (e) {
+			this.logger.error('Failed to find city by id', e instanceof Error ? e : null, { operation: 'findById', cityId: id });
 			return err(new DatabaseError('Failed to find city by id', e));
 		}
 	}
@@ -82,6 +90,7 @@ export class PrismaCityRepository implements CityRepository {
 			});
 			return ok(city);
 		} catch (e) {
+			this.logger.error('Failed to find city by name', e instanceof Error ? e : null, { operation: 'findByCityName', name });
 			return err(new DatabaseError('Failed to find city by name', e));
 		}
 	}
@@ -102,6 +111,7 @@ export class PrismaCityRepository implements CityRepository {
 			});
 			return ok(city);
 		} catch (e) {
+			this.logger.error('Failed to create city', e instanceof Error ? e : null, { operation: 'create', name: data.cityName });
 			return err(new DatabaseError('Failed to create city', e));
 		}
 	}
@@ -118,6 +128,7 @@ export class PrismaCityRepository implements CityRepository {
 			});
 			return ok(undefined);
 		} catch (e) {
+			this.logger.error('Failed to delete city', e instanceof Error ? e : null, { operation: 'delete', cityId: id });
 			return err(new DatabaseError('Failed to delete city', e));
 		}
 	}

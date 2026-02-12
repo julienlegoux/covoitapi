@@ -1,6 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { container } from 'tsyringe';
+import { TOKENS } from '../../src/lib/shared/di/tokens.js';
 import { registerMockJwtService, authHeaders } from './helpers.js';
+import { createMockLogger } from '../setup.js';
 
 vi.mock('../../src/infrastructure/database/generated/prisma/client.js', () => ({
 	PrismaClient: class { $extends() { return this; } },
@@ -11,6 +13,7 @@ import { app } from '../../src/presentation/routes/index.js';
 describe('GET /api/health', () => {
 	beforeEach(() => {
 		container.clearInstances();
+		container.registerInstance(TOKENS.Logger, createMockLogger());
 		registerMockJwtService();
 	});
 

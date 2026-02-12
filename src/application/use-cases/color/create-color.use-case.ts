@@ -11,6 +11,7 @@ import type { ColorEntity } from '../../../domain/entities/color.entity.js';
 import { ColorAlreadyExistsError } from '../../../lib/errors/domain.errors.js';
 import type { ColorRepository } from '../../../domain/repositories/color.repository.js';
 import type { RepositoryError } from '../../../lib/errors/repository.errors.js';
+import type { Logger } from '../../../lib/logging/logger.types.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import type { Result } from '../../../lib/shared/types/result.js';
 import { err } from '../../../lib/shared/types/result.js';
@@ -36,10 +37,15 @@ type CreateColorError = ColorAlreadyExistsError | RepositoryError;
  */
 @injectable()
 export class CreateColorUseCase {
+	private readonly logger: Logger;
+
 	constructor(
 		@inject(TOKENS.ColorRepository)
 		private readonly colorRepository: ColorRepository,
-	) {}
+		@inject(TOKENS.Logger) logger: Logger,
+	) {
+		this.logger = logger.child({ useCase: 'CreateColorUseCase' });
+	}
 
 	/**
 	 * Creates a new color with the given name and hex code.
@@ -55,9 +61,14 @@ export class CreateColorUseCase {
 		}
 
 		if (existingResult.value) {
+			this.logger.warn('Color already exists', { colorName: input.name });
 			return err(new ColorAlreadyExistsError(input.name));
 		}
 
-		return this.colorRepository.create({ name: input.name, hex: input.hex });
+		const result = await this.colorRepository.create({ name: input.name, hex: input.hex });
+		if (result.success) {
+			this.logger.info('Color created', { colorId: result.value.id });
+		}
+		return result;
 	}
 }

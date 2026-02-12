@@ -15,6 +15,7 @@ import type { PasswordService } from '../../../domain/services/password.service.
 import type { RepositoryError } from '../../../lib/errors/repository.errors.js';
 import type { PasswordError } from '../../../lib/errors/password.errors.js';
 import type { JwtError } from '../../../lib/errors/jwt.errors.js';
+import type { Logger } from '../../../lib/logging/logger.types.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import type { Result } from '../../../lib/shared/types/result.js';
 import { ok, err } from '../../../lib/shared/types/result.js';
@@ -48,6 +49,8 @@ type LoginError = InvalidCredentialsError | RepositoryError | PasswordError | Jw
  */
 @injectable()
 export class LoginUseCase {
+	private readonly logger: Logger;
+
 	constructor(
 		@inject(TOKENS.AuthRepository)
 		private readonly authRepository: AuthRepository,
@@ -57,7 +60,10 @@ export class LoginUseCase {
 		private readonly passwordService: PasswordService,
 		@inject(TOKENS.JwtService)
 		private readonly jwtService: JwtService,
-	) {}
+		@inject(TOKENS.Logger) logger: Logger,
+	) {
+		this.logger = logger.child({ useCase: 'LoginUseCase' });
+	}
 
 	/**
 	 * Executes the login flow for the given credentials.
@@ -75,6 +81,7 @@ export class LoginUseCase {
 
 		const auth = authResult.value;
 		if (!auth) {
+			this.logger.warn('Login failed', { email: input.email });
 			return err(new InvalidCredentialsError());
 		}
 
@@ -85,6 +92,7 @@ export class LoginUseCase {
 		}
 
 		if (!passwordResult.value) {
+			this.logger.warn('Login failed', { email: input.email });
 			return err(new InvalidCredentialsError());
 		}
 
@@ -96,6 +104,7 @@ export class LoginUseCase {
 
 		const user = userResult.value;
 		if (!user) {
+			this.logger.warn('Login failed', { email: input.email });
 			return err(new InvalidCredentialsError());
 		}
 
@@ -105,6 +114,7 @@ export class LoginUseCase {
 			return tokenResult;
 		}
 
+		this.logger.info('User logged in', { userId: user.id });
 		return ok({
 			userId: user.id,
 			token: tokenResult.value,

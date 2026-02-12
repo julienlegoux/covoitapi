@@ -8,6 +8,7 @@
 import { inject, injectable } from 'tsyringe';
 import type { BrandEntity, CreateBrandData } from '../../../domain/entities/brand.entity.js';
 import type { BrandRepository } from '../../../domain/repositories/brand.repository.js';
+import type { Logger } from '../../../lib/logging/logger.types.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import type { Result } from '../../../lib/shared/types/result.js';
 import { ok, err } from '../../../lib/shared/types/result.js';
@@ -23,10 +24,15 @@ import type { PrismaClient } from '../generated/prisma/client.js';
  */
 @injectable()
 export class PrismaBrandRepository implements BrandRepository {
+	private readonly logger: Logger;
+
 	constructor(
 		@inject(TOKENS.PrismaClient)
 		private readonly prisma: PrismaClient,
-	) {}
+		@inject(TOKENS.Logger) logger: Logger,
+	) {
+		this.logger = logger.child({ repository: 'BrandRepository' });
+	}
 
 	/**
 	 * Retrieves all brand records with optional pagination.
@@ -46,6 +52,7 @@ export class PrismaBrandRepository implements BrandRepository {
 			]);
 			return ok({ data, total });
 		} catch (e) {
+			this.logger.error('Failed to find all brands', e instanceof Error ? e : null, { operation: 'findAll' });
 			return err(new DatabaseError('Failed to find all brands', e));
 		}
 	}
@@ -63,6 +70,7 @@ export class PrismaBrandRepository implements BrandRepository {
 			});
 			return ok(brand);
 		} catch (e) {
+			this.logger.error('Failed to find brand by id', e instanceof Error ? e : null, { operation: 'findById', brandId: id });
 			return err(new DatabaseError('Failed to find brand by id', e));
 		}
 	}
@@ -82,6 +90,7 @@ export class PrismaBrandRepository implements BrandRepository {
 			});
 			return ok(brand);
 		} catch (e) {
+			this.logger.error('Failed to create brand', e instanceof Error ? e : null, { operation: 'create', name: data.name });
 			return err(new DatabaseError('Failed to create brand', e));
 		}
 	}
@@ -98,6 +107,7 @@ export class PrismaBrandRepository implements BrandRepository {
 			});
 			return ok(undefined);
 		} catch (e) {
+			this.logger.error('Failed to delete brand', e instanceof Error ? e : null, { operation: 'delete', brandId: id });
 			return err(new DatabaseError('Failed to delete brand', e));
 		}
 	}

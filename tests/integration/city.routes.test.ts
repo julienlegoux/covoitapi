@@ -1,11 +1,13 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { container } from 'tsyringe';
+import { TOKENS } from '../../src/lib/shared/di/tokens.js';
 import { ListCitiesUseCase } from '../../src/application/use-cases/city/list-cities.use-case.js';
 import { CreateCityUseCase } from '../../src/application/use-cases/city/create-city.use-case.js';
 import { DeleteCityUseCase } from '../../src/application/use-cases/city/delete-city.use-case.js';
 import { ok, err } from '../../src/lib/shared/types/result.js';
 import { CityNotFoundError } from '../../src/lib/errors/domain.errors.js';
 import { authHeaders, registerMockJwtService, registerMockUseCase } from './helpers.js';
+import { createMockLogger } from '../setup.js';
 
 vi.mock('../../src/infrastructure/database/generated/prisma/client.js', () => ({
 	PrismaClient: class { $extends() { return this; } },
@@ -20,33 +22,34 @@ describe('City Routes', () => {
 
 	beforeEach(() => {
 		container.clearInstances();
+		container.registerInstance(TOKENS.Logger, createMockLogger());
 		registerMockJwtService();
 		listMock = registerMockUseCase(ListCitiesUseCase);
 		createMock = registerMockUseCase(CreateCityUseCase);
 		deleteMock = registerMockUseCase(DeleteCityUseCase);
 	});
 
-	describe('GET /api/cities', () => {
+	describe('GET /api/v1/cities', () => {
 		it('should return 200 with cities', async () => {
 			const cities = [{ id: '1', cityName: 'Paris', zipcode: '75000' }];
 			listMock.execute.mockResolvedValue(ok(cities));
-			const res = await app.request('/api/cities', { headers: authHeaders() });
+			const res = await app.request('/api/v1/cities', { headers: authHeaders() });
 			expect(res.status).toBe(200);
 			const body = await res.json();
 			expect(body).toEqual({ success: true, data: cities });
 		});
 
 		it('should return 401 without auth token', async () => {
-			const res = await app.request('/api/cities');
+			const res = await app.request('/api/v1/cities');
 			expect(res.status).toBe(401);
 		});
 	});
 
-	describe('POST /api/cities', () => {
+	describe('POST /api/v1/cities', () => {
 		it('should return 201 on success', async () => {
 			const city = { id: '1', cityName: 'Paris', zipcode: '75000' };
 			createMock.execute.mockResolvedValue(ok(city));
-			const res = await app.request('/api/cities', {
+			const res = await app.request('/api/v1/cities', {
 				method: 'POST',
 				body: JSON.stringify({ cityName: 'Paris', zipcode: '75000' }),
 				headers: authHeaders(),
@@ -58,7 +61,7 @@ describe('City Routes', () => {
 
 		it('should pass cityName and zipcode fields', async () => {
 			createMock.execute.mockResolvedValue(ok({ id: '1', cityName: 'Lyon', zipcode: '69000' }));
-			await app.request('/api/cities', {
+			await app.request('/api/v1/cities', {
 				method: 'POST',
 				body: JSON.stringify({ cityName: 'Lyon', zipcode: '69000' }),
 				headers: authHeaders(),
@@ -67,7 +70,7 @@ describe('City Routes', () => {
 		});
 
 		it('should reject invalid input', async () => {
-			const res = await app.request('/api/cities', {
+			const res = await app.request('/api/v1/cities', {
 				method: 'POST',
 				body: JSON.stringify({}),
 				headers: authHeaders(),
@@ -76,10 +79,10 @@ describe('City Routes', () => {
 		});
 	});
 
-	describe('DELETE /api/cities/:id', () => {
+	describe('DELETE /api/v1/cities/:id', () => {
 		it('should return 204 on success', async () => {
 			deleteMock.execute.mockResolvedValue(ok(undefined));
-			const res = await app.request('/api/cities/1', {
+			const res = await app.request('/api/v1/cities/1', {
 				method: 'DELETE',
 				headers: authHeaders(),
 			});
@@ -88,7 +91,7 @@ describe('City Routes', () => {
 
 		it('should return 404 when not found', async () => {
 			deleteMock.execute.mockResolvedValue(err(new CityNotFoundError('1')));
-			const res = await app.request('/api/cities/1', {
+			const res = await app.request('/api/v1/cities/1', {
 				method: 'DELETE',
 				headers: authHeaders(),
 			});

@@ -8,6 +8,7 @@
 import { inject, injectable } from 'tsyringe';
 import type { CreateModelData, ModelEntity } from '../../../domain/entities/model.entity.js';
 import type { ModelRepository } from '../../../domain/repositories/model.repository.js';
+import type { Logger } from '../../../lib/logging/logger.types.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import type { Result } from '../../../lib/shared/types/result.js';
 import { ok, err } from '../../../lib/shared/types/result.js';
@@ -22,10 +23,15 @@ import type { PrismaClient } from '../generated/prisma/client.js';
  */
 @injectable()
 export class PrismaModelRepository implements ModelRepository {
+	private readonly logger: Logger;
+
 	constructor(
 		@inject(TOKENS.PrismaClient)
 		private readonly prisma: PrismaClient,
-	) {}
+		@inject(TOKENS.Logger) logger: Logger,
+	) {
+		this.logger = logger.child({ repository: 'ModelRepository' });
+	}
 
 	/**
 	 * Retrieves all car model records.
@@ -36,6 +42,7 @@ export class PrismaModelRepository implements ModelRepository {
 			const models = await this.prisma.model.findMany();
 			return ok(models);
 		} catch (e) {
+			this.logger.error('Failed to find all models', e instanceof Error ? e : null, { operation: 'findAll' });
 			return err(new DatabaseError('Failed to find all models', e));
 		}
 	}
@@ -53,6 +60,7 @@ export class PrismaModelRepository implements ModelRepository {
 			});
 			return ok(model);
 		} catch (e) {
+			this.logger.error('Failed to find model by ID', e instanceof Error ? e : null, { operation: 'findById', modelId: id });
 			return err(new DatabaseError('Failed to find model by id', e));
 		}
 	}
@@ -74,6 +82,7 @@ export class PrismaModelRepository implements ModelRepository {
 			});
 			return ok(model);
 		} catch (e) {
+			this.logger.error('Failed to find model by name and brand', e instanceof Error ? e : null, { operation: 'findByNameAndBrand', name, brandRefId });
 			return err(new DatabaseError('Failed to find model by name and brand', e));
 		}
 	}
@@ -94,6 +103,7 @@ export class PrismaModelRepository implements ModelRepository {
 			});
 			return ok(model);
 		} catch (e) {
+			this.logger.error('Failed to create model', e instanceof Error ? e : null, { operation: 'create', name: data.name, brandRefId: data.brandRefId });
 			return err(new DatabaseError('Failed to create model', e));
 		}
 	}

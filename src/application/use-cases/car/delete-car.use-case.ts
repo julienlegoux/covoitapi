@@ -9,6 +9,7 @@ import { inject, injectable } from 'tsyringe';
 import { CarNotFoundError } from '../../../lib/errors/domain.errors.js';
 import type { CarRepository } from '../../../domain/repositories/car.repository.js';
 import type { RepositoryError } from '../../../lib/errors/repository.errors.js';
+import type { Logger } from '../../../lib/logging/logger.types.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import type { Result } from '../../../lib/shared/types/result.js';
 import { err } from '../../../lib/shared/types/result.js';
@@ -33,10 +34,15 @@ type DeleteCarError = CarNotFoundError | RepositoryError;
  */
 @injectable()
 export class DeleteCarUseCase {
+	private readonly logger: Logger;
+
 	constructor(
 		@inject(TOKENS.CarRepository)
 		private readonly carRepository: CarRepository,
-	) {}
+		@inject(TOKENS.Logger) logger: Logger,
+	) {
+		this.logger = logger.child({ useCase: 'DeleteCarUseCase' });
+	}
 
 	/**
 	 * Deletes the car identified by the given UUID.
@@ -51,9 +57,11 @@ export class DeleteCarUseCase {
 		}
 
 		if (!findResult.value) {
+			this.logger.warn('Car not found for deletion', { carId: id });
 			return err(new CarNotFoundError(id));
 		}
 
+		this.logger.info('Car deleted', { carId: id });
 		return this.carRepository.delete(id);
 	}
 }

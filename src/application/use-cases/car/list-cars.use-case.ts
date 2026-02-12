@@ -8,6 +8,7 @@ import { inject, injectable } from 'tsyringe';
 import type { CarEntity } from '../../../domain/entities/car.entity.js';
 import type { CarRepository } from '../../../domain/repositories/car.repository.js';
 import type { RepositoryError } from '../../../lib/errors/repository.errors.js';
+import type { Logger } from '../../../lib/logging/logger.types.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import type { Result } from '../../../lib/shared/types/result.js';
 import { ok } from '../../../lib/shared/types/result.js';
@@ -23,10 +24,15 @@ import { type PaginationParams, type PaginatedResult, toSkipTake, buildPaginatio
  */
 @injectable()
 export class ListCarsUseCase {
+	private readonly logger: Logger;
+
 	constructor(
 		@inject(TOKENS.CarRepository)
 		private readonly carRepository: CarRepository,
-	) {}
+		@inject(TOKENS.Logger) logger: Logger,
+	) {
+		this.logger = logger.child({ useCase: 'ListCarsUseCase' });
+	}
 
 	/**
 	 * Fetches a paginated page of cars.

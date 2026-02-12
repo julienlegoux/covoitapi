@@ -7,8 +7,10 @@
  */
 
 import { sign as honoSign, verify as honoVerify } from 'hono/jwt';
-import { injectable } from 'tsyringe';
+import { inject, injectable } from 'tsyringe';
 import type { JwtPayload, JwtService } from '../../domain/services/jwt.service.js';
+import type { Logger } from '../../lib/logging/logger.types.js';
+import { TOKENS } from '../../lib/shared/di/tokens.js';
 import type { Result } from '../../lib/shared/types/result.js';
 import { ok, err } from '../../lib/shared/types/result.js';
 import {
@@ -31,12 +33,14 @@ import {
 export class HonoJwtService implements JwtService {
 	private readonly secret: string;
 	private readonly expiresIn: string;
+	private readonly logger: Logger;
 
 	/**
 	 * Reads JWT configuration from environment variables.
 	 * @throws {Error} If JWT_SECRET is not set.
 	 */
-	constructor() {
+	constructor(@inject(TOKENS.Logger) logger: Logger) {
+		this.logger = logger.child({ service: 'JwtService' });
 		const secret = process.env.JWT_SECRET;
 		if (!secret) {
 			throw new Error('JWT_SECRET environment variable is required');
@@ -58,6 +62,7 @@ export class HonoJwtService implements JwtService {
 			const token = await honoSign({ ...payload, exp }, this.secret, 'HS256');
 			return ok(token);
 		} catch (e) {
+			this.logger.error('Token signing failed', e instanceof Error ? e : null, { userId: payload.userId });
 			return err(new TokenSigningError(e));
 		}
 	}
@@ -84,7 +89,9 @@ export class HonoJwtService implements JwtService {
 			return ok({ userId: decoded.userId, role: (decoded.role as string) ?? 'USER' });
 		} catch (e) {
 			// Classify the raw JWT error into a typed domain error
-			return err(this.classifyJwtError(e));
+			const classified = this.classifyJwtError(e);
+			this.logger.warn('Token verification failed', { errorCode: classified.code });
+			return err(classified);
 		}
 	}
 

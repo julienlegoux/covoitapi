@@ -8,6 +8,7 @@
 import { inject, injectable } from 'tsyringe';
 import type { CreateDriverData, DriverEntity } from '../../../domain/entities/driver.entity.js';
 import type { DriverRepository } from '../../../domain/repositories/driver.repository.js';
+import type { Logger } from '../../../lib/logging/logger.types.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import type { Result } from '../../../lib/shared/types/result.js';
 import { ok, err } from '../../../lib/shared/types/result.js';
@@ -22,10 +23,15 @@ import type { PrismaClient } from '../generated/prisma/client.js';
  */
 @injectable()
 export class PrismaDriverRepository implements DriverRepository {
+	private readonly logger: Logger;
+
 	constructor(
 		@inject(TOKENS.PrismaClient)
 		private readonly prisma: PrismaClient,
-	) {}
+		@inject(TOKENS.Logger) logger: Logger,
+	) {
+		this.logger = logger.child({ repository: 'DriverRepository' });
+	}
 
 	/**
 	 * Finds a driver record by the user's integer reference ID.
@@ -42,6 +48,7 @@ export class PrismaDriverRepository implements DriverRepository {
 			});
 			return ok(driver);
 		} catch (e) {
+			this.logger.error('Failed to find driver by user ref id', e instanceof Error ? e : null, { operation: 'findByUserRefId', userRefId });
 			return err(new DatabaseError('Failed to find driver by user ref id', e));
 		}
 	}
@@ -62,6 +69,7 @@ export class PrismaDriverRepository implements DriverRepository {
 			});
 			return ok(driver);
 		} catch (e) {
+			this.logger.error('Failed to create driver', e instanceof Error ? e : null, { operation: 'create', userRefId: data.userRefId });
 			return err(new DatabaseError('Failed to create driver', e));
 		}
 	}

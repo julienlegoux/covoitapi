@@ -14,6 +14,9 @@
  * - 403 FORBIDDEN -- user's role level is below the minimum required
  */
 import type { Context, Next } from 'hono';
+import type { Logger } from '../../lib/logging/logger.types.js';
+import { container } from '../../lib/shared/di/container.js';
+import { TOKENS } from '../../lib/shared/di/tokens.js';
 
 /**
  * Role hierarchy mapping. Higher numbers indicate greater privileges.
@@ -45,9 +48,14 @@ const ROLE_HIERARCHY: Record<string, number> = {
  */
 export function requireRole(...roles: string[]) {
 	return async (c: Context, next: Next) => {
+		const logger = container.resolve<Logger>(TOKENS.Logger);
 		const userRole = c.get('role') as string | undefined;
 
 		if (!userRole) {
+			logger.warn('Authorization failed: no role in context', {
+				path: c.req.path,
+				method: c.req.method,
+			});
 			return c.json(
 				{ success: false, error: { code: 'UNAUTHORIZED', message: 'Authentication required' } },
 				401,
@@ -58,6 +66,12 @@ export function requireRole(...roles: string[]) {
 		const minRequired = Math.min(...roles.map((r) => ROLE_HIERARCHY[r] ?? Infinity));
 
 		if (userLevel < minRequired) {
+			logger.warn('Authorization failed: insufficient role', {
+				path: c.req.path,
+				method: c.req.method,
+				userRole,
+				requiredRoles: roles,
+			});
 			return c.json(
 				{ success: false, error: { code: 'FORBIDDEN', message: 'Insufficient permissions' } },
 				403,

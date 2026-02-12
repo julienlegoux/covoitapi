@@ -7,8 +7,10 @@
  */
 
 import { Resend } from 'resend';
-import { injectable } from 'tsyringe';
+import { inject, injectable } from 'tsyringe';
 import type { EmailService, SendEmailOptions } from '../../domain/services/email.service.js';
+import type { Logger } from '../../lib/logging/logger.types.js';
+import { TOKENS } from '../../lib/shared/di/tokens.js';
 import type { Result } from '../../lib/shared/types/result.js';
 import { ok, err } from '../../lib/shared/types/result.js';
 import { EmailDeliveryError } from '../../lib/errors/email.errors.js';
@@ -25,11 +27,13 @@ import { EmailDeliveryError } from '../../lib/errors/email.errors.js';
 @injectable()
 export class ResendEmailService implements EmailService {
 	private readonly resend: Resend;
+	private readonly logger: Logger;
 
 	/**
 	 * Initializes the Resend SDK client with the API key from environment.
 	 */
-	constructor() {
+	constructor(@inject(TOKENS.Logger) logger: Logger) {
+		this.logger = logger.child({ service: 'EmailService' });
 		this.resend = new Resend(process.env.RESEND_API_KEY);
 	}
 
@@ -65,6 +69,7 @@ export class ResendEmailService implements EmailService {
 	async send(options: SendEmailOptions): Promise<Result<void, EmailDeliveryError>> {
 		const fromEmail = process.env.RESEND_FROM_EMAIL;
 		if (!fromEmail) {
+			this.logger.error('RESEND_FROM_EMAIL not configured');
 			return err(new EmailDeliveryError(options.to, new Error('RESEND_FROM_EMAIL not configured')));
 		}
 
@@ -75,8 +80,10 @@ export class ResendEmailService implements EmailService {
 				subject: options.subject,
 				html: options.html,
 			});
+			this.logger.info('Email sent', { to: options.to, subject: options.subject });
 			return ok(undefined);
 		} catch (e) {
+			this.logger.error('Email delivery failed', e instanceof Error ? e : null, { to: options.to, subject: options.subject });
 			return err(new EmailDeliveryError(options.to, e));
 		}
 	}

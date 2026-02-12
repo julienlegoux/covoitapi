@@ -8,10 +8,11 @@
 
 import { describe, expect, it } from 'vitest';
 import { ArgonPasswordService } from './argon-password.service.js';
+import { createMockLogger } from '../../../tests/setup.js';
 
 // Integration tests using real Argon2 hashing (no mocks)
 describe('ArgonPasswordService', () => {
-	const passwordService = new ArgonPasswordService();
+	const passwordService = new ArgonPasswordService(createMockLogger() as any);
 
 	it('should hash a password', async () => {
 		const password = 'TestPassword123!';

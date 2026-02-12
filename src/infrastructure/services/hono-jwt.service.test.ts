@@ -19,6 +19,7 @@ vi.mock('hono/jwt', () => ({
 }));
 
 import { HonoJwtService } from './hono-jwt.service.js';
+import { createMockLogger } from '../../../tests/setup.js';
 
 // Tests for HonoJwtService with mocked hono/jwt functions
 describe('HonoJwtService', () => {
@@ -30,7 +31,7 @@ describe('HonoJwtService', () => {
 		process.env = { ...originalEnv };
 		process.env.JWT_SECRET = 'test-secret';
 		process.env.JWT_EXPIRES_IN = '24h';
-		jwtService = new HonoJwtService();
+		jwtService = new HonoJwtService(createMockLogger() as any);
 	});
 
 	afterEach(() => {
@@ -41,12 +42,12 @@ describe('HonoJwtService', () => {
 	describe('constructor', () => {
 		it('should throw when JWT_SECRET is missing', () => {
 			process.env.JWT_SECRET = '';
-			expect(() => new HonoJwtService()).toThrow('JWT_SECRET environment variable is required');
+			expect(() => new HonoJwtService(createMockLogger() as any)).toThrow('JWT_SECRET environment variable is required');
 		});
 
 		it('should default JWT_EXPIRES_IN to 24h', () => {
 			delete process.env.JWT_EXPIRES_IN;
-			expect(() => new HonoJwtService()).not.toThrow();
+			expect(() => new HonoJwtService(createMockLogger() as any)).not.toThrow();
 		});
 	});
 
@@ -205,7 +206,7 @@ describe('HonoJwtService', () => {
 	describe('calculateExpiration()', () => {
 		it('should calculate hours correctly', async () => {
 			process.env.JWT_EXPIRES_IN = '2h';
-			const service = new HonoJwtService();
+			const service = new HonoJwtService(createMockLogger() as any);
 			mockSign.mockResolvedValue('token');
 			const now = Math.floor(Date.now() / 1000);
 
@@ -218,7 +219,7 @@ describe('HonoJwtService', () => {
 
 		it('should calculate days correctly', async () => {
 			process.env.JWT_EXPIRES_IN = '7d';
-			const service = new HonoJwtService();
+			const service = new HonoJwtService(createMockLogger() as any);
 			mockSign.mockResolvedValue('token');
 			const now = Math.floor(Date.now() / 1000);
 
@@ -231,7 +232,7 @@ describe('HonoJwtService', () => {
 
 		it('should calculate minutes correctly', async () => {
 			process.env.JWT_EXPIRES_IN = '30m';
-			const service = new HonoJwtService();
+			const service = new HonoJwtService(createMockLogger() as any);
 			mockSign.mockResolvedValue('token');
 			const now = Math.floor(Date.now() / 1000);
 
@@ -244,7 +245,7 @@ describe('HonoJwtService', () => {
 
 		it('should default to 24h for invalid format', async () => {
 			process.env.JWT_EXPIRES_IN = 'invalid';
-			const service = new HonoJwtService();
+			const service = new HonoJwtService(createMockLogger() as any);
 			mockSign.mockResolvedValue('token');
 			const now = Math.floor(Date.now() / 1000);
 

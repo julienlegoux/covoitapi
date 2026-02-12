@@ -13,6 +13,7 @@ import type { CarRepository } from '../../../domain/repositories/car.repository.
 import type { ModelRepository } from '../../../domain/repositories/model.repository.js';
 import type { BrandRepository } from '../../../domain/repositories/brand.repository.js';
 import type { RepositoryError } from '../../../lib/errors/repository.errors.js';
+import type { Logger } from '../../../lib/logging/logger.types.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import type { Result } from '../../../lib/shared/types/result.js';
 import { err } from '../../../lib/shared/types/result.js';
@@ -43,6 +44,8 @@ type CreateCarError = CarAlreadyExistsError | BrandNotFoundError | RepositoryErr
  */
 @injectable()
 export class CreateCarUseCase {
+	private readonly logger: Logger;
+
 	constructor(
 		@inject(TOKENS.CarRepository)
 		private readonly carRepository: CarRepository,
@@ -50,7 +53,10 @@ export class CreateCarUseCase {
 		private readonly modelRepository: ModelRepository,
 		@inject(TOKENS.BrandRepository)
 		private readonly brandRepository: BrandRepository,
-	) {}
+		@inject(TOKENS.Logger) logger: Logger,
+	) {
+		this.logger = logger.child({ useCase: 'CreateCarUseCase' });
+	}
 
 	/**
 	 * Creates a new car with the given license plate, brand, and model.
@@ -65,6 +71,7 @@ export class CreateCarUseCase {
 		}
 
 		if (existsResult.value) {
+			this.logger.warn('Car already exists', { licensePlate: input.licensePlate });
 			return err(new CarAlreadyExistsError(input.licensePlate));
 		}
 
@@ -74,6 +81,7 @@ export class CreateCarUseCase {
 			return brandResult;
 		}
 		if (!brandResult.value) {
+			this.logger.warn('Brand not found', { brandId: input.brandId });
 			return err(new BrandNotFoundError(input.brandId));
 		}
 
@@ -97,9 +105,13 @@ export class CreateCarUseCase {
 			modelRefId = createModelResult.value.refId;
 		}
 
-		return this.carRepository.create({
+		const result = await this.carRepository.create({
 			licensePlate: input.licensePlate,
 			modelRefId,
 		});
+		if (result.success) {
+			this.logger.info('Car created', { carId: result.value.id });
+		}
+		return result;
 	}
 }
