@@ -24,7 +24,9 @@
  */
 import { randomUUID } from 'node:crypto';
 import type { Context, Next } from 'hono';
-import { logger } from '../../lib/logging/logger.js';
+import type { Logger } from '../../lib/logging/logger.types.js';
+import { container } from '../../lib/shared/di/container.js';
+import { TOKENS } from '../../lib/shared/di/tokens.js';
 import { getContext, runWithContext } from '../../lib/context/request-context.js';
 
 /**
@@ -35,6 +37,7 @@ import { getContext, runWithContext } from '../../lib/context/request-context.js
  * @param next - Next middleware/handler in the chain
  */
 export async function requestLogger(c: Context, next: Next): Promise<void> {
+	const logger = container.resolve<Logger>(TOKENS.Logger);
 	const requestId = randomUUID();
 	const startTime = performance.now();
 

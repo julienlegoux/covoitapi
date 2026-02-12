@@ -7,6 +7,7 @@
 import { inject, injectable } from 'tsyringe';
 import type { ColorEntity } from '../../../domain/entities/color.entity.js';
 import type { ColorRepository, CreateColorData, UpdateColorData } from '../../../domain/repositories/color.repository.js';
+import type { Logger } from '../../../lib/logging/logger.types.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import type { Result } from '../../../lib/shared/types/result.js';
 import { ok, err } from '../../../lib/shared/types/result.js';
@@ -21,10 +22,15 @@ import type { PrismaClient } from '../generated/prisma/client.js';
  */
 @injectable()
 export class PrismaColorRepository implements ColorRepository {
+	private readonly logger: Logger;
+
 	constructor(
 		@inject(TOKENS.PrismaClient)
 		private readonly prisma: PrismaClient,
-	) {}
+		@inject(TOKENS.Logger) logger: Logger,
+	) {
+		this.logger = logger.child({ repository: 'ColorRepository' });
+	}
 
 	/**
 	 * Retrieves all color records with optional pagination.
@@ -44,6 +50,7 @@ export class PrismaColorRepository implements ColorRepository {
 			]);
 			return ok({ data, total });
 		} catch (e) {
+			this.logger.error('Failed to find all colors', e instanceof Error ? e : null, { operation: 'findAll' });
 			return err(new DatabaseError('Failed to find all colors', e));
 		}
 	}
@@ -61,6 +68,7 @@ export class PrismaColorRepository implements ColorRepository {
 			});
 			return ok(color);
 		} catch (e) {
+			this.logger.error('Failed to find color by id', e instanceof Error ? e : null, { operation: 'findById', colorId: id });
 			return err(new DatabaseError('Failed to find color by id', e));
 		}
 	}
@@ -79,6 +87,7 @@ export class PrismaColorRepository implements ColorRepository {
 			});
 			return ok(color);
 		} catch (e) {
+			this.logger.error('Failed to find color by name', e instanceof Error ? e : null, { operation: 'findByName', name });
 			return err(new DatabaseError('Failed to find color by name', e));
 		}
 	}
@@ -99,6 +108,7 @@ export class PrismaColorRepository implements ColorRepository {
 			});
 			return ok(color);
 		} catch (e) {
+			this.logger.error('Failed to create color', e instanceof Error ? e : null, { operation: 'create', name: data.name });
 			return err(new DatabaseError('Failed to create color', e));
 		}
 	}
@@ -118,6 +128,7 @@ export class PrismaColorRepository implements ColorRepository {
 			});
 			return ok(color);
 		} catch (e) {
+			this.logger.error('Failed to update color', e instanceof Error ? e : null, { operation: 'update', colorId: id });
 			return err(new DatabaseError('Failed to update color', e));
 		}
 	}
@@ -134,6 +145,7 @@ export class PrismaColorRepository implements ColorRepository {
 			});
 			return ok(undefined);
 		} catch (e) {
+			this.logger.error('Failed to delete color', e instanceof Error ? e : null, { operation: 'delete', colorId: id });
 			return err(new DatabaseError('Failed to delete color', e));
 		}
 	}

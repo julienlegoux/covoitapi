@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { container } from 'tsyringe';
+import { TOKENS } from '../../src/lib/shared/di/tokens.js';
 import { ListCarsUseCase } from '../../src/application/use-cases/car/list-cars.use-case.js';
 import { CreateCarUseCase } from '../../src/application/use-cases/car/create-car.use-case.js';
 import { UpdateCarUseCase } from '../../src/application/use-cases/car/update-car.use-case.js';
@@ -7,6 +8,7 @@ import { DeleteCarUseCase } from '../../src/application/use-cases/car/delete-car
 import { ok, err } from '../../src/lib/shared/types/result.js';
 import { CarNotFoundError, CarAlreadyExistsError } from '../../src/lib/errors/domain.errors.js';
 import { authHeaders, registerMockJwtService, registerMockUseCase } from './helpers.js';
+import { createMockLogger } from '../setup.js';
 
 vi.mock('../../src/infrastructure/database/generated/prisma/client.js', () => ({
 	PrismaClient: class { $extends() { return this; } },
@@ -22,6 +24,7 @@ describe('Car Routes', () => {
 
 	beforeEach(() => {
 		container.clearInstances();
+		container.registerInstance(TOKENS.Logger, createMockLogger());
 		registerMockJwtService();
 		listMock = registerMockUseCase(ListCarsUseCase);
 		createMock = registerMockUseCase(CreateCarUseCase);
@@ -49,13 +52,16 @@ describe('Car Routes', () => {
 		const validBody = { model: 'Corolla', brandId: 'b1', licensePlate: 'AB-123-CD' };
 
 		it('should return 201 on success', async () => {
-			createMock.execute.mockResolvedValue(ok({ id: '1', licensePlate: 'AB-123-CD' }));
+			const car = { id: '1', licensePlate: 'AB-123-CD' };
+			createMock.execute.mockResolvedValue(ok(car));
 			const res = await app.request('/api/v1/cars', {
 				method: 'POST',
 				body: JSON.stringify(validBody),
 				headers: authHeaders(),
 			});
 			expect(res.status).toBe(201);
+			const body = await res.json();
+			expect(body).toEqual({ success: true, data: car });
 		});
 
 		it('should reject invalid input', async () => {

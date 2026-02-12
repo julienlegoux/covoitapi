@@ -8,7 +8,7 @@
 
 import { container } from 'tsyringe';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { createMockTravelRepository, createMockDriverRepository, createMockCityRepository, createMockUserRepository, createMockCarRepository } from '../../../../tests/setup.js';
+import { createMockTravelRepository, createMockDriverRepository, createMockCityRepository, createMockLogger, createMockUserRepository, createMockCarRepository } from '../../../../tests/setup.js';
 import { DriverNotFoundError } from '../../../lib/errors/domain.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import { ok, err } from '../../../lib/shared/types/result.js';
@@ -40,6 +40,7 @@ describe('CreateTravelUseCase', () => {
 		container.registerInstance(TOKENS.CityRepository, mockCityRepo);
 		container.registerInstance(TOKENS.UserRepository, mockUserRepo);
 		container.registerInstance(TOKENS.CarRepository, mockCarRepo);
+		container.registerInstance(TOKENS.Logger, createMockLogger());
 		useCase = container.resolve(CreateTravelUseCase);
 	});
 

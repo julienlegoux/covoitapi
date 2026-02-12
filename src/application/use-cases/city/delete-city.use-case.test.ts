@@ -6,7 +6,7 @@
 
 import { container } from 'tsyringe';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { createMockCityRepository } from '../../../../tests/setup.js';
+import { createMockCityRepository, createMockLogger } from '../../../../tests/setup.js';
 import { CityNotFoundError } from '../../../lib/errors/domain.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import { ok, err } from '../../../lib/shared/types/result.js';
@@ -21,6 +21,7 @@ describe('DeleteCityUseCase', () => {
 	beforeEach(() => {
 		mockCityRepository = createMockCityRepository();
 		container.registerInstance(TOKENS.CityRepository, mockCityRepository);
+		container.registerInstance(TOKENS.Logger, createMockLogger());
 		useCase = container.resolve(DeleteCityUseCase);
 	});
 

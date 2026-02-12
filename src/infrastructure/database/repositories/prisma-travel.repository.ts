@@ -9,6 +9,7 @@
 import { inject, injectable } from 'tsyringe';
 import type { CreateTravelData, TravelEntity } from '../../../domain/entities/travel.entity.js';
 import type { TravelFilters, TravelRepository } from '../../../domain/repositories/travel.repository.js';
+import type { Logger } from '../../../lib/logging/logger.types.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import type { Result } from '../../../lib/shared/types/result.js';
 import { ok, err } from '../../../lib/shared/types/result.js';
@@ -25,10 +26,15 @@ import type { PrismaClient } from '../generated/prisma/client.js';
  */
 @injectable()
 export class PrismaTravelRepository implements TravelRepository {
+	private readonly logger: Logger;
+
 	constructor(
 		@inject(TOKENS.PrismaClient)
 		private readonly prisma: PrismaClient,
-	) {}
+		@inject(TOKENS.Logger) logger: Logger,
+	) {
+		this.logger = logger.child({ repository: 'TravelRepository' });
+	}
 
 	/**
 	 * Retrieves all travel records with optional pagination.
@@ -54,6 +60,7 @@ export class PrismaTravelRepository implements TravelRepository {
 			]);
 			return ok({ data: routes as unknown as TravelEntity[], total });
 		} catch (e) {
+			this.logger.error('Failed to find all travels', e instanceof Error ? e : null, { operation: 'findAll' });
 			return err(new DatabaseError('Failed to find all travels', e));
 		}
 	}
@@ -79,6 +86,7 @@ export class PrismaTravelRepository implements TravelRepository {
 			});
 			return ok(route as unknown as TravelEntity | null);
 		} catch (e) {
+			this.logger.error('Failed to find travel by ID', e instanceof Error ? e : null, { operation: 'findById', travelId: id });
 			return err(new DatabaseError('Failed to find travel by id', e));
 		}
 	}
@@ -148,6 +156,7 @@ export class PrismaTravelRepository implements TravelRepository {
 			});
 			return ok(routes as unknown as TravelEntity[]);
 		} catch (e) {
+			this.logger.error('Failed to find travels by filters', e instanceof Error ? e : null, { operation: 'findByFilters', filters });
 			return err(new DatabaseError('Failed to find travels by filters', e));
 		}
 	}
@@ -183,6 +192,7 @@ export class PrismaTravelRepository implements TravelRepository {
 			});
 			return ok(route);
 		} catch (e) {
+			this.logger.error('Failed to create travel', e instanceof Error ? e : null, { operation: 'create', driverRefId: data.driverRefId, carRefId: data.carRefId });
 			return err(new DatabaseError('Failed to create travel', e));
 		}
 	}
@@ -200,6 +210,7 @@ export class PrismaTravelRepository implements TravelRepository {
 			});
 			return ok(undefined);
 		} catch (e) {
+			this.logger.error('Failed to delete travel', e instanceof Error ? e : null, { operation: 'delete', travelId: id });
 			return err(new DatabaseError('Failed to delete travel', e));
 		}
 	}

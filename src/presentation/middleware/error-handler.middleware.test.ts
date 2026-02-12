@@ -9,8 +9,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import type { Context, Next } from 'hono';
 import { type ZodError, z } from 'zod';
+import { container } from 'tsyringe';
 import { errorHandler } from './error-handler.middleware.js';
 import { DomainError, UserAlreadyExistsError, InvalidCredentialsError, UserNotFoundError } from '../../lib/errors/domain.errors.js';
+import { TOKENS } from '../../lib/shared/di/tokens.js';
+import { createMockLogger } from '../../../tests/setup.js';
 
 function createMockContext() {
 	const jsonMock = vi.fn();
@@ -29,6 +32,14 @@ function createPassingNext(): Next {
 }
 
 describe('errorHandler middleware', () => {
+	let mockLogger: ReturnType<typeof createMockLogger>;
+
+	beforeEach(() => {
+		container.clearInstances();
+		mockLogger = createMockLogger();
+		container.registerInstance(TOKENS.Logger, mockLogger);
+	});
+
 	// Zod validation errors: 400 status with field-level details
 	describe('ZodError handling', () => {
 		it('should return 400 with VALIDATION_ERROR code', async () => {
@@ -190,16 +201,6 @@ describe('errorHandler middleware', () => {
 
 	// Unexpected errors: 500 INTERNAL_ERROR with error logging
 	describe('Unknown error handling', () => {
-		let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
-
-		beforeEach(() => {
-			consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-		});
-
-		afterEach(() => {
-			consoleErrorSpy.mockRestore();
-		});
-
 		it('should return 500 for unexpected errors', async () => {
 			const error = new Error('Unexpected database connection failed');
 
@@ -226,7 +227,7 @@ describe('errorHandler middleware', () => {
 			expect(response.error.message).toBe('An unexpected error occurred');
 		});
 
-		it('should log error to console', async () => {
+		it('should log error via logger', async () => {
 			const error = new Error('Test error');
 
 			const ctx = createMockContext();
@@ -234,8 +235,9 @@ describe('errorHandler middleware', () => {
 
 			await errorHandler(ctx as unknown as Context, next);
 
-			expect(consoleErrorSpy).toHaveBeenCalledWith(
-				expect.stringContaining('Unexpected error'),
+			expect(mockLogger.error).toHaveBeenCalledWith(
+				'Unexpected error',
+				error,
 			);
 		});
 

@@ -1,11 +1,13 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { container } from 'tsyringe';
+import { TOKENS } from '../../src/lib/shared/di/tokens.js';
 import { ListBrandsUseCase } from '../../src/application/use-cases/brand/list-brands.use-case.js';
 import { CreateBrandUseCase } from '../../src/application/use-cases/brand/create-brand.use-case.js';
 import { DeleteBrandUseCase } from '../../src/application/use-cases/brand/delete-brand.use-case.js';
 import { ok, err } from '../../src/lib/shared/types/result.js';
 import { BrandNotFoundError } from '../../src/lib/errors/domain.errors.js';
 import { authHeaders, registerMockJwtService, registerMockUseCase } from './helpers.js';
+import { createMockLogger } from '../setup.js';
 
 vi.mock('../../src/infrastructure/database/generated/prisma/client.js', () => ({
 	PrismaClient: class { $extends() { return this; } },
@@ -20,6 +22,7 @@ describe('Brand Routes', () => {
 
 	beforeEach(() => {
 		container.clearInstances();
+		container.registerInstance(TOKENS.Logger, createMockLogger());
 		registerMockJwtService();
 		listMock = registerMockUseCase(ListBrandsUseCase);
 		createMock = registerMockUseCase(CreateBrandUseCase);

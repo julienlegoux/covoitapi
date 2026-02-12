@@ -9,6 +9,7 @@ import { inject, injectable } from 'tsyringe';
 import type { CityEntity } from '../../../domain/entities/city.entity.js';
 import type { CityRepository } from '../../../domain/repositories/city.repository.js';
 import type { RepositoryError } from '../../../lib/errors/repository.errors.js';
+import type { Logger } from '../../../lib/logging/logger.types.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import type { Result } from '../../../lib/shared/types/result.js';
 import { ok } from '../../../lib/shared/types/result.js';
@@ -24,10 +25,15 @@ import { type PaginationParams, type PaginatedResult, toSkipTake, buildPaginatio
  */
 @injectable()
 export class ListCitiesUseCase {
+	private readonly logger: Logger;
+
 	constructor(
 		@inject(TOKENS.CityRepository)
 		private readonly cityRepository: CityRepository,
-	) {}
+		@inject(TOKENS.Logger) logger: Logger,
+	) {
+		this.logger = logger.child({ useCase: 'ListCitiesUseCase' });
+	}
 
 	/**
 	 * Fetches a paginated page of cities.

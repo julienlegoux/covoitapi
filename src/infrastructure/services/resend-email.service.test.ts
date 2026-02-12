@@ -9,6 +9,7 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import type { EmailService } from '../../domain/services/email.service.js';
 import { EmailDeliveryError } from '../../lib/errors/email.errors.js';
+import { createMockLogger } from '../../../tests/setup.js';
 
 // Mock the Resend SDK to avoid real API calls in tests
 const mockSend = vi.fn();
@@ -33,7 +34,7 @@ describe('ResendEmailService', () => {
 		process.env.RESEND_FROM_EMAIL = 'noreply@test.com';
 
 		const { ResendEmailService } = await import('./resend-email.service.js');
-		emailService = new ResendEmailService();
+		emailService = new ResendEmailService(createMockLogger() as any);
 	});
 
 	afterEach(() => {

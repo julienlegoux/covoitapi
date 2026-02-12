@@ -11,6 +11,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import {
 	createMockAuthRepository,
 	createMockDriverRepository,
+	createMockLogger,
 	createMockUserRepository,
 } from '../../../../tests/setup.js';
 import { DriverAlreadyExistsError } from '../../../lib/errors/domain.errors.js';
@@ -62,6 +63,7 @@ describe('CreateDriverUseCase', () => {
 		container.registerInstance(TOKENS.DriverRepository, mockDriverRepository);
 		container.registerInstance(TOKENS.UserRepository, mockUserRepository);
 		container.registerInstance(TOKENS.AuthRepository, mockAuthRepository);
+		container.registerInstance(TOKENS.Logger, createMockLogger());
 
 		useCase = container.resolve(CreateDriverUseCase);
 	});

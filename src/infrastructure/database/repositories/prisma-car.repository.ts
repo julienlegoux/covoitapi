@@ -9,6 +9,7 @@
 import { inject, injectable } from 'tsyringe';
 import type { CarEntity, CreateCarData, UpdateCarData } from '../../../domain/entities/car.entity.js';
 import type { CarRepository } from '../../../domain/repositories/car.repository.js';
+import type { Logger } from '../../../lib/logging/logger.types.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import type { Result } from '../../../lib/shared/types/result.js';
 import { ok, err } from '../../../lib/shared/types/result.js';
@@ -23,10 +24,15 @@ import type { PrismaClient } from '../generated/prisma/client.js';
  */
 @injectable()
 export class PrismaCarRepository implements CarRepository {
+	private readonly logger: Logger;
+
 	constructor(
 		@inject(TOKENS.PrismaClient)
 		private readonly prisma: PrismaClient,
-	) {}
+		@inject(TOKENS.Logger) logger: Logger,
+	) {
+		this.logger = logger.child({ repository: 'CarRepository' });
+	}
 
 	/**
 	 * Maps a raw Prisma car record to the domain {@link CarEntity}.
@@ -56,6 +62,7 @@ export class PrismaCarRepository implements CarRepository {
 			]);
 			return ok({ data: data.map((c) => this.toEntity(c)), total });
 		} catch (e) {
+			this.logger.error('Failed to find all cars', e instanceof Error ? e : null, { operation: 'findAll' });
 			return err(new DatabaseError('Failed to find all cars', e));
 		}
 	}
@@ -73,6 +80,7 @@ export class PrismaCarRepository implements CarRepository {
 			});
 			return ok(car ? this.toEntity(car) : null);
 		} catch (e) {
+			this.logger.error('Failed to find car by id', e instanceof Error ? e : null, { operation: 'findById', carId: id });
 			return err(new DatabaseError('Failed to find car by id', e));
 		}
 	}
@@ -94,6 +102,7 @@ export class PrismaCarRepository implements CarRepository {
 			});
 			return ok(this.toEntity(car));
 		} catch (e) {
+			this.logger.error('Failed to create car', e instanceof Error ? e : null, { operation: 'create', licensePlate: data.licensePlate });
 			return err(new DatabaseError('Failed to create car', e));
 		}
 	}
@@ -118,6 +127,7 @@ export class PrismaCarRepository implements CarRepository {
 			});
 			return ok(this.toEntity(car));
 		} catch (e) {
+			this.logger.error('Failed to update car', e instanceof Error ? e : null, { operation: 'update', carId: id });
 			return err(new DatabaseError('Failed to update car', e));
 		}
 	}
@@ -134,6 +144,7 @@ export class PrismaCarRepository implements CarRepository {
 			});
 			return ok(undefined);
 		} catch (e) {
+			this.logger.error('Failed to delete car', e instanceof Error ? e : null, { operation: 'delete', carId: id });
 			return err(new DatabaseError('Failed to delete car', e));
 		}
 	}
@@ -153,6 +164,7 @@ export class PrismaCarRepository implements CarRepository {
 			});
 			return ok(count > 0);
 		} catch (e) {
+			this.logger.error('Failed to check if car exists by license plate', e instanceof Error ? e : null, { operation: 'existsByLicensePlate', licensePlate });
 			return err(new DatabaseError('Failed to check if car exists', e));
 		}
 	}

@@ -9,6 +9,7 @@ import { inject, injectable } from 'tsyringe';
 import type { AuthEntity, CreateAuthData } from '../../../domain/entities/auth.entity.js';
 import type { CreateUserData, PublicUserEntity } from '../../../domain/entities/user.entity.js';
 import type { AuthRepository } from '../../../domain/repositories/auth.repository.js';
+import type { Logger } from '../../../lib/logging/logger.types.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import type { Result } from '../../../lib/shared/types/result.js';
 import { ok, err } from '../../../lib/shared/types/result.js';
@@ -22,10 +23,15 @@ import type { PrismaClient, $Enums } from '../generated/prisma/client.js';
  */
 @injectable()
 export class PrismaAuthRepository implements AuthRepository {
+	private readonly logger: Logger;
+
 	constructor(
 		@inject(TOKENS.PrismaClient)
 		private readonly prisma: PrismaClient,
-	) {}
+		@inject(TOKENS.Logger) logger: Logger,
+	) {
+		this.logger = logger.child({ repository: 'AuthRepository' });
+	}
 
 	/**
 	 * Finds an authentication record by its unique email address.
@@ -41,6 +47,7 @@ export class PrismaAuthRepository implements AuthRepository {
 			});
 			return ok(auth);
 		} catch (e) {
+			this.logger.error('Failed to find auth by email', e instanceof Error ? e : null, { operation: 'findByEmail', email });
 			return err(new DatabaseError('Failed to find auth by email', e));
 		}
 	}
@@ -86,6 +93,7 @@ export class PrismaAuthRepository implements AuthRepository {
 			});
 			return ok(result);
 		} catch (e) {
+			this.logger.error('Failed to create auth with user', e instanceof Error ? e : null, { operation: 'createWithUser', email: authData.email });
 			return err(new DatabaseError('Failed to create auth with user', e));
 		}
 	}
@@ -104,6 +112,7 @@ export class PrismaAuthRepository implements AuthRepository {
 			});
 			return ok(count > 0);
 		} catch (e) {
+			this.logger.error('Failed to check if auth exists by email', e instanceof Error ? e : null, { operation: 'existsByEmail', email });
 			return err(new DatabaseError('Failed to check if auth exists', e));
 		}
 	}
@@ -124,6 +133,7 @@ export class PrismaAuthRepository implements AuthRepository {
 			});
 			return ok(undefined);
 		} catch (e) {
+			this.logger.error('Failed to update auth role', e instanceof Error ? e : null, { operation: 'updateRole', refId, role });
 			return err(new DatabaseError('Failed to update auth role', e));
 		}
 	}

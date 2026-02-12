@@ -7,6 +7,7 @@
 
 import { inject, injectable } from 'tsyringe';
 import type { InscriptionEntity } from '../../../domain/entities/inscription.entity.js';
+import type { Logger } from '../../../lib/logging/logger.types.js';
 import type { InscriptionRepository } from '../../../domain/repositories/inscription.repository.js';
 import type { RepositoryError } from '../../../lib/errors/repository.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
@@ -21,10 +22,15 @@ import { type PaginationParams, type PaginatedResult, toSkipTake, buildPaginatio
  */
 @injectable()
 export class ListInscriptionsUseCase {
+	private readonly logger: Logger;
+
 	constructor(
 		@inject(TOKENS.InscriptionRepository)
 		private readonly inscriptionRepository: InscriptionRepository,
-	) {}
+		@inject(TOKENS.Logger) logger: Logger,
+	) {
+		this.logger = logger.child({ useCase: 'ListInscriptionsUseCase' });
+	}
 
 	/**
 	 * Fetches a paginated page of inscriptions.

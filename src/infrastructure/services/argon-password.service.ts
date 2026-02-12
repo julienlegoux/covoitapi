@@ -6,8 +6,10 @@
  */
 
 import * as argon2 from 'argon2';
-import { injectable } from 'tsyringe';
+import { inject, injectable } from 'tsyringe';
 import type { PasswordService } from '../../domain/services/password.service.js';
+import type { Logger } from '../../lib/logging/logger.types.js';
+import { TOKENS } from '../../lib/shared/di/tokens.js';
 import type { Result } from '../../lib/shared/types/result.js';
 import { ok, err } from '../../lib/shared/types/result.js';
 import { HashingError, HashVerificationError } from '../../lib/errors/password.errors.js';
@@ -21,6 +23,12 @@ import { HashingError, HashVerificationError } from '../../lib/errors/password.e
  */
 @injectable()
 export class ArgonPasswordService implements PasswordService {
+	private readonly logger: Logger;
+
+	constructor(@inject(TOKENS.Logger) logger: Logger) {
+		this.logger = logger.child({ service: 'PasswordService' });
+	}
+
 	/**
 	 * Hashes a plaintext password using Argon2id.
 	 * The resulting hash string includes the algorithm, salt, and parameters
@@ -34,6 +42,7 @@ export class ArgonPasswordService implements PasswordService {
 			const hashed: string = await argon2.hash(password);
 			return ok(hashed);
 		} catch (e) {
+			this.logger.error('Password hashing failed', e instanceof Error ? e : null);
 			return err(new HashingError(e));
 		}
 	}
@@ -51,6 +60,7 @@ export class ArgonPasswordService implements PasswordService {
 			const valid: boolean = await argon2.verify(hash, password);
 			return ok(valid);
 		} catch (e) {
+			this.logger.error('Password verification failed', e instanceof Error ? e : null);
 			return err(new HashVerificationError(e));
 		}
 	}

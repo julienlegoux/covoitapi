@@ -10,6 +10,7 @@
 import { inject, injectable } from 'tsyringe';
 import type { TravelEntity } from '../../../domain/entities/travel.entity.js';
 import { DriverNotFoundError, CarNotFoundError } from '../../../lib/errors/domain.errors.js';
+import type { Logger } from '../../../lib/logging/logger.types.js';
 import type { DriverRepository } from '../../../domain/repositories/driver.repository.js';
 import type { CarRepository } from '../../../domain/repositories/car.repository.js';
 import type { CityRepository } from '../../../domain/repositories/city.repository.js';
@@ -46,6 +47,8 @@ type CreateTravelError = DriverNotFoundError | CarNotFoundError | RepositoryErro
  */
 @injectable()
 export class CreateTravelUseCase {
+	private readonly logger: Logger;
+
 	constructor(
 		@inject(TOKENS.TravelRepository)
 		private readonly travelRepository: TravelRepository,
@@ -57,7 +60,10 @@ export class CreateTravelUseCase {
 		private readonly userRepository: UserRepository,
 		@inject(TOKENS.CarRepository)
 		private readonly carRepository: CarRepository,
-	) {}
+		@inject(TOKENS.Logger) logger: Logger,
+	) {
+		this.logger = logger.child({ useCase: 'CreateTravelUseCase' });
+	}
 
 	/**
 	 * Creates a new travel for the authenticated driver.
@@ -74,6 +80,7 @@ export class CreateTravelUseCase {
 			return userResult;
 		}
 		if (!userResult.value) {
+			this.logger.warn('Driver not found for travel creation', { userId: input.userId });
 			return err(new DriverNotFoundError(input.userId));
 		}
 
@@ -82,6 +89,7 @@ export class CreateTravelUseCase {
 			return driverResult;
 		}
 		if (!driverResult.value) {
+			this.logger.warn('Driver not found for travel creation', { userId: input.userId });
 			return err(new DriverNotFoundError(input.userId));
 		}
 
@@ -91,6 +99,7 @@ export class CreateTravelUseCase {
 			return carResult;
 		}
 		if (!carResult.value) {
+			this.logger.warn('Car not found for travel creation', { carId: input.carId });
 			return err(new CarNotFoundError(input.carId));
 		}
 
@@ -104,7 +113,7 @@ export class CreateTravelUseCase {
 			return arrivalCityRefIdResult;
 		}
 
-		return this.travelRepository.create({
+		const result = await this.travelRepository.create({
 			dateRoute: new Date(input.date),
 			kms: input.kms,
 			seats: input.seats,
@@ -112,6 +121,12 @@ export class CreateTravelUseCase {
 			carRefId: carResult.value.refId,
 			cityRefIds: [departureCityRefIdResult.value, arrivalCityRefIdResult.value],
 		});
+
+		if (result.success) {
+			this.logger.info('Travel created', { travelId: result.value.id });
+		}
+
+		return result;
 	}
 
 	private async findOrCreateCityRefId(cityName: string): Promise<Result<number, RepositoryError>> {

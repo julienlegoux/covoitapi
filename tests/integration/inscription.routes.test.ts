@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { container } from 'tsyringe';
+import { TOKENS } from '../../src/lib/shared/di/tokens.js';
 import { ListInscriptionsUseCase } from '../../src/application/use-cases/inscription/list-inscriptions.use-case.js';
 import { ListUserInscriptionsUseCase } from '../../src/application/use-cases/inscription/list-user-inscriptions.use-case.js';
 import { ListRoutePassengersUseCase } from '../../src/application/use-cases/inscription/list-route-passengers.use-case.js';
@@ -8,6 +9,7 @@ import { DeleteInscriptionUseCase } from '../../src/application/use-cases/inscri
 import { ok, err } from '../../src/lib/shared/types/result.js';
 import { InscriptionNotFoundError, TravelNotFoundError, AlreadyInscribedError, NoSeatsAvailableError } from '../../src/lib/errors/domain.errors.js';
 import { authHeaders, registerMockJwtService, registerMockUseCase } from './helpers.js';
+import { createMockLogger } from '../setup.js';
 
 vi.mock('../../src/infrastructure/database/generated/prisma/client.js', () => ({
 	PrismaClient: class { $extends() { return this; } },
@@ -24,6 +26,7 @@ describe('Inscription Routes', () => {
 
 	beforeEach(() => {
 		container.clearInstances();
+		container.registerInstance(TOKENS.Logger, createMockLogger());
 		registerMockJwtService();
 		listMock = registerMockUseCase(ListInscriptionsUseCase);
 		listUserMock = registerMockUseCase(ListUserInscriptionsUseCase);
@@ -78,6 +81,8 @@ describe('Inscription Routes', () => {
 				headers: authHeaders(),
 			});
 			expect(res.status).toBe(201);
+			const body = await res.json();
+			expect(body).toEqual({ success: true, data: inscription });
 		});
 
 		it('should reject invalid input', async () => {

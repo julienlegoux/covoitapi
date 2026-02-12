@@ -10,6 +10,7 @@
 import { inject, injectable } from 'tsyringe';
 import type { InscriptionEntity } from '../../../domain/entities/inscription.entity.js';
 import { AlreadyInscribedError, NoSeatsAvailableError, TravelNotFoundError, UserNotFoundError } from '../../../lib/errors/domain.errors.js';
+import type { Logger } from '../../../lib/logging/logger.types.js';
 import type { InscriptionRepository } from '../../../domain/repositories/inscription.repository.js';
 import type { TravelRepository } from '../../../domain/repositories/travel.repository.js';
 import type { UserRepository } from '../../../domain/repositories/user.repository.js';
@@ -45,6 +46,8 @@ type CreateInscriptionError = UserNotFoundError | TravelNotFoundError | AlreadyI
  */
 @injectable()
 export class CreateInscriptionUseCase {
+	private readonly logger: Logger;
+
 	constructor(
 		@inject(TOKENS.InscriptionRepository)
 		private readonly inscriptionRepository: InscriptionRepository,
@@ -52,7 +55,10 @@ export class CreateInscriptionUseCase {
 		private readonly travelRepository: TravelRepository,
 		@inject(TOKENS.UserRepository)
 		private readonly userRepository: UserRepository,
-	) {}
+		@inject(TOKENS.Logger) logger: Logger,
+	) {
+		this.logger = logger.child({ useCase: 'CreateInscriptionUseCase' });
+	}
 
 	/**
 	 * Creates a new inscription for the authenticated user on the specified travel.
@@ -68,6 +74,7 @@ export class CreateInscriptionUseCase {
 			return userResult;
 		}
 		if (!userResult.value) {
+			this.logger.warn('User not found for inscription creation', { userId: input.userId });
 			return err(new UserNotFoundError(input.userId));
 		}
 
@@ -77,6 +84,7 @@ export class CreateInscriptionUseCase {
 			return travelResult;
 		}
 		if (!travelResult.value) {
+			this.logger.warn('Travel not found for inscription creation', { travelId: input.travelId });
 			return err(new TravelNotFoundError(input.travelId));
 		}
 
@@ -89,6 +97,7 @@ export class CreateInscriptionUseCase {
 			return existsResult;
 		}
 		if (existsResult.value) {
+			this.logger.warn('User already inscribed on travel', { userId: input.userId, travelId: input.travelId });
 			return err(new AlreadyInscribedError(input.userId, input.travelId));
 		}
 
@@ -100,12 +109,19 @@ export class CreateInscriptionUseCase {
 
 		const travel = travelResult.value;
 		if (countResult.value >= travel.seats) {
+			this.logger.warn('No seats available for inscription', { travelId: input.travelId });
 			return err(new NoSeatsAvailableError(input.travelId));
 		}
 
-		return this.inscriptionRepository.create({
+		const result = await this.inscriptionRepository.create({
 			userRefId,
 			routeRefId,
 		});
+
+		if (result.success) {
+			this.logger.info('Inscription created', { inscriptionId: result.value.id });
+		}
+
+		return result;
 	}
 }

@@ -9,6 +9,7 @@
 import { inject, injectable } from 'tsyringe';
 import type { PublicUserEntity, UpdateUserData } from '../../../domain/entities/user.entity.js';
 import { UserNotFoundError } from '../../../lib/errors/domain.errors.js';
+import type { Logger } from '../../../lib/logging/logger.types.js';
 import type { UserRepository } from '../../../domain/repositories/user.repository.js';
 import type { RepositoryError } from '../../../lib/errors/repository.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
@@ -42,10 +43,15 @@ export type UpdateProfileInput = {
  */
 @injectable()
 export class UpdateUserUseCase {
+	private readonly logger: Logger;
+
 	constructor(
 		@inject(TOKENS.UserRepository)
 		private readonly userRepository: UserRepository,
-	) {}
+		@inject(TOKENS.Logger) logger: Logger,
+	) {
+		this.logger = logger.child({ useCase: 'UpdateUserUseCase' });
+	}
 
 	/**
 	 * Applies a partial update to the user's profile.
@@ -62,6 +68,7 @@ export class UpdateUserUseCase {
 		}
 
 		if (!findResult.value) {
+			this.logger.warn('User not found for update', { userId: id });
 			return err(new UserNotFoundError(id));
 		}
 
@@ -70,6 +77,10 @@ export class UpdateUserUseCase {
 		if (input.lastName) updateData.lastName = input.lastName;
 		if (input.phone) updateData.phone = input.phone;
 
-		return this.userRepository.update(id, updateData);
+		const result = await this.userRepository.update(id, updateData);
+		if (result.success) {
+			this.logger.info('User updated', { userId: id });
+		}
+		return result;
 	}
 }

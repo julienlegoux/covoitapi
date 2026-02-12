@@ -37,6 +37,7 @@ export const TOKENS = {
 	PasswordService: Symbol('PasswordService'),
 	JwtService: Symbol('JwtService'),
 	PrismaClient: Symbol('PrismaClient'),
+	Logger: Symbol('Logger'),
 } as const;
 
 /** Union type of all token names in the TOKENS registry. */

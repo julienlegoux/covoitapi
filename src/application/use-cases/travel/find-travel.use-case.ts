@@ -8,6 +8,7 @@
 
 import { inject, injectable } from 'tsyringe';
 import type { TravelEntity } from '../../../domain/entities/travel.entity.js';
+import type { Logger } from '../../../lib/logging/logger.types.js';
 import type { TravelRepository } from '../../../domain/repositories/travel.repository.js';
 import type { RepositoryError } from '../../../lib/errors/repository.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
@@ -25,10 +26,15 @@ import type { FindTravelQueryType } from '../../schemas/travel.schema.js';
  */
 @injectable()
 export class FindTravelUseCase {
+	private readonly logger: Logger;
+
 	constructor(
 		@inject(TOKENS.TravelRepository)
 		private readonly travelRepository: TravelRepository,
-	) {}
+		@inject(TOKENS.Logger) logger: Logger,
+	) {
+		this.logger = logger.child({ useCase: 'FindTravelUseCase' });
+	}
 
 	/**
 	 * Finds travels matching the provided filters.

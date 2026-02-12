@@ -28,10 +28,12 @@
 import { Hono } from 'hono';
 import { bodyLimit } from 'hono/body-limit';
 import { errorHandler } from '../middleware/error-handler.middleware.js';
+import { requestLogger } from '../middleware/request-logger.middleware.js';
 import { v1Routes } from './v1/index.js';
 
 const app = new Hono().basePath('/api');
 
+app.use('*', requestLogger);
 app.use('*', bodyLimit({ maxSize: 1024 * 1024 }));
 app.use('*', errorHandler);
 

@@ -14,6 +14,7 @@ import type { CarRepository } from '../../../domain/repositories/car.repository.
 import type { ModelRepository } from '../../../domain/repositories/model.repository.js';
 import type { BrandRepository } from '../../../domain/repositories/brand.repository.js';
 import type { RepositoryError } from '../../../lib/errors/repository.errors.js';
+import type { Logger } from '../../../lib/logging/logger.types.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import type { Result } from '../../../lib/shared/types/result.js';
 import { err } from '../../../lib/shared/types/result.js';
@@ -42,6 +43,8 @@ type UpdateCarError = CarNotFoundError | BrandNotFoundError | RepositoryError;
  */
 @injectable()
 export class UpdateCarUseCase {
+	private readonly logger: Logger;
+
 	constructor(
 		@inject(TOKENS.CarRepository)
 		private readonly carRepository: CarRepository,
@@ -49,7 +52,10 @@ export class UpdateCarUseCase {
 		private readonly modelRepository: ModelRepository,
 		@inject(TOKENS.BrandRepository)
 		private readonly brandRepository: BrandRepository,
-	) {}
+		@inject(TOKENS.Logger) logger: Logger,
+	) {
+		this.logger = logger.child({ useCase: 'UpdateCarUseCase' });
+	}
 
 	/**
 	 * Applies a partial update to the car identified by UUID.
@@ -65,6 +71,7 @@ export class UpdateCarUseCase {
 		}
 
 		if (!findResult.value) {
+			this.logger.warn('Car not found for update', { carId: id });
 			return err(new CarNotFoundError(id));
 		}
 
@@ -82,7 +89,11 @@ export class UpdateCarUseCase {
 			updateData.modelRefId = modelRefIdResult.value;
 		}
 
-		return this.carRepository.update(id, updateData);
+		const result = await this.carRepository.update(id, updateData);
+		if (result.success) {
+			this.logger.info('Car updated', { carId: id });
+		}
+		return result;
 	}
 
 	private async resolveModelRefId(name: string, brandId: string): Promise<Result<number, BrandNotFoundError | RepositoryError>> {

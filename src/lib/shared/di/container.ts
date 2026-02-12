@@ -32,6 +32,7 @@ import { PrismaUserRepository } from '../../../infrastructure/database/repositor
 import { ArgonPasswordService } from '../../../infrastructure/services/argon-password.service.js';
 import { HonoJwtService } from '../../../infrastructure/services/hono-jwt.service.js';
 import { ResendEmailService } from '../../../infrastructure/services/resend-email.service.js';
+import { logger } from '../../logging/logger.js';
 
 // Validate required environment variable
 const databaseUrl = process.env.DATABASE_URL;
@@ -46,6 +47,9 @@ const prismaClient = new PrismaClient({ adapter });
 
 // Register the PrismaClient singleton instance
 container.registerInstance(TOKENS.PrismaClient, prismaClient);
+
+// Register the Logger singleton instance
+container.registerInstance(TOKENS.Logger, logger);
 
 // Register repository implementations (Token → Prisma-backed class)
 container.register(TOKENS.AuthRepository, { useClass: PrismaAuthRepository });

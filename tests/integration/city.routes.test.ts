@@ -1,11 +1,13 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { container } from 'tsyringe';
+import { TOKENS } from '../../src/lib/shared/di/tokens.js';
 import { ListCitiesUseCase } from '../../src/application/use-cases/city/list-cities.use-case.js';
 import { CreateCityUseCase } from '../../src/application/use-cases/city/create-city.use-case.js';
 import { DeleteCityUseCase } from '../../src/application/use-cases/city/delete-city.use-case.js';
 import { ok, err } from '../../src/lib/shared/types/result.js';
 import { CityNotFoundError } from '../../src/lib/errors/domain.errors.js';
 import { authHeaders, registerMockJwtService, registerMockUseCase } from './helpers.js';
+import { createMockLogger } from '../setup.js';
 
 vi.mock('../../src/infrastructure/database/generated/prisma/client.js', () => ({
 	PrismaClient: class { $extends() { return this; } },
@@ -20,6 +22,7 @@ describe('City Routes', () => {
 
 	beforeEach(() => {
 		container.clearInstances();
+		container.registerInstance(TOKENS.Logger, createMockLogger());
 		registerMockJwtService();
 		listMock = registerMockUseCase(ListCitiesUseCase);
 		createMock = registerMockUseCase(CreateCityUseCase);

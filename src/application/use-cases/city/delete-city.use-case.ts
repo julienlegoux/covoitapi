@@ -9,6 +9,7 @@ import { inject, injectable } from 'tsyringe';
 import { CityNotFoundError } from '../../../lib/errors/domain.errors.js';
 import type { CityRepository } from '../../../domain/repositories/city.repository.js';
 import type { RepositoryError } from '../../../lib/errors/repository.errors.js';
+import type { Logger } from '../../../lib/logging/logger.types.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import type { Result } from '../../../lib/shared/types/result.js';
 import { err } from '../../../lib/shared/types/result.js';
@@ -33,10 +34,15 @@ type DeleteCityError = CityNotFoundError | RepositoryError;
  */
 @injectable()
 export class DeleteCityUseCase {
+	private readonly logger: Logger;
+
 	constructor(
 		@inject(TOKENS.CityRepository)
 		private readonly cityRepository: CityRepository,
-	) {}
+		@inject(TOKENS.Logger) logger: Logger,
+	) {
+		this.logger = logger.child({ useCase: 'DeleteCityUseCase' });
+	}
 
 	/**
 	 * Deletes the city identified by the given UUID.
@@ -51,9 +57,11 @@ export class DeleteCityUseCase {
 		}
 
 		if (!findResult.value) {
+			this.logger.warn('City not found for deletion', { cityId: id });
 			return err(new CityNotFoundError(id));
 		}
 
+		this.logger.info('City deleted', { cityId: id });
 		return this.cityRepository.delete(id);
 	}
 }
