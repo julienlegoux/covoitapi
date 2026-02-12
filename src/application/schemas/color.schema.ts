@@ -14,12 +14,10 @@ import { z } from 'zod';
  * - `name` -- non-empty string for the color name (e.g. "Red").
  * - `hex` -- must match the 6-digit hex color format `#RRGGBB` (case-insensitive).
  */
-export const ColorSchema = z.object({
+export const createColorSchema = z.object({
 	name: z.string().min(1),
 	hex: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Must be a valid hex color'),
 });
-
-export const createColorSchema = ColorSchema;
 
 /**
  * Schema for validating a partial color update input.
@@ -30,10 +28,10 @@ export const createColorSchema = ColorSchema;
  * - `name` -- optional; if present, must be a non-empty string.
  * - `hex` -- optional; if present, must match `#RRGGBB` hex format.
  */
-export const updateColorSchema = ColorSchema.partial();
+export const updateColorSchema = createColorSchema.partial();
 
 /** Inferred TypeScript type for a valid color creation request body. */
-export type CreateColorSchemaType = z.infer<typeof ColorSchema>;
+export type CreateColorSchemaType = z.infer<typeof createColorSchema>;
 
 /** Inferred TypeScript type for a valid color update request body. */
 export type UpdateColorSchemaType = z.infer<typeof updateColorSchema>;
