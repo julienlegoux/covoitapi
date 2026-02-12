@@ -1,3 +1,12 @@
+/**
+ * @module InscriptionController
+ * Handles passenger inscriptions (sign-ups) to carpooling travels.
+ * Provides listing of all inscriptions, per-user inscriptions, per-route passengers,
+ * creation, and deletion. All endpoints require authentication with USER+ role.
+ *
+ * Some handlers are mounted as nested resource routes in the main router
+ * (e.g. GET /api/users/:id/inscriptions, GET /api/travels/:id/passengers).
+ */
 import type { Context } from 'hono';
 import { CreateInscriptionUseCase } from '../../application/use-cases/inscription/create-inscription.use-case.js';
 import { DeleteInscriptionUseCase } from '../../application/use-cases/inscription/delete-inscription.use-case.js';
@@ -11,6 +20,14 @@ import { createInscriptionSchema } from '../../application/schemas/inscription.s
 import type { CreateInscriptionSchemaType } from '../../application/schemas/inscription.schema.js';
 import type { WithAuthContext } from '../../lib/shared/types/auth-context.js';
 
+/**
+ * Lists all inscriptions with pagination.
+ *
+ * **GET /api/inscriptions** -- Auth required, USER+
+ *
+ * @param c - Hono request context with optional `page` and `limit` query params
+ * @returns 200 with `{ success: true, data: { data: Inscription[], meta: PaginationMeta } }`
+ */
 export async function listInscriptions(c: Context): Promise<Response> {
 	const pagination = paginationSchema.parse({
 		page: c.req.query('page'),
@@ -21,6 +38,15 @@ export async function listInscriptions(c: Context): Promise<Response> {
 	return resultToResponse(c, result);
 }
 
+/**
+ * Lists all inscriptions for a specific user with pagination.
+ *
+ * **GET /api/users/:id/inscriptions** -- Auth required, USER+
+ *
+ * @param c - Hono request context with `id` route parameter (user UUID)
+ *            and optional `page`/`limit` query params
+ * @returns 200 with `{ success: true, data: { data: Inscription[], meta: PaginationMeta } }`
+ */
 export async function listUserInscriptions(c: Context): Promise<Response> {
 	const userId = c.req.param('id');
 	const pagination = paginationSchema.parse({
@@ -32,6 +58,15 @@ export async function listUserInscriptions(c: Context): Promise<Response> {
 	return resultToResponse(c, result);
 }
 
+/**
+ * Lists all passengers inscribed to a specific travel/route with pagination.
+ *
+ * **GET /api/travels/:id/passengers** -- Auth required, USER+
+ *
+ * @param c - Hono request context with `id` route parameter (travel UUID)
+ *            and optional `page`/`limit` query params
+ * @returns 200 with `{ success: true, data: { data: Passenger[], meta: PaginationMeta } }`
+ */
 export async function listRoutePassengers(c: Context): Promise<Response> {
 	const routeId = c.req.param('id');
 	const pagination = paginationSchema.parse({
@@ -43,6 +78,21 @@ export async function listRoutePassengers(c: Context): Promise<Response> {
 	return resultToResponse(c, result);
 }
 
+/**
+ * Creates a new inscription (signs up the authenticated user for a travel).
+ *
+ * **POST /api/inscriptions** -- Auth required, USER+
+ *
+ * Reads `userId` from the Hono context (set by authMiddleware) and merges it
+ * with the validated request body.
+ *
+ * @param c - Hono request context with JSON body and `userId` set on context
+ * @returns 201 with `{ success: true, data: Inscription }` on success,
+ *          or an error response (e.g. 404 TRAVEL_NOT_FOUND).
+ *          Throws ZodError on invalid input.
+ *
+ * Request body: `{ travelId: string }`
+ */
 export async function createInscription(c: Context): Promise<Response> {
 	const body = await c.req.json();
 	const validated = createInscriptionSchema.parse(body);
@@ -57,6 +107,15 @@ export async function createInscription(c: Context): Promise<Response> {
 	return resultToResponse(c, result, 201);
 }
 
+/**
+ * Deletes an inscription by its UUID.
+ *
+ * **DELETE /api/inscriptions/:id** -- Auth required, USER+
+ *
+ * @param c - Hono request context with `id` route parameter (UUID)
+ * @returns 204 (no content) on success,
+ *          or an error response (e.g. 404 INSCRIPTION_NOT_FOUND).
+ */
 export async function deleteInscription(c: Context): Promise<Response> {
 	const id = c.req.param('id');
 	const useCase = container.resolve(DeleteInscriptionUseCase);

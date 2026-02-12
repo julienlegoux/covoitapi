@@ -1,3 +1,12 @@
+/**
+ * @module logger
+ * Structured logging implementation with environment-aware formatting.
+ * In production, outputs JSON for log aggregation tools.
+ * In development, outputs colorized, human-readable output to the console.
+ * Automatically enriches log entries with request context (requestId, userId)
+ * from the AsyncLocalStorage-backed request context.
+ */
+
 import { getContext } from '../context/request-context.js';
 import {
 	type ErrorInfo,
@@ -8,14 +17,20 @@ import {
 	type LogLevel,
 } from './logger.types.js';
 
-// JSON Formatter for production
+/**
+ * JSON formatter for production environments.
+ * Outputs each log entry as a single JSON line, suitable for log aggregation.
+ */
 class JsonFormatter implements LogFormatter {
 	format(entry: LogEntry): string {
 		return JSON.stringify(entry);
 	}
 }
 
-// Pretty Formatter for development
+/**
+ * Pretty formatter for development environments.
+ * Outputs colorized, human-readable log lines with ANSI escape codes.
+ */
 class PrettyFormatter implements LogFormatter {
 	private readonly colors = {
 		debug: '\x1b[36m', // cyan
@@ -33,6 +48,7 @@ class PrettyFormatter implements LogFormatter {
 
 		const timestamp = dim + entry.timestamp + reset;
 		const level = color + entry.level.toUpperCase().padEnd(5) + reset;
+		// Show first 8 chars of requestId for brevity
 		const reqId = entry.requestId ? `${dim}[${entry.requestId.slice(0, 8)}]${reset}` : '';
 
 		let output = `${timestamp} ${level} ${reqId} ${entry.message}`;
@@ -52,6 +68,11 @@ class PrettyFormatter implements LogFormatter {
 	}
 }
 
+/**
+ * Converts an Error object into a serializable ErrorInfo structure.
+ * @param error - The error to serialize.
+ * @returns A plain object with name, message, stack, and optional code.
+ */
 function serializeError(error: Error): ErrorInfo {
 	return {
 		name: error.name,
@@ -61,6 +82,11 @@ function serializeError(error: Error): ErrorInfo {
 	};
 }
 
+/**
+ * Determines the minimum log level from environment variables.
+ * Falls back to "info" in production and "debug" in development.
+ * @returns The minimum LogLevel to output.
+ */
 function getMinLogLevel(): LogLevel {
 	const envLevel = process.env.LOG_LEVEL?.toLowerCase();
 	if (envLevel && envLevel in LOG_LEVELS) {
@@ -69,10 +95,19 @@ function getMinLogLevel(): LogLevel {
 	return process.env.NODE_ENV === 'production' ? 'info' : 'debug';
 }
 
+/**
+ * Selects the appropriate log formatter based on the environment.
+ * @returns JsonFormatter for production, PrettyFormatter for development.
+ */
 function getFormatter(): LogFormatter {
 	return process.env.NODE_ENV === 'production' ? new JsonFormatter() : new PrettyFormatter();
 }
 
+/**
+ * Core structured logger implementation.
+ * Enriches every log entry with the current request context and base context.
+ * Supports child loggers that inherit and extend the parent's base context.
+ */
 class StructuredLogger implements Logger {
 	private readonly formatter: LogFormatter;
 	private readonly minLevel: LogLevel;
@@ -84,10 +119,12 @@ class StructuredLogger implements Logger {
 		this.baseContext = baseContext;
 	}
 
+	/** Checks if the given level meets the minimum threshold. */
 	private shouldLog(level: LogLevel): boolean {
 		return LOG_LEVELS[level] >= LOG_LEVELS[this.minLevel];
 	}
 
+	/** Builds a structured LogEntry, pulling requestId/userId from AsyncLocalStorage. */
 	private createEntry(
 		level: LogLevel,
 		message: string,
@@ -107,6 +144,7 @@ class StructuredLogger implements Logger {
 		};
 	}
 
+	/** Formats and outputs a log entry to the appropriate console method. */
 	private log(
 		level: LogLevel,
 		message: string,
@@ -155,8 +193,14 @@ class StructuredLogger implements Logger {
 	}
 }
 
+/** Default application-wide logger instance. */
 export const logger: Logger = new StructuredLogger();
 
+/**
+ * Creates a new logger instance with the given base context.
+ * @param context - Optional base context to include in all log entries.
+ * @returns A new StructuredLogger instance.
+ */
 export function createLogger(context?: Record<string, unknown>): Logger {
 	return new StructuredLogger(context);
 }

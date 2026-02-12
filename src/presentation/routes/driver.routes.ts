@@ -1,3 +1,12 @@
+/**
+ * @module DriverRoutes
+ * Driver registration endpoint group mounted at `/api/drivers`.
+ *
+ * Middleware chain: authMiddleware (all routes) -> requireRole('USER') (per route)
+ *
+ * Endpoints:
+ * - POST / -- Register the authenticated user as a driver (USER+)
+ */
 import { Hono } from 'hono';
 import { authMiddleware } from '../middleware/auth.middleware.js';
 import { requireRole } from '../middleware/authorization.middleware.js';

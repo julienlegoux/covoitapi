@@ -1,6 +1,15 @@
+/**
+ * @module argon-password.service.test
+ * Unit tests for {@link ArgonPasswordService}.
+ * Verifies Argon2 hashing produces valid hash strings, correct/incorrect
+ * password verification, and that each invocation produces a unique hash
+ * (due to random salting).
+ */
+
 import { describe, expect, it } from 'vitest';
 import { ArgonPasswordService } from './argon-password.service.js';
 
+// Integration tests using real Argon2 hashing (no mocks)
 describe('ArgonPasswordService', () => {
 	const passwordService = new ArgonPasswordService();
 

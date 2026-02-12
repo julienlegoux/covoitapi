@@ -1,3 +1,16 @@
+/**
+ * @module TravelRoutes
+ * Travel/route (carpooling journey) endpoint group mounted at `/api/travels`.
+ *
+ * Middleware chain: authMiddleware (all routes) -> requireRole (per route)
+ *
+ * Endpoints:
+ * - GET    /         -- List all travels (USER+)
+ * - GET    /search   -- Search travels by departure, arrival, date (USER+)
+ * - GET    /:id      -- Get travel by UUID (USER+)
+ * - POST   /         -- Create travel (DRIVER+)
+ * - DELETE /:id      -- Delete travel (DRIVER+)
+ */
 import { Hono } from 'hono';
 import { authMiddleware } from '../middleware/auth.middleware.js';
 import { requireRole } from '../middleware/authorization.middleware.js';

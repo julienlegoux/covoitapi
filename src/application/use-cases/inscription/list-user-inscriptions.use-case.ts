@@ -1,3 +1,11 @@
+/**
+ * @module ListUserInscriptionsUseCase
+ *
+ * Lists all travel inscriptions for a specific user. Resolves the user UUID
+ * to its internal refId before querying inscriptions. Pagination is applied
+ * in-memory after fetching all inscriptions for the user.
+ */
+
 import { inject, injectable } from 'tsyringe';
 import type { InscriptionEntity } from '../../../domain/entities/inscription.entity.js';
 import { UserNotFoundError } from '../../../lib/errors/domain.errors.js';
@@ -9,8 +17,24 @@ import type { Result } from '../../../lib/shared/types/result.js';
 import { ok, err } from '../../../lib/shared/types/result.js';
 import { type PaginationParams, type PaginatedResult, buildPaginationMeta } from '../../../lib/shared/utils/pagination.util.js';
 
+/**
+ * Union of all possible error types returned by the list user inscriptions use case.
+ *
+ * - {@link UserNotFoundError} - The user UUID does not exist
+ * - {@link RepositoryError} - Database-level failure during lookup or listing
+ */
 type ListUserInscriptionsError = UserNotFoundError | RepositoryError;
 
+/**
+ * Retrieves all inscriptions belonging to a specific user, with pagination.
+ *
+ * Business flow:
+ * 1. Resolve the user UUID to its internal refId
+ * 2. Fetch all inscriptions for that user refId
+ * 3. Apply in-memory pagination (slice) and build pagination metadata
+ *
+ * @dependencies InscriptionRepository, UserRepository
+ */
 @injectable()
 export class ListUserInscriptionsUseCase {
 	constructor(
@@ -20,6 +44,14 @@ export class ListUserInscriptionsUseCase {
 		private readonly userRepository: UserRepository,
 	) {}
 
+	/**
+	 * Fetches a paginated list of inscriptions for the given user.
+	 *
+	 * @param userId - The UUID of the user whose inscriptions to list
+	 * @param pagination - Optional page and limit parameters (defaults to page 1, limit 20)
+	 * @returns A Result containing a PaginatedResult with inscription data and pagination meta,
+	 *          or a ListUserInscriptionsError on failure
+	 */
 	async execute(userId: string, pagination?: PaginationParams): Promise<Result<PaginatedResult<InscriptionEntity>, ListUserInscriptionsError>> {
 		// Resolve userId UUID to refId
 		const userResult = await this.userRepository.findById(userId);

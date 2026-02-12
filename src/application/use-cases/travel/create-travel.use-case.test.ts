@@ -1,3 +1,11 @@
+/**
+ * @file Unit tests for the CreateTravelUseCase.
+ *
+ * Covers travel creation with existing and new cities, driver-not-found
+ * rejection, and repository error propagation from driver, city, and
+ * travel repositories.
+ */
+
 import { container } from 'tsyringe';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { createMockTravelRepository, createMockDriverRepository, createMockCityRepository, createMockUserRepository, createMockCarRepository } from '../../../../tests/setup.js';
@@ -7,6 +15,7 @@ import { ok, err } from '../../../lib/shared/types/result.js';
 import { DatabaseError } from '../../../lib/errors/repository.errors.js';
 import { CreateTravelUseCase } from './create-travel.use-case.js';
 
+// Test suite for creating carpooling travels with driver/car/city resolution
 describe('CreateTravelUseCase', () => {
 	let useCase: CreateTravelUseCase;
 	let mockTravelRepo: ReturnType<typeof createMockTravelRepository>;
@@ -34,6 +43,7 @@ describe('CreateTravelUseCase', () => {
 		useCase = container.resolve(CreateTravelUseCase);
 	});
 
+	// Happy path: both cities already exist, travel is created with their refIds
 	it('should create travel with existing cities', async () => {
 		const parisCity = { id: 'city-1', refId: 20, cityName: 'Paris', zipcode: '75000' };
 		const lyonCity = { id: 'city-2', refId: 21, cityName: 'Lyon', zipcode: '69000' };
@@ -58,6 +68,7 @@ describe('CreateTravelUseCase', () => {
 		});
 	});
 
+	// Cities auto-created when they do not exist
 	it('should create travel with new cities', async () => {
 		const newParis = { id: 'city-new-1', refId: 30, cityName: 'Paris', zipcode: '' };
 		const newLyon = { id: 'city-new-2', refId: 31, cityName: 'Lyon', zipcode: '' };
@@ -76,6 +87,7 @@ describe('CreateTravelUseCase', () => {
 		expect(mockCityRepo.create).toHaveBeenCalledTimes(2);
 	});
 
+	// User exists but has no driver profile
 	it('should return DriverNotFoundError when driver not found', async () => {
 		mockUserRepo.findById.mockResolvedValue(ok(user));
 		mockDriverRepo.findByUserRefId.mockResolvedValue(ok(null));
@@ -84,6 +96,7 @@ describe('CreateTravelUseCase', () => {
 		if (!result.success) expect(result.error).toBeInstanceOf(DriverNotFoundError);
 	});
 
+	// DB error during driver lookup bubbles up
 	it('should propagate error from driverRepository.findByUserRefId', async () => {
 		mockUserRepo.findById.mockResolvedValue(ok(user));
 		mockDriverRepo.findByUserRefId.mockResolvedValue(err(new DatabaseError('db error')));
@@ -91,6 +104,7 @@ describe('CreateTravelUseCase', () => {
 		expect(result.success).toBe(false);
 	});
 
+	// DB error during city lookup bubbles up
 	it('should propagate error from cityRepository.findByCityName', async () => {
 		mockUserRepo.findById.mockResolvedValue(ok(user));
 		mockDriverRepo.findByUserRefId.mockResolvedValue(ok(driver));
@@ -100,6 +114,7 @@ describe('CreateTravelUseCase', () => {
 		expect(result.success).toBe(false);
 	});
 
+	// DB error during travel creation bubbles up
 	it('should propagate error from travelRepository.create', async () => {
 		mockUserRepo.findById.mockResolvedValue(ok(user));
 		mockDriverRepo.findByUserRefId.mockResolvedValue(ok(driver));

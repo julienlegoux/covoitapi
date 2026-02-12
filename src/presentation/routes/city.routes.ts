@@ -1,3 +1,14 @@
+/**
+ * @module CityRoutes
+ * City management endpoint group mounted at `/api/cities`.
+ *
+ * Middleware chain: authMiddleware (all routes) -> requireRole (per route)
+ *
+ * Endpoints:
+ * - GET    /         -- List cities (USER+)
+ * - POST   /         -- Create city (USER+)
+ * - DELETE /:id      -- Delete city (ADMIN)
+ */
 import { Hono } from 'hono';
 import { authMiddleware } from '../middleware/auth.middleware.js';
 import { requireRole } from '../middleware/authorization.middleware.js';

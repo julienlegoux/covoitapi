@@ -1,5 +1,15 @@
+/**
+ * @module StructuredLoggerTests
+ *
+ * Test suite for the StructuredLogger created via createLogger(). Covers
+ * log level filtering (debug, info, warn, error) based on LOG_LEVEL env var,
+ * JSON formatting in production mode, automatic enrichment with timestamp,
+ * requestId, and userId from the request context, Error object serialization,
+ * child logger context merging, and ad-hoc context inclusion in log calls.
+ */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
+/** Tests for the StructuredLogger covering level filtering, formatting, context enrichment, and child loggers. */
 describe('StructuredLogger', () => {
 	const originalEnv = process.env;
 	let consoleSpy: {
@@ -25,7 +35,9 @@ describe('StructuredLogger', () => {
 		vi.restoreAllMocks();
 	});
 
+	/** Tests for log level filtering based on the LOG_LEVEL environment variable. */
 	describe('log levels', () => {
+		/** Validates that debug messages are emitted when LOG_LEVEL=debug in development. */
 		it('should log debug in development', async () => {
 			process.env.NODE_ENV = 'development';
 			process.env.LOG_LEVEL = 'debug';
@@ -37,6 +49,7 @@ describe('StructuredLogger', () => {
 			expect(consoleSpy.debug).toHaveBeenCalled();
 		});
 
+		/** Validates that debug messages are suppressed when the minimum level is info. */
 		it('should not log debug when minLevel is info', async () => {
 			process.env.NODE_ENV = 'development';
 			process.env.LOG_LEVEL = 'info';
@@ -48,6 +61,7 @@ describe('StructuredLogger', () => {
 			expect(consoleSpy.debug).not.toHaveBeenCalled();
 		});
 
+		/** Validates that info messages are emitted when LOG_LEVEL is set to debug (below warn). */
 		it('should log info at all levels below warn', async () => {
 			process.env.LOG_LEVEL = 'debug';
 			const { createLogger } = await import('./logger.js');
@@ -58,6 +72,7 @@ describe('StructuredLogger', () => {
 			expect(consoleSpy.info).toHaveBeenCalled();
 		});
 
+		/** Validates that warn messages are emitted when LOG_LEVEL=warn. */
 		it('should log warn at warn level', async () => {
 			process.env.LOG_LEVEL = 'warn';
 			const { createLogger } = await import('./logger.js');
@@ -68,6 +83,7 @@ describe('StructuredLogger', () => {
 			expect(consoleSpy.warn).toHaveBeenCalled();
 		});
 
+		/** Validates that error messages are always emitted, even at the strictest log level. */
 		it('should log error at all levels', async () => {
 			process.env.LOG_LEVEL = 'error';
 			const { createLogger } = await import('./logger.js');
@@ -79,7 +95,9 @@ describe('StructuredLogger', () => {
 		});
 	});
 
+	/** Tests for log output formatting, timestamp inclusion, request context enrichment, and Error serialization. */
 	describe('formatting', () => {
+		/** Validates that production mode outputs valid JSON with message and level fields. */
 		it('should use JsonFormatter in production', async () => {
 			process.env.NODE_ENV = 'production';
 			process.env.LOG_LEVEL = 'info';
@@ -95,6 +113,7 @@ describe('StructuredLogger', () => {
 			expect(parsed.level).toBe('info');
 		});
 
+		/** Validates that each log entry contains a valid ISO 8601 timestamp. */
 		it('should include timestamp in log entry', async () => {
 			process.env.NODE_ENV = 'production';
 			process.env.LOG_LEVEL = 'info';
@@ -109,6 +128,7 @@ describe('StructuredLogger', () => {
 			expect(new Date(parsed.timestamp).toISOString()).toBe(parsed.timestamp);
 		});
 
+		/** Validates that the requestId from the active AsyncLocalStorage context is included in log output. */
 		it('should include requestId from context', async () => {
 			process.env.NODE_ENV = 'production';
 			process.env.LOG_LEVEL = 'info';
@@ -125,6 +145,7 @@ describe('StructuredLogger', () => {
 			expect(parsed.requestId).toBe('test-req-id');
 		});
 
+		/** Validates that the userId from the active AsyncLocalStorage context is included in log output. */
 		it('should include userId from context', async () => {
 			process.env.NODE_ENV = 'production';
 			process.env.LOG_LEVEL = 'info';
@@ -141,6 +162,7 @@ describe('StructuredLogger', () => {
 			expect(parsed.userId).toBe('test-user-id');
 		});
 
+		/** Validates that Error objects are serialized with name, message, and stack fields in JSON output. */
 		it('should serialize Error objects correctly', async () => {
 			process.env.NODE_ENV = 'production';
 			process.env.LOG_LEVEL = 'info';
@@ -158,7 +180,9 @@ describe('StructuredLogger', () => {
 		});
 	});
 
+	/** Tests for the child() method that creates a sub-logger with merged context. */
 	describe('child()', () => {
+		/** Validates that a child logger inherits the parent's context and adds its own fields. */
 		it('should create logger with merged context', async () => {
 			process.env.NODE_ENV = 'production';
 			process.env.LOG_LEVEL = 'info';
@@ -175,7 +199,9 @@ describe('StructuredLogger', () => {
 		});
 	});
 
+	/** Tests for ad-hoc context data passed directly to individual log calls. */
 	describe('context inclusion', () => {
+		/** Validates that extra context fields passed at call time appear in the JSON output. */
 		it('should include provided context in log', async () => {
 			process.env.NODE_ENV = 'production';
 			process.env.LOG_LEVEL = 'info';

@@ -1,6 +1,15 @@
+/**
+ * @module hono-jwt.service.test
+ * Unit tests for {@link HonoJwtService}.
+ * Mocks the hono/jwt sign and verify functions to test token creation,
+ * payload validation, error classification (expired, malformed, invalid),
+ * and expiration calculation for different duration formats (h, d, m).
+ */
+
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { TokenExpiredError, TokenInvalidError, TokenMalformedError, TokenSigningError } from '../../lib/errors/jwt.errors.js';
 
+// Mock hono/jwt to isolate the service logic from actual cryptographic operations
 const mockSign = vi.fn();
 const mockVerify = vi.fn();
 
@@ -11,6 +20,7 @@ vi.mock('hono/jwt', () => ({
 
 import { HonoJwtService } from './hono-jwt.service.js';
 
+// Tests for HonoJwtService with mocked hono/jwt functions
 describe('HonoJwtService', () => {
 	let jwtService: HonoJwtService;
 	const originalEnv = process.env;
@@ -27,6 +37,7 @@ describe('HonoJwtService', () => {
 		process.env = originalEnv;
 	});
 
+	// Verifies constructor throws when JWT_SECRET is missing and defaults JWT_EXPIRES_IN
 	describe('constructor', () => {
 		it('should throw when JWT_SECRET is missing', () => {
 			process.env.JWT_SECRET = '';
@@ -39,6 +50,7 @@ describe('HonoJwtService', () => {
 		});
 	});
 
+	// Verifies sign() delegates to hono sign with correct payload, secret, and algorithm
 	describe('sign()', () => {
 		it('should return ok with the signed token', async () => {
 			mockSign.mockResolvedValue('signed-token');
@@ -79,6 +91,7 @@ describe('HonoJwtService', () => {
 		});
 	});
 
+	// Verifies verify() extracts payload, validates userId, and classifies JWT errors
 	describe('verify()', () => {
 		it('should return payload with userId and role', async () => {
 			mockVerify.mockResolvedValue({ userId: 'user-789', role: 'ADMIN' });
@@ -188,6 +201,7 @@ describe('HonoJwtService', () => {
 		});
 	});
 
+	// Verifies expiration calculation for hours, days, minutes, and invalid format fallback
 	describe('calculateExpiration()', () => {
 		it('should calculate hours correctly', async () => {
 			process.env.JWT_EXPIRES_IN = '2h';

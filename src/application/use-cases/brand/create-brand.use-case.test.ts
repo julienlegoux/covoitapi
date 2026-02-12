@@ -1,3 +1,10 @@
+/**
+ * @file Unit tests for the CreateBrandUseCase.
+ *
+ * Covers successful brand creation and repository error propagation.
+ * The brand repository is fully mocked.
+ */
+
 import { container } from 'tsyringe';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { createMockBrandRepository } from '../../../../tests/setup.js';
@@ -6,6 +13,7 @@ import { ok, err } from '../../../lib/shared/types/result.js';
 import { DatabaseError } from '../../../lib/errors/repository.errors.js';
 import { CreateBrandUseCase } from './create-brand.use-case.js';
 
+// Test suite for creating car brands
 describe('CreateBrandUseCase', () => {
 	let useCase: CreateBrandUseCase;
 	let mockBrandRepository: ReturnType<typeof createMockBrandRepository>;
@@ -16,6 +24,7 @@ describe('CreateBrandUseCase', () => {
 		useCase = container.resolve(CreateBrandUseCase);
 	});
 
+	// Happy path: brand is persisted and returned
 	it('should create brand successfully', async () => {
 		const brand = { id: '1', name: 'Toyota' };
 		mockBrandRepository.create.mockResolvedValue(ok(brand));
@@ -27,6 +36,7 @@ describe('CreateBrandUseCase', () => {
 		expect(mockBrandRepository.create).toHaveBeenCalledWith({ name: 'Toyota' });
 	});
 
+	// Verifies that database errors bubble up unchanged
 	it('should propagate repository error', async () => {
 		mockBrandRepository.create.mockResolvedValue(err(new DatabaseError('db error')));
 

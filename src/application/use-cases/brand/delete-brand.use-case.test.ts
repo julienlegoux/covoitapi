@@ -1,3 +1,10 @@
+/**
+ * @file Unit tests for the DeleteBrandUseCase.
+ *
+ * Covers successful deletion, not-found error when brand does not exist,
+ * and repository error propagation from both findById and delete operations.
+ */
+
 import { container } from 'tsyringe';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { createMockBrandRepository } from '../../../../tests/setup.js';
@@ -7,6 +14,7 @@ import { ok, err } from '../../../lib/shared/types/result.js';
 import { DatabaseError } from '../../../lib/errors/repository.errors.js';
 import { DeleteBrandUseCase } from './delete-brand.use-case.js';
 
+// Test suite for deleting car brands by UUID
 describe('DeleteBrandUseCase', () => {
 	let useCase: DeleteBrandUseCase;
 	let mockBrandRepository: ReturnType<typeof createMockBrandRepository>;
@@ -17,6 +25,7 @@ describe('DeleteBrandUseCase', () => {
 		useCase = container.resolve(DeleteBrandUseCase);
 	});
 
+	// Happy path: brand exists and is deleted
 	it('should delete brand successfully when found', async () => {
 		mockBrandRepository.findById.mockResolvedValue(ok({ id: '1', name: 'Toyota' }));
 		mockBrandRepository.delete.mockResolvedValue(ok(undefined));
@@ -27,6 +36,7 @@ describe('DeleteBrandUseCase', () => {
 		expect(mockBrandRepository.delete).toHaveBeenCalledWith('1');
 	});
 
+	// Verifies not-found guard: null lookup returns BrandNotFoundError
 	it('should return BrandNotFoundError when brand does not exist', async () => {
 		mockBrandRepository.findById.mockResolvedValue(ok(null));
 
@@ -37,6 +47,7 @@ describe('DeleteBrandUseCase', () => {
 		expect(mockBrandRepository.delete).not.toHaveBeenCalled();
 	});
 
+	// Verifies DB error during lookup bubbles up and skips delete
 	it('should propagate repository error from findById', async () => {
 		mockBrandRepository.findById.mockResolvedValue(err(new DatabaseError('db error')));
 
@@ -47,6 +58,7 @@ describe('DeleteBrandUseCase', () => {
 		expect(mockBrandRepository.delete).not.toHaveBeenCalled();
 	});
 
+	// Verifies DB error during actual deletion bubbles up
 	it('should propagate repository error from delete', async () => {
 		mockBrandRepository.findById.mockResolvedValue(ok({ id: '1', name: 'Toyota' }));
 		mockBrandRepository.delete.mockResolvedValue(err(new DatabaseError('db error')));

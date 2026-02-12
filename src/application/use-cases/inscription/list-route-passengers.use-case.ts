@@ -1,3 +1,11 @@
+/**
+ * @module ListRoutePassengersUseCase
+ *
+ * Lists all passengers (inscriptions) for a specific carpooling travel.
+ * Resolves the travel UUID to its internal refId before querying inscriptions.
+ * Pagination is applied in-memory after fetching all inscriptions for the route.
+ */
+
 import { inject, injectable } from 'tsyringe';
 import type { InscriptionEntity } from '../../../domain/entities/inscription.entity.js';
 import { TravelNotFoundError } from '../../../lib/errors/domain.errors.js';
@@ -9,8 +17,24 @@ import type { Result } from '../../../lib/shared/types/result.js';
 import { ok, err } from '../../../lib/shared/types/result.js';
 import { type PaginationParams, type PaginatedResult, buildPaginationMeta } from '../../../lib/shared/utils/pagination.util.js';
 
+/**
+ * Union of all possible error types returned by the list route passengers use case.
+ *
+ * - {@link TravelNotFoundError} - The travel UUID does not exist
+ * - {@link RepositoryError} - Database-level failure during lookup or listing
+ */
 type ListRoutePassengersError = TravelNotFoundError | RepositoryError;
 
+/**
+ * Retrieves all passengers inscribed on a specific travel, with pagination.
+ *
+ * Business flow:
+ * 1. Resolve the travel UUID to its internal refId
+ * 2. Fetch all inscriptions for that route refId
+ * 3. Apply in-memory pagination (slice) and build pagination metadata
+ *
+ * @dependencies InscriptionRepository, TravelRepository
+ */
 @injectable()
 export class ListRoutePassengersUseCase {
 	constructor(
@@ -20,6 +44,14 @@ export class ListRoutePassengersUseCase {
 		private readonly travelRepository: TravelRepository,
 	) {}
 
+	/**
+	 * Fetches a paginated list of passengers for the given travel.
+	 *
+	 * @param routeId - The UUID of the travel (route) to list passengers for
+	 * @param pagination - Optional page and limit parameters (defaults to page 1, limit 20)
+	 * @returns A Result containing a PaginatedResult with inscription data and pagination meta,
+	 *          or a ListRoutePassengersError on failure
+	 */
 	async execute(routeId: string, pagination?: PaginationParams): Promise<Result<PaginatedResult<InscriptionEntity>, ListRoutePassengersError>> {
 		// Resolve routeId UUID to refId
 		const travelResult = await this.travelRepository.findById(routeId);

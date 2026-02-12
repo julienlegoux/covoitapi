@@ -1,5 +1,16 @@
+/**
+ * @module repository.errors
+ * Defines error classes for database/repository operations.
+ * These errors wrap underlying database exceptions into the Result pattern,
+ * allowing use cases to handle persistence failures without catching exceptions.
+ */
+
 import { InfrastructureError } from './infrastructure.error.js';
 
+/**
+ * Base class for all repository-level errors.
+ * @extends InfrastructureError
+ */
 export class RepositoryError extends InfrastructureError {
 	constructor(message: string, code: string, cause?: unknown) {
 		super(message, code, cause);
@@ -7,6 +18,14 @@ export class RepositoryError extends InfrastructureError {
 	}
 }
 
+/**
+ * Thrown when a database query or mutation fails.
+ * This is the most common repository error, wrapping Prisma exceptions.
+ *
+ * @extends RepositoryError
+ * @param message - Description of what database operation failed.
+ * @param cause - The underlying Prisma/database error.
+ */
 export class DatabaseError extends RepositoryError {
 	constructor(message: string, cause?: unknown) {
 		super(message, 'DATABASE_ERROR', cause);
@@ -14,6 +33,12 @@ export class DatabaseError extends RepositoryError {
 	}
 }
 
+/**
+ * Thrown when the database connection itself fails.
+ *
+ * @extends RepositoryError
+ * @param cause - The underlying connection error.
+ */
 export class ConnectionError extends RepositoryError {
 	constructor(cause?: unknown) {
 		super('Database connection failed', 'CONNECTION_ERROR', cause);

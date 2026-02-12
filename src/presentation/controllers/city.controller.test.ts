@@ -1,3 +1,8 @@
+/**
+ * Unit tests for the CityController (listCities, createCity, deleteCity).
+ * Verifies paginated listing, creation (201) with cityName/zipcode mapping,
+ * deletion (204), error propagation, and Zod validation.
+ */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import type { Context } from 'hono';
 import { container } from 'tsyringe';
@@ -25,6 +30,7 @@ function createMockContext(overrides?: { jsonBody?: unknown; params?: Record<str
 }
 
 describe('City Controller', () => {
+	// Paginated listing of cities
 	describe('listCities()', () => {
 		let mockUseCase: { execute: ReturnType<typeof vi.fn> };
 		beforeEach(() => {
@@ -47,6 +53,7 @@ describe('City Controller', () => {
 		});
 	});
 
+	// City creation with Zod validation
 	describe('createCity()', () => {
 		let mockUseCase: { execute: ReturnType<typeof vi.fn> };
 		beforeEach(() => {
@@ -78,6 +85,7 @@ describe('City Controller', () => {
 		});
 	});
 
+	// City deletion by UUID
 	describe('deleteCity()', () => {
 		let mockUseCase: { execute: ReturnType<typeof vi.fn> };
 		beforeEach(() => {

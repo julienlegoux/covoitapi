@@ -1,9 +1,18 @@
+/**
+ * @module prisma-user.repository.test
+ * Unit tests for {@link PrismaUserRepository}.
+ * Uses a mock PrismaClient injected via tsyringe to verify that each
+ * repository method correctly delegates to Prisma and wraps results
+ * in the Result<T, DatabaseError> pattern.
+ */
+
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { container } from 'tsyringe';
 import { PrismaUserRepository } from './prisma-user.repository.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import { DatabaseError } from '../../../lib/errors/repository.errors.js';
 
+/** Creates a mock PrismaClient with stubbed user and auth model methods. */
 function createMockPrismaClient() {
 	return {
 		user: {
@@ -23,6 +32,7 @@ function createMockPrismaClient() {
 	};
 }
 
+// Tests for the PrismaUserRepository Prisma implementation
 describe('PrismaUserRepository', () => {
 	let repository: PrismaUserRepository;
 	let mockPrisma: ReturnType<typeof createMockPrismaClient>;
@@ -47,6 +57,7 @@ describe('PrismaUserRepository', () => {
 		repository = container.resolve(PrismaUserRepository);
 	});
 
+	// Verifies findById returns the correct Result variant for found, not-found, and error cases
 	describe('findById()', () => {
 		it('should return ok(user) when user exists', async () => {
 			mockPrisma.user.findUnique.mockResolvedValue(mockUser);
@@ -87,6 +98,7 @@ describe('PrismaUserRepository', () => {
 		});
 	});
 
+	// Verifies create passes correct data to Prisma and wraps results/errors properly
 	describe('create()', () => {
 		const createData = {
 			firstName: 'Jane',

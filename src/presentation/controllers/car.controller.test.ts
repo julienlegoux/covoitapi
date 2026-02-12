@@ -1,3 +1,8 @@
+/**
+ * Unit tests for the CarController (listCars, createCar, updateCar, patchCar, deleteCar).
+ * Verifies paginated listing, creation (201), full update (PUT), partial update (PATCH),
+ * deletion (204), error handling for not-found, and Zod validation.
+ */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import type { Context } from 'hono';
 import { container } from 'tsyringe';
@@ -26,6 +31,7 @@ function createMockContext(overrides?: { jsonBody?: unknown; params?: Record<str
 }
 
 describe('Car Controller', () => {
+	// Paginated listing of cars
 	describe('listCars()', () => {
 		let mockUseCase: { execute: ReturnType<typeof vi.fn> };
 		beforeEach(() => {
@@ -48,6 +54,7 @@ describe('Car Controller', () => {
 		});
 	});
 
+	// Car creation with model, brand, and license plate
 	describe('createCar()', () => {
 		let mockUseCase: { execute: ReturnType<typeof vi.fn> };
 		beforeEach(() => {
@@ -79,6 +86,7 @@ describe('Car Controller', () => {
 		});
 	});
 
+	// Full car update (PUT) -- all fields required
 	describe('updateCar()', () => {
 		let mockUseCase: { execute: ReturnType<typeof vi.fn> };
 		beforeEach(() => {
@@ -105,6 +113,7 @@ describe('Car Controller', () => {
 		});
 	});
 
+	// Partial car update (PATCH) -- only provided fields
 	describe('patchCar()', () => {
 		let mockUseCase: { execute: ReturnType<typeof vi.fn> };
 		beforeEach(() => {
@@ -123,6 +132,7 @@ describe('Car Controller', () => {
 		});
 	});
 
+	// Car deletion by UUID
 	describe('deleteCar()', () => {
 		let mockUseCase: { execute: ReturnType<typeof vi.fn> };
 		beforeEach(() => {

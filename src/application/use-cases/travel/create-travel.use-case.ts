@@ -1,3 +1,12 @@
+/**
+ * @module CreateTravelUseCase
+ *
+ * Creates a new carpooling travel (route) offered by a driver. A travel
+ * connects two cities on a specific date with a given number of available
+ * seats and is linked to a driver and their car. Cities are found or
+ * auto-created by name.
+ */
+
 import { inject, injectable } from 'tsyringe';
 import type { TravelEntity } from '../../../domain/entities/travel.entity.js';
 import { DriverNotFoundError, CarNotFoundError } from '../../../lib/errors/domain.errors.js';
@@ -13,8 +22,28 @@ import { err } from '../../../lib/shared/types/result.js';
 import type { CreateTravelSchemaType } from '../../schemas/travel.schema.js';
 import type { WithAuthContext } from '../../../lib/shared/types/auth-context.js';
 
+/**
+ * Union of all possible error types returned by the create travel use case.
+ *
+ * - {@link DriverNotFoundError} - The authenticated user has no driver profile
+ * - {@link CarNotFoundError} - The referenced car UUID does not exist
+ * - {@link RepositoryError} - Database-level failure during any step
+ */
 type CreateTravelError = DriverNotFoundError | CarNotFoundError | RepositoryError;
 
+/**
+ * Creates a new carpooling travel offered by the authenticated driver.
+ *
+ * Business flow:
+ * 1. Resolve the user UUID to find the associated driver profile
+ * 2. Resolve the car UUID to its internal refId
+ * 3. Find or create departure and arrival cities by name
+ * 4. Persist the travel record with all resolved refIds
+ *
+ * Cities that do not yet exist are auto-created with an empty zipcode.
+ *
+ * @dependencies TravelRepository, DriverRepository, CityRepository, UserRepository, CarRepository
+ */
 @injectable()
 export class CreateTravelUseCase {
 	constructor(
@@ -30,6 +59,14 @@ export class CreateTravelUseCase {
 		private readonly carRepository: CarRepository,
 	) {}
 
+	/**
+	 * Creates a new travel for the authenticated driver.
+	 *
+	 * @param input - Validated payload containing date, kms, seats, carId,
+	 *                departureCity, arrivalCity, and the authenticated userId
+	 * @returns A Result containing the created TravelEntity on success,
+	 *          or a CreateTravelError on failure
+	 */
 	async execute(input: WithAuthContext<CreateTravelSchemaType>): Promise<Result<TravelEntity, CreateTravelError>> {
 		// Resolve user UUID to get driver
 		const userResult = await this.userRepository.findById(input.userId);

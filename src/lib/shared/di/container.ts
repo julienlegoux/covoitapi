@@ -1,3 +1,16 @@
+/**
+ * @module container
+ * Configures and exports the tsyringe dependency injection container.
+ * This is the composition root of the application where all abstract interfaces
+ * are bound to their concrete implementations:
+ * - Repositories → Prisma-backed implementations
+ * - Services → Argon2 (password), Hono (JWT), Resend (email)
+ * - PrismaClient → Configured instance with Neon serverless adapter
+ *
+ * This module also initializes the Prisma client with the Neon PostgreSQL adapter
+ * and requires the DATABASE_URL environment variable to be set.
+ */
+
 import 'reflect-metadata';
 import 'dotenv/config';
 import { neonConfig } from '@neondatabase/serverless';
@@ -20,17 +33,21 @@ import { ArgonPasswordService } from '../../../infrastructure/services/argon-pas
 import { HonoJwtService } from '../../../infrastructure/services/hono-jwt.service.js';
 import { ResendEmailService } from '../../../infrastructure/services/resend-email.service.js';
 
+// Validate required environment variable
 const databaseUrl = process.env.DATABASE_URL;
 if (!databaseUrl) {
 	throw new Error('DATABASE_URL environment variable is required');
 }
 
+// Configure Neon serverless adapter with WebSocket support
 neonConfig.webSocketConstructor = ws;
 const adapter = new PrismaNeon({ connectionString: databaseUrl });
 const prismaClient = new PrismaClient({ adapter });
 
+// Register the PrismaClient singleton instance
 container.registerInstance(TOKENS.PrismaClient, prismaClient);
 
+// Register repository implementations (Token → Prisma-backed class)
 container.register(TOKENS.AuthRepository, { useClass: PrismaAuthRepository });
 container.register(TOKENS.UserRepository, { useClass: PrismaUserRepository });
 container.register(TOKENS.BrandRepository, { useClass: PrismaBrandRepository });
@@ -41,6 +58,8 @@ container.register(TOKENS.DriverRepository, { useClass: PrismaDriverRepository }
 container.register(TOKENS.TravelRepository, { useClass: PrismaTravelRepository });
 container.register(TOKENS.InscriptionRepository, { useClass: PrismaInscriptionRepository });
 container.register(TOKENS.ColorRepository, { useClass: PrismaColorRepository });
+
+// Register service implementations (Token → concrete service class)
 container.register(TOKENS.PasswordService, { useClass: ArgonPasswordService });
 container.register(TOKENS.EmailService, { useClass: ResendEmailService });
 container.register(TOKENS.JwtService, { useClass: HonoJwtService });

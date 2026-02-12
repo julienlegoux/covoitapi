@@ -1,6 +1,14 @@
+/**
+ * @module inscription.schema.test
+ * Unit tests for the inscription Zod schema (createInscriptionSchema).
+ * Verifies that travelId is required and non-empty, and that userId
+ * is not required in the schema (it comes from the JWT token).
+ */
+
 import { describe, it, expect } from 'vitest';
 import { createInscriptionSchema } from './inscription.schema.js';
 
+/** Tests for createInscriptionSchema -- validates travelId presence and confirms userId is not required. */
 describe('createInscriptionSchema', () => {
 	const validInput = { travelId: 'route-1' };
 

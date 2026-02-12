@@ -1,3 +1,10 @@
+/**
+ * @file Unit tests for the ListColorsUseCase.
+ *
+ * Covers paginated color listing with default and custom pagination,
+ * empty results, and repository error propagation.
+ */
+
 import { container } from 'tsyringe';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { createMockColorRepository } from '../../../../tests/setup.js';
@@ -6,6 +13,7 @@ import { ok, err } from '../../../lib/shared/types/result.js';
 import { DatabaseError } from '../../../lib/errors/repository.errors.js';
 import { ListColorsUseCase } from './list-colors.use-case.js';
 
+// Test suite for listing colors with pagination
 describe('ListColorsUseCase', () => {
 	let useCase: ListColorsUseCase;
 	let mockColorRepository: ReturnType<typeof createMockColorRepository>;
@@ -16,6 +24,7 @@ describe('ListColorsUseCase', () => {
 		useCase = container.resolve(ListColorsUseCase);
 	});
 
+	// Happy path: returns colors with default pagination meta
 	it('should return paginated list of colors', async () => {
 		const colors = [
 			{ id: '1', name: 'Red', hex: '#FF0000' },
@@ -32,6 +41,7 @@ describe('ListColorsUseCase', () => {
 		}
 	});
 
+	// Edge case: empty dataset
 	it('should return empty array when no colors', async () => {
 		mockColorRepository.findAll.mockResolvedValue(ok({ data: [], total: 0 }));
 
@@ -44,6 +54,7 @@ describe('ListColorsUseCase', () => {
 		}
 	});
 
+	// DB error bubbles up unchanged
 	it('should propagate repository error', async () => {
 		mockColorRepository.findAll.mockResolvedValue(err(new DatabaseError('db error')));
 
@@ -53,6 +64,7 @@ describe('ListColorsUseCase', () => {
 		if (!result.success) expect(result.error).toBeInstanceOf(DatabaseError);
 	});
 
+	// Verifies page/limit conversion to skip/take
 	it('should pass pagination params to repository', async () => {
 		mockColorRepository.findAll.mockResolvedValue(ok({ data: [], total: 0 }));
 		await useCase.execute({ page: 2, limit: 10 });
