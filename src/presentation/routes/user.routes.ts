@@ -1,3 +1,18 @@
+/**
+ * @module UserRoutes
+ * User management endpoint group mounted at `/api/users`.
+ *
+ * Middleware chain: authMiddleware (all routes) -> requireRole (per route)
+ *
+ * Endpoints:
+ * - PATCH  /me       -- Update own profile (USER+)
+ * - DELETE /me       -- GDPR self-anonymization (USER+)
+ * - GET    /         -- List all users (ADMIN)
+ * - GET    /:id      -- Get user by UUID (USER+)
+ * - DELETE /:id      -- Anonymize user by UUID (ADMIN)
+ *
+ * Note: `/me` routes are defined before `/:id` to prevent route shadowing.
+ */
 import { Hono } from 'hono';
 import { authMiddleware } from '../middleware/auth.middleware.js';
 import { requireRole } from '../middleware/authorization.middleware.js';

@@ -1,6 +1,14 @@
+/**
+ * @module user.schema.test
+ * Unit tests for the user profile Zod schema (profileSchema).
+ * Verifies that firstName and lastName are required non-empty strings,
+ * and that phone meets the minimum 10-character length requirement.
+ */
+
 import { describe, it, expect } from 'vitest';
 import { profileSchema } from './user.schema.js';
 
+/** Tests for profileSchema -- validates firstName, lastName, and phone constraints. */
 describe('profileSchema', () => {
 	const validInput = {
 		firstName: 'John',

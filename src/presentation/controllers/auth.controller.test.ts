@@ -1,3 +1,9 @@
+/**
+ * Unit tests for the AuthController (register and login handlers).
+ * Uses mock Hono contexts and mocked use cases resolved from tsyringe.
+ * Verifies correct HTTP status codes, response shapes, Zod validation,
+ * and proper delegation to RegisterUseCase and LoginUseCase.
+ */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import type { Context } from 'hono';
 import { container } from 'tsyringe';
@@ -18,6 +24,7 @@ function createMockContext(jsonBody: unknown) {
 	} as unknown as Context & { _getJsonCall: () => [unknown, number] };
 }
 
+// Tests for register() and login() controller functions
 describe('Auth Controller', () => {
 	const validRegisterInput = {
 		email: 'test@example.com',
@@ -30,6 +37,7 @@ describe('Auth Controller', () => {
 		password: 'Password123',
 	};
 
+	// Registration endpoint: validates input, delegates to RegisterUseCase
 	describe('register()', () => {
 		let mockRegisterUseCase: { execute: ReturnType<typeof vi.fn> };
 
@@ -95,6 +103,7 @@ describe('Auth Controller', () => {
 		});
 	});
 
+	// Login endpoint: validates credentials, delegates to LoginUseCase
 	describe('login()', () => {
 		let mockLoginUseCase: { execute: ReturnType<typeof vi.fn> };
 

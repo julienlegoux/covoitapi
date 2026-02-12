@@ -1,3 +1,11 @@
+/**
+ * Unit tests for the errorHandler middleware.
+ * Verifies correct handling of three error categories:
+ * - ZodError: 400 with per-field details, nested paths, multiple errors
+ * - DomainError: mapped HTTP status codes (409, 401, 404, 400)
+ * - Unknown errors: 500 INTERNAL_ERROR with logging
+ * Also verifies transparent pass-through when no error occurs.
+ */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import type { Context, Next } from 'hono';
 import { type ZodError, z } from 'zod';
@@ -21,6 +29,7 @@ function createPassingNext(): Next {
 }
 
 describe('errorHandler middleware', () => {
+	// Zod validation errors: 400 status with field-level details
 	describe('ZodError handling', () => {
 		it('should return 400 with VALIDATION_ERROR code', async () => {
 			const schema = z.object({ email: z.string().email() });
@@ -108,6 +117,7 @@ describe('errorHandler middleware', () => {
 		});
 	});
 
+	// Domain errors: mapped to appropriate HTTP status via error registry
 	describe('DomainError handling', () => {
 		it('should return 409 for USER_ALREADY_EXISTS', async () => {
 			const error = new UserAlreadyExistsError('test@example.com');
@@ -178,6 +188,7 @@ describe('errorHandler middleware', () => {
 		});
 	});
 
+	// Unexpected errors: 500 INTERNAL_ERROR with error logging
 	describe('Unknown error handling', () => {
 		let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
 
@@ -240,6 +251,7 @@ describe('errorHandler middleware', () => {
 		});
 	});
 
+	// Pass-through: no error means no interference with the response
 	describe('next() flow', () => {
 		it('should call next() and not catch if no error', async () => {
 			const ctx = createMockContext();

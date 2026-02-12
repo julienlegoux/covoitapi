@@ -1,6 +1,13 @@
+/**
+ * @module car.schema.test
+ * Unit tests for the car Zod schemas (createCarSchema, updateCarSchema, patchCarSchema).
+ * Verifies required fields for creation and full update, and optional fields for partial update.
+ */
+
 import { describe, it, expect } from 'vitest';
 import { createCarSchema, updateCarSchema, patchCarSchema } from './car.schema.js';
 
+/** Tests for createCarSchema -- all fields (model, brandId, licensePlate) are required and non-empty. */
 describe('createCarSchema', () => {
 	const validInput = { model: 'Corolla', brandId: 'brand-1', licensePlate: 'AB-123-CD' };
 
@@ -30,6 +37,7 @@ describe('createCarSchema', () => {
 	});
 });
 
+/** Tests for updateCarSchema -- full update requires all fields (model, brandId, licensePlate). */
 describe('updateCarSchema', () => {
 	const validInput = { model: 'Corolla', brandId: 'brand-1', licensePlate: 'AB-123-CD' };
 
@@ -54,6 +62,7 @@ describe('updateCarSchema', () => {
 	});
 });
 
+/** Tests for patchCarSchema -- partial update where all fields are optional but must be non-empty if provided. */
 describe('patchCarSchema', () => {
 	it('should accept partial input with only model', () => {
 		const result = patchCarSchema.safeParse({ model: 'Yaris' });

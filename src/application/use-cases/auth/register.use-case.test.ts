@@ -1,3 +1,11 @@
+/**
+ * @file Unit tests for the RegisterUseCase.
+ *
+ * Covers the full registration flow including Auth + User creation in a
+ * single transaction, password hashing, welcome email dispatch, JWT
+ * issuance, and the duplicate-email error path. All dependencies are mocked.
+ */
+
 import { container } from 'tsyringe';
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
@@ -12,6 +20,7 @@ import { ok } from '../../../lib/shared/types/result.js';
 import type { RegisterSchemaType } from '../../schemas/auth.schema.js';
 import { RegisterUseCase } from './register.use-case.js';
 
+// Main test suite for the user registration use case
 describe('RegisterUseCase', () => {
 	let registerUseCase: RegisterUseCase;
 	let mockAuthRepository: ReturnType<typeof createMockAuthRepository>;
@@ -39,6 +48,7 @@ describe('RegisterUseCase', () => {
 		registerUseCase = container.resolve(RegisterUseCase);
 	});
 
+	// Verifies the happy path: new email leads to Auth+User creation, email sent, JWT issued
 	it('should register a new user successfully', async () => {
 		const createdAuth = {
 			id: 'auth-123',
@@ -89,6 +99,7 @@ describe('RegisterUseCase', () => {
 		expect(mockJwtService.sign).toHaveBeenCalledWith({ userId: 'user-123', role: 'USER' });
 	});
 
+	// Verifies that a duplicate email is rejected and no records are created
 	it('should return UserAlreadyExistsError when email is taken', async () => {
 		mockAuthRepository.existsByEmail.mockResolvedValue(ok(true));
 

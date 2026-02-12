@@ -1,3 +1,9 @@
+/**
+ * Unit tests for the authMiddleware.
+ * Verifies JWT token extraction from x-auth-token header, JwtService delegation,
+ * context population (userId, role), and error responses for missing/expired/
+ * invalid/malformed tokens.
+ */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import type { Context, Next } from 'hono';
 import { container } from 'tsyringe';
@@ -30,6 +36,7 @@ function createMockJwtService() {
 	};
 }
 
+// Tests for token validation, context population, and JWT error scenarios
 describe('authMiddleware', () => {
 	let mockJwtService: ReturnType<typeof createMockJwtService>;
 	let mockNext: Next;

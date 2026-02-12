@@ -1,3 +1,10 @@
+/**
+ * Unit tests for the RouteController (travel/route handlers).
+ * Covers listRoutes, getRoute, findRoute (search by query params),
+ * createRoute (with userId from auth context), and deleteRoute.
+ * Verifies HTTP status codes, query parameter extraction, userId injection,
+ * Zod validation, and TRAVEL_NOT_FOUND error propagation.
+ */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import type { Context } from 'hono';
 import { container } from 'tsyringe';
@@ -32,6 +39,7 @@ function createMockContext(overrides?: { jsonBody?: unknown; params?: Record<str
 }
 
 describe('Route Controller', () => {
+	// Listing all available travel routes
 	describe('listRoutes()', () => {
 		let mockUseCase: { execute: ReturnType<typeof vi.fn> };
 		beforeEach(() => {
@@ -50,6 +58,7 @@ describe('Route Controller', () => {
 		});
 	});
 
+	// Getting a single route by UUID
 	describe('getRoute()', () => {
 		let mockUseCase: { execute: ReturnType<typeof vi.fn> };
 		beforeEach(() => {
@@ -77,6 +86,7 @@ describe('Route Controller', () => {
 		});
 	});
 
+	// Searching routes by departureCity, arrivalCity, and date query params
 	describe('findRoute()', () => {
 		let mockUseCase: { execute: ReturnType<typeof vi.fn> };
 		beforeEach(() => {
@@ -102,6 +112,7 @@ describe('Route Controller', () => {
 		});
 	});
 
+	// Route creation with userId injected from auth context
 	describe('createRoute()', () => {
 		let mockUseCase: { execute: ReturnType<typeof vi.fn> };
 		beforeEach(() => {
@@ -134,6 +145,7 @@ describe('Route Controller', () => {
 		});
 	});
 
+	// Route deletion by UUID
 	describe('deleteRoute()', () => {
 		let mockUseCase: { execute: ReturnType<typeof vi.fn> };
 		beforeEach(() => {

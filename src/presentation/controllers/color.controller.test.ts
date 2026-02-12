@@ -1,3 +1,8 @@
+/**
+ * Unit tests for the ColorController (listColors, createColor, updateColor, deleteColor).
+ * Verifies paginated listing, creation (201) with name/hex validation,
+ * partial update (PATCH), deletion (204), duplicate detection, and Zod validation.
+ */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import type { Context } from 'hono';
 import { container } from 'tsyringe';
@@ -26,6 +31,7 @@ function createMockContext(overrides?: { jsonBody?: unknown; params?: Record<str
 }
 
 describe('Color Controller', () => {
+	// Paginated listing of colors
 	describe('listColors()', () => {
 		let mockUseCase: { execute: ReturnType<typeof vi.fn> };
 
@@ -57,6 +63,7 @@ describe('Color Controller', () => {
 		});
 	});
 
+	// Color creation with name and hex code validation
 	describe('createColor()', () => {
 		let mockUseCase: { execute: ReturnType<typeof vi.fn> };
 
@@ -102,6 +109,7 @@ describe('Color Controller', () => {
 		});
 	});
 
+	// Partial color update merging id from params with body fields
 	describe('updateColor()', () => {
 		let mockUseCase: { execute: ReturnType<typeof vi.fn> };
 
@@ -137,6 +145,7 @@ describe('Color Controller', () => {
 		});
 	});
 
+	// Color deletion by UUID
 	describe('deleteColor()', () => {
 		let mockUseCase: { execute: ReturnType<typeof vi.fn> };
 

@@ -1,3 +1,9 @@
+/**
+ * Unit tests for the requireRole authorization middleware.
+ * Verifies the hierarchical role system (USER < DRIVER < ADMIN),
+ * including exact role match, higher-role access, insufficient permissions (403),
+ * missing role (401), unknown roles, and multi-role argument behavior.
+ */
 import { describe, it, expect, vi } from 'vitest';
 import type { Context, Next } from 'hono';
 import { requireRole } from './authorization.middleware.js';
@@ -21,6 +27,7 @@ function createMockNext(): Next {
 	return vi.fn().mockResolvedValue(undefined);
 }
 
+// Tests for the role hierarchy and permission enforcement
 describe('requireRole', () => {
 	it('should return 401 when role is not set in context', async () => {
 		const ctx = createMockContext(undefined);

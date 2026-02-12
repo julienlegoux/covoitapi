@@ -1,6 +1,14 @@
+/**
+ * @module color.schema.test
+ * Unit tests for the color Zod schemas (createColorSchema, updateColorSchema).
+ * Verifies color name requirements and hex color format validation (#RRGGBB),
+ * including case sensitivity, length, and invalid character handling.
+ */
+
 import { describe, it, expect } from 'vitest';
 import { createColorSchema, updateColorSchema } from './color.schema.js';
 
+/** Tests for createColorSchema -- name is required and hex must be a valid #RRGGBB format. */
 describe('createColorSchema', () => {
 	it('should accept valid color with name and hex', () => {
 		const result = createColorSchema.safeParse({ name: 'Red', hex: '#FF0000' });
@@ -53,6 +61,7 @@ describe('createColorSchema', () => {
 	});
 });
 
+/** Tests for updateColorSchema -- all fields optional, but must be valid if provided. */
 describe('updateColorSchema', () => {
 	it('should accept valid name only', () => {
 		const result = updateColorSchema.safeParse({ name: 'Dark Red' });

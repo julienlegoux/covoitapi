@@ -1,6 +1,15 @@
+/**
+ * @module travel.schema.test
+ * Unit tests for the travel Zod schema (createTravelSchema).
+ * Verifies validation of all required fields (kms, date, departureCity,
+ * arrivalCity, seats, carId) including integer and positivity constraints,
+ * and confirms that userId is not required (it comes from the JWT token).
+ */
+
 import { describe, it, expect } from 'vitest';
 import { createTravelSchema } from './travel.schema.js';
 
+/** Tests for createTravelSchema -- validates all travel creation fields and their constraints. */
 describe('createTravelSchema', () => {
 	const validInput = {
 		kms: 150,

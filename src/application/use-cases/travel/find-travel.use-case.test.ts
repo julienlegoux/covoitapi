@@ -1,3 +1,10 @@
+/**
+ * @file Unit tests for the FindTravelUseCase.
+ *
+ * Covers search with full filters, partial filters, empty results,
+ * and repository error propagation.
+ */
+
 import { container } from 'tsyringe';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { createMockTravelRepository } from '../../../../tests/setup.js';
@@ -6,6 +13,7 @@ import { ok, err } from '../../../lib/shared/types/result.js';
 import { DatabaseError } from '../../../lib/errors/repository.errors.js';
 import { FindTravelUseCase } from './find-travel.use-case.js';
 
+// Test suite for searching travels by departure/arrival city and date
 describe('FindTravelUseCase', () => {
 	let useCase: FindTravelUseCase;
 	let mockTravelRepository: ReturnType<typeof createMockTravelRepository>;
@@ -16,6 +24,7 @@ describe('FindTravelUseCase', () => {
 		useCase = container.resolve(FindTravelUseCase);
 	});
 
+	// All filters provided: departure, arrival, and date
 	it('should find travels with all filters', async () => {
 		const travels = [{ id: 'r1', dateRoute: new Date(), kms: 100, seats: 3, driverId: 'd1', carId: 'c1' }];
 		mockTravelRepository.findByFilters.mockResolvedValue(ok(travels));
@@ -30,6 +39,7 @@ describe('FindTravelUseCase', () => {
 		});
 	});
 
+	// Partial filters: only departure city, others are undefined
 	it('should find travels with partial filters', async () => {
 		mockTravelRepository.findByFilters.mockResolvedValue(ok([]));
 
@@ -42,6 +52,7 @@ describe('FindTravelUseCase', () => {
 		});
 	});
 
+	// No matching travels: returns empty array
 	it('should return empty array when no travels match', async () => {
 		mockTravelRepository.findByFilters.mockResolvedValue(ok([]));
 		const result = await useCase.execute({ departureCity: 'Nowhere' });
@@ -49,6 +60,7 @@ describe('FindTravelUseCase', () => {
 		if (result.success) expect(result.value).toEqual([]);
 	});
 
+	// DB error bubbles up unchanged
 	it('should propagate repository error', async () => {
 		mockTravelRepository.findByFilters.mockResolvedValue(err(new DatabaseError('db error')));
 		const result = await useCase.execute({ departureCity: 'Paris' });

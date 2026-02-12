@@ -1,7 +1,16 @@
+/**
+ * @module resend-email.service.test
+ * Unit tests for {@link ResendEmailService}.
+ * Mocks the Resend SDK to verify email sending behavior without making
+ * real API calls. Tests cover welcome email content, generic send,
+ * error wrapping with recipient information, and environment configuration.
+ */
+
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import type { EmailService } from '../../domain/services/email.service.js';
 import { EmailDeliveryError } from '../../lib/errors/email.errors.js';
 
+// Mock the Resend SDK to avoid real API calls in tests
 const mockSend = vi.fn();
 
 vi.mock('resend', () => ({
@@ -12,6 +21,7 @@ vi.mock('resend', () => ({
 	},
 }));
 
+// Tests for ResendEmailService with mocked Resend SDK
 describe('ResendEmailService', () => {
 	let emailService: EmailService;
 	const originalEnv = process.env;
@@ -30,6 +40,7 @@ describe('ResendEmailService', () => {
 		process.env = originalEnv;
 	});
 
+	// Verifies welcome email is sent with correct template, recipient, and subject
 	describe('sendWelcomeEmail()', () => {
 		it('should send email with correct recipient and firstName', async () => {
 			mockSend.mockResolvedValue({ id: 'email-123' });
@@ -71,6 +82,7 @@ describe('ResendEmailService', () => {
 		});
 	});
 
+	// Verifies generic send method passes options to Resend and wraps errors with recipient
 	describe('send()', () => {
 		it('should send email with provided options', async () => {
 			mockSend.mockResolvedValue({ id: 'email-123' });

@@ -1,3 +1,9 @@
+/**
+ * Unit tests for the BrandController (listBrands, createBrand, deleteBrand).
+ * Uses mock Hono contexts and mocked use cases resolved from tsyringe.
+ * Verifies pagination, 201 creation, 204 deletion, error propagation,
+ * and Zod validation behavior.
+ */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import type { Context } from 'hono';
 import { container } from 'tsyringe';
@@ -25,6 +31,7 @@ function createMockContext(overrides?: { jsonBody?: unknown; params?: Record<str
 }
 
 describe('Brand Controller', () => {
+	// Paginated listing of brands
 	describe('listBrands()', () => {
 		let mockUseCase: { execute: ReturnType<typeof vi.fn> };
 
@@ -56,6 +63,7 @@ describe('Brand Controller', () => {
 		});
 	});
 
+	// Brand creation with Zod validation
 	describe('createBrand()', () => {
 		let mockUseCase: { execute: ReturnType<typeof vi.fn> };
 
@@ -88,6 +96,7 @@ describe('Brand Controller', () => {
 		});
 	});
 
+	// Brand deletion by UUID
 	describe('deleteBrand()', () => {
 		let mockUseCase: { execute: ReturnType<typeof vi.fn> };
 

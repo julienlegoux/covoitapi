@@ -1,6 +1,14 @@
+/**
+ * @module auth.schema.test
+ * Unit tests for the authentication Zod schemas (registerSchema, loginSchema).
+ * Verifies email format validation, password strength rules, password confirmation
+ * matching, and login credential requirements.
+ */
+
 import { describe, it, expect } from 'vitest';
 import { registerSchema, loginSchema } from './auth.schema.js';
 
+/** Tests for the registration input schema. */
 describe('registerSchema', () => {
 	const validInput = {
 		email: 'test@example.com',
@@ -8,6 +16,7 @@ describe('registerSchema', () => {
 		confirmPassword: 'Password123',
 	};
 
+	/** Validates email format rules (valid format, missing @, missing domain, etc.). */
 	describe('email validation', () => {
 		it('should accept valid email', () => {
 			const result = registerSchema.safeParse(validInput);
@@ -38,6 +47,7 @@ describe('registerSchema', () => {
 		});
 	});
 
+	/** Validates password strength (min 8 chars, lowercase, uppercase, digit). */
 	describe('password validation', () => {
 		it('should accept password with lowercase, uppercase, and number', () => {
 			const result = registerSchema.safeParse({ ...validInput, password: 'ValidPass1', confirmPassword: 'ValidPass1' });
@@ -81,6 +91,7 @@ describe('registerSchema', () => {
 		});
 	});
 
+	/** Validates that password and confirmPassword fields must match. */
 	describe('confirmPassword validation', () => {
 		it('should accept matching passwords', () => {
 			const result = registerSchema.safeParse(validInput);
@@ -104,6 +115,7 @@ describe('registerSchema', () => {
 	});
 });
 
+/** Tests for the login input schema (email + non-empty password, no strength check). */
 describe('loginSchema', () => {
 	const validInput = {
 		email: 'test@example.com',

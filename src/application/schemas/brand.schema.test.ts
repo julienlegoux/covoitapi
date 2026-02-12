@@ -1,6 +1,13 @@
+/**
+ * @module brand.schema.test
+ * Unit tests for the car brand Zod schema (createBrandSchema).
+ * Verifies that the brand name is a required, non-empty string.
+ */
+
 import { describe, it, expect } from 'vitest';
 import { createBrandSchema } from './brand.schema.js';
 
+/** Tests for createBrandSchema -- validates brand name presence and type. */
 describe('createBrandSchema', () => {
 	it('should accept valid brand name', () => {
 		const result = createBrandSchema.safeParse({ name: 'Toyota' });
