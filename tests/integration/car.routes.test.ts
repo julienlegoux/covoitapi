@@ -52,13 +52,16 @@ describe('Car Routes', () => {
 		const validBody = { model: 'Corolla', brandId: 'b1', licensePlate: 'AB-123-CD' };
 
 		it('should return 201 on success', async () => {
-			createMock.execute.mockResolvedValue(ok({ id: '1', licensePlate: 'AB-123-CD' }));
+			const car = { id: '1', licensePlate: 'AB-123-CD' };
+			createMock.execute.mockResolvedValue(ok(car));
 			const res = await app.request('/api/v1/cars', {
 				method: 'POST',
 				body: JSON.stringify(validBody),
 				headers: authHeaders(),
 			});
 			expect(res.status).toBe(201);
+			const body = await res.json();
+			expect(body).toEqual({ success: true, data: car });
 		});
 
 		it('should reject invalid input', async () => {

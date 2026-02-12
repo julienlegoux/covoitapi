@@ -186,6 +186,65 @@ export function createMockPrismaClient() {
 			update: vi.fn(),
 			count: vi.fn(),
 		},
+		car: {
+			findUnique: vi.fn(),
+			findMany: vi.fn(),
+			create: vi.fn(),
+			update: vi.fn(),
+			delete: vi.fn(),
+			count: vi.fn(),
+		},
+		brand: {
+			findUnique: vi.fn(),
+			findMany: vi.fn(),
+			create: vi.fn(),
+			delete: vi.fn(),
+			count: vi.fn(),
+		},
+		city: {
+			findUnique: vi.fn(),
+			findMany: vi.fn(),
+			create: vi.fn(),
+			delete: vi.fn(),
+			count: vi.fn(),
+		},
+		color: {
+			findUnique: vi.fn(),
+			findMany: vi.fn(),
+			create: vi.fn(),
+			update: vi.fn(),
+			delete: vi.fn(),
+			count: vi.fn(),
+		},
+		driver: {
+			findUnique: vi.fn(),
+			create: vi.fn(),
+			count: vi.fn(),
+		},
+		inscription: {
+			findUnique: vi.fn(),
+			findMany: vi.fn(),
+			create: vi.fn(),
+			delete: vi.fn(),
+			count: vi.fn(),
+		},
+		travel: {
+			findUnique: vi.fn(),
+			findMany: vi.fn(),
+			create: vi.fn(),
+			delete: vi.fn(),
+			count: vi.fn(),
+		},
+		model: {
+			findUnique: vi.fn(),
+			findMany: vi.fn(),
+			create: vi.fn(),
+			count: vi.fn(),
+		},
+		$transaction: vi.fn((fn: (tx: unknown) => Promise<unknown>) => fn({
+			auth: { create: vi.fn(), findUnique: vi.fn() },
+			user: { create: vi.fn(), findUnique: vi.fn() },
+		})),
 	};
 }
 

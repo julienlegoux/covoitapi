@@ -81,6 +81,8 @@ describe('Inscription Routes', () => {
 				headers: authHeaders(),
 			});
 			expect(res.status).toBe(201);
+			const body = await res.json();
+			expect(body).toEqual({ success: true, data: inscription });
 		});
 
 		it('should reject invalid input', async () => {

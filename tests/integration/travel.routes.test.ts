@@ -87,13 +87,16 @@ describe('Travel Routes', () => {
 		const validBody = { kms: 150, date: '2025-06-15', departureCity: 'Paris', arrivalCity: 'Lyon', seats: 3, carId: 'c1' };
 
 		it('should return 201 on success', async () => {
-			createMock.execute.mockResolvedValue(ok({ id: 'r1' }));
+			const travel = { id: 'r1' };
+			createMock.execute.mockResolvedValue(ok(travel));
 			const res = await app.request('/api/v1/travels', {
 				method: 'POST',
 				body: JSON.stringify(validBody),
 				headers: authHeaders(),
 			});
 			expect(res.status).toBe(201);
+			const body = await res.json();
+			expect(body).toEqual({ success: true, data: travel });
 		});
 
 		it('should reject invalid input', async () => {

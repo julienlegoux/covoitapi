@@ -16,8 +16,11 @@ import {
 	createMockUserRepository,
 } from '../../../../tests/setup.js';
 import { InvalidCredentialsError } from '../../../lib/errors/domain.errors.js';
+import { DatabaseError } from '../../../lib/errors/repository.errors.js';
+import { HashVerificationError } from '../../../lib/errors/password.errors.js';
+import { TokenSigningError } from '../../../lib/errors/jwt.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
-import { ok } from '../../../lib/shared/types/result.js';
+import { ok, err } from '../../../lib/shared/types/result.js';
 import type { LoginSchemaType } from '../../schemas/auth.schema.js';
 import { LoginUseCase } from './login.use-case.js';
 
@@ -121,5 +124,78 @@ describe('LoginUseCase', () => {
 			expect(result.error).toBeInstanceOf(InvalidCredentialsError);
 		}
 		expect(mockJwtService.sign).not.toHaveBeenCalled();
+	});
+
+	// Verifies that a DB error on findByEmail propagates correctly
+	it('should propagate error when findByEmail fails', async () => {
+		const dbError = new DatabaseError('Connection failed');
+		mockAuthRepository.findByEmail.mockResolvedValue(err(dbError));
+
+		const result = await loginUseCase.execute(validInput);
+
+		expect(result.success).toBe(false);
+		if (!result.success) {
+			expect(result.error).toBeInstanceOf(DatabaseError);
+		}
+		expect(mockPasswordService.verify).not.toHaveBeenCalled();
+	});
+
+	// Verifies that a password verification error propagates correctly
+	it('should propagate error when passwordService.verify fails', async () => {
+		mockAuthRepository.findByEmail.mockResolvedValue(ok(existingAuth));
+		mockPasswordService.verify.mockResolvedValue(err(new HashVerificationError('Argon2 failed')));
+
+		const result = await loginUseCase.execute(validInput);
+
+		expect(result.success).toBe(false);
+		if (!result.success) {
+			expect(result.error).toBeInstanceOf(HashVerificationError);
+		}
+		expect(mockUserRepository.findByAuthRefId).not.toHaveBeenCalled();
+	});
+
+	// Verifies that a DB error on findByAuthRefId propagates correctly
+	it('should propagate error when findByAuthRefId fails', async () => {
+		mockAuthRepository.findByEmail.mockResolvedValue(ok(existingAuth));
+		mockPasswordService.verify.mockResolvedValue(ok(true));
+		mockUserRepository.findByAuthRefId.mockResolvedValue(err(new DatabaseError('User lookup failed')));
+
+		const result = await loginUseCase.execute(validInput);
+
+		expect(result.success).toBe(false);
+		if (!result.success) {
+			expect(result.error).toBeInstanceOf(DatabaseError);
+		}
+		expect(mockJwtService.sign).not.toHaveBeenCalled();
+	});
+
+	// Verifies that a missing user profile returns InvalidCredentialsError
+	it('should return InvalidCredentialsError when user profile is null', async () => {
+		mockAuthRepository.findByEmail.mockResolvedValue(ok(existingAuth));
+		mockPasswordService.verify.mockResolvedValue(ok(true));
+		mockUserRepository.findByAuthRefId.mockResolvedValue(ok(null));
+
+		const result = await loginUseCase.execute(validInput);
+
+		expect(result.success).toBe(false);
+		if (!result.success) {
+			expect(result.error).toBeInstanceOf(InvalidCredentialsError);
+		}
+		expect(mockJwtService.sign).not.toHaveBeenCalled();
+	});
+
+	// Verifies that a JWT signing error propagates correctly
+	it('should propagate error when jwtService.sign fails', async () => {
+		mockAuthRepository.findByEmail.mockResolvedValue(ok(existingAuth));
+		mockPasswordService.verify.mockResolvedValue(ok(true));
+		mockUserRepository.findByAuthRefId.mockResolvedValue(ok(existingUser));
+		mockJwtService.sign.mockResolvedValue(err(new TokenSigningError('Signing failed')));
+
+		const result = await loginUseCase.execute(validInput);
+
+		expect(result.success).toBe(false);
+		if (!result.success) {
+			expect(result.error).toBeInstanceOf(TokenSigningError);
+		}
 	});
 });
