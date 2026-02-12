@@ -1,3 +1,10 @@
+/**
+ * @file Unit tests for the ListRoutePassengersUseCase.
+ *
+ * Covers passenger listing for a specific travel with default and custom
+ * pagination, empty results, and repository error propagation.
+ */
+
 import { container } from 'tsyringe';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { createMockInscriptionRepository, createMockTravelRepository } from '../../../../tests/setup.js';
@@ -6,6 +13,7 @@ import { ok, err } from '../../../lib/shared/types/result.js';
 import { DatabaseError } from '../../../lib/errors/repository.errors.js';
 import { ListRoutePassengersUseCase } from './list-route-passengers.use-case.js';
 
+// Test suite for listing passengers on a specific travel route
 describe('ListRoutePassengersUseCase', () => {
 	let useCase: ListRoutePassengersUseCase;
 	let mockRepo: ReturnType<typeof createMockInscriptionRepository>;
@@ -21,6 +29,7 @@ describe('ListRoutePassengersUseCase', () => {
 		useCase = container.resolve(ListRoutePassengersUseCase);
 	});
 
+	// Happy path: returns passengers with UUID-to-refId resolution
 	it('should return paginated passengers for route', async () => {
 		const passengers = [{ id: '1', refId: 1, createdAt: new Date(), userRefId: 1, routeRefId: 10, status: 'ACTIVE' }];
 		mockTravelRepo.findById.mockResolvedValue(ok(travel));
@@ -37,6 +46,7 @@ describe('ListRoutePassengersUseCase', () => {
 		}
 	});
 
+	// Edge case: no passengers inscribed on this travel
 	it('should return empty array when no passengers', async () => {
 		mockTravelRepo.findById.mockResolvedValue(ok(travel));
 		mockRepo.findByRouteRefId.mockResolvedValue(ok([]));
@@ -48,6 +58,7 @@ describe('ListRoutePassengersUseCase', () => {
 		}
 	});
 
+	// DB error during inscription fetch bubbles up
 	it('should propagate repository error', async () => {
 		mockTravelRepo.findById.mockResolvedValue(ok(travel));
 		mockRepo.findByRouteRefId.mockResolvedValue(err(new DatabaseError('db error')));
@@ -55,6 +66,7 @@ describe('ListRoutePassengersUseCase', () => {
 		expect(result.success).toBe(false);
 	});
 
+	// In-memory pagination: slices the full list with custom page/limit
 	it('should paginate results with custom pagination', async () => {
 		const passengers = [
 			{ id: '1', refId: 1, createdAt: new Date(), userRefId: 1, routeRefId: 10, status: 'ACTIVE' },

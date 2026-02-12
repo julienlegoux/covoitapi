@@ -1,3 +1,10 @@
+/**
+ * @module ListCitiesUseCase
+ *
+ * Retrieves a paginated list of all cities available as departure or arrival
+ * points on the carpooling platform.
+ */
+
 import { inject, injectable } from 'tsyringe';
 import type { CityEntity } from '../../../domain/entities/city.entity.js';
 import type { CityRepository } from '../../../domain/repositories/city.repository.js';
@@ -7,6 +14,14 @@ import type { Result } from '../../../lib/shared/types/result.js';
 import { ok } from '../../../lib/shared/types/result.js';
 import { type PaginationParams, type PaginatedResult, toSkipTake, buildPaginationMeta } from '../../../lib/shared/utils/pagination.util.js';
 
+/**
+ * Returns a paginated list of cities with metadata.
+ *
+ * Defaults to page 1 with a limit of 20 when no pagination parameters
+ * are provided. Converts page/limit into skip/take for the repository layer.
+ *
+ * @dependencies CityRepository
+ */
 @injectable()
 export class ListCitiesUseCase {
 	constructor(
@@ -14,6 +29,13 @@ export class ListCitiesUseCase {
 		private readonly cityRepository: CityRepository,
 	) {}
 
+	/**
+	 * Fetches a paginated page of cities.
+	 *
+	 * @param pagination - Optional page and limit parameters (defaults to page 1, limit 20)
+	 * @returns A Result containing a PaginatedResult with city data and pagination meta,
+	 *          or a RepositoryError on database failure
+	 */
 	async execute(pagination?: PaginationParams): Promise<Result<PaginatedResult<CityEntity>, RepositoryError>> {
 		const result = await this.cityRepository.findAll(pagination ? toSkipTake(pagination) : undefined);
 		if (!result.success) return result;

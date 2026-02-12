@@ -1,3 +1,8 @@
+/**
+ * Unit tests for the CarController (listCars, createCar, updateCar, patchCar, deleteCar).
+ * Verifies paginated listing, creation (201), full update (PUT), partial update (PATCH),
+ * deletion (204), error handling for not-found, and Zod validation.
+ */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import type { Context } from 'hono';
 import { container } from 'tsyringe';
@@ -26,6 +31,7 @@ function createMockContext(overrides?: { jsonBody?: unknown; params?: Record<str
 }
 
 describe('Car Controller', () => {
+	// Paginated listing of cars
 	describe('listCars()', () => {
 		let mockUseCase: { execute: ReturnType<typeof vi.fn> };
 		beforeEach(() => {
@@ -36,7 +42,7 @@ describe('Car Controller', () => {
 
 		it('should return 200 with paginated list of cars', async () => {
 			const paginatedResult = {
-				data: [{ id: '1', immat: 'AB-123-CD', modelId: 'm1' }],
+				data: [{ id: '1', licensePlate: 'AB-123-CD', modelId: 'm1' }],
 				meta: { page: 1, limit: 20, total: 1, totalPages: 1 },
 			};
 			mockUseCase.execute.mockResolvedValue(ok(paginatedResult));
@@ -48,6 +54,7 @@ describe('Car Controller', () => {
 		});
 	});
 
+	// Car creation with model, brand, and license plate
 	describe('createCar()', () => {
 		let mockUseCase: { execute: ReturnType<typeof vi.fn> };
 		beforeEach(() => {
@@ -57,7 +64,7 @@ describe('Car Controller', () => {
 		});
 
 		it('should return 201 with car on success', async () => {
-			const car = { id: '1', immat: 'AB-123-CD', modelId: 'm1' };
+			const car = { id: '1', licensePlate: 'AB-123-CD', modelId: 'm1' };
 			mockUseCase.execute.mockResolvedValue(ok(car));
 			const ctx = createMockContext({ jsonBody: { model: 'Corolla', brandId: 'b1', licensePlate: 'AB-123-CD' } });
 			await createCar(ctx);
@@ -67,10 +74,10 @@ describe('Car Controller', () => {
 		});
 
 		it('should pass correct input mapping', async () => {
-			mockUseCase.execute.mockResolvedValue(ok({ id: '1', immat: 'AB', modelId: 'm1' }));
+			mockUseCase.execute.mockResolvedValue(ok({ id: '1', licensePlate: 'AB', modelId: 'm1' }));
 			const ctx = createMockContext({ jsonBody: { model: 'Corolla', brandId: 'b1', licensePlate: 'AB-123-CD' } });
 			await createCar(ctx);
-			expect(mockUseCase.execute).toHaveBeenCalledWith({ modele: 'Corolla', marqueId: 'b1', immatriculation: 'AB-123-CD' });
+			expect(mockUseCase.execute).toHaveBeenCalledWith({ model: 'Corolla', brandId: 'b1', licensePlate: 'AB-123-CD' });
 		});
 
 		it('should throw ZodError for invalid input', async () => {
@@ -79,6 +86,7 @@ describe('Car Controller', () => {
 		});
 	});
 
+	// Full car update (PUT) -- all fields required
 	describe('updateCar()', () => {
 		let mockUseCase: { execute: ReturnType<typeof vi.fn> };
 		beforeEach(() => {
@@ -88,7 +96,7 @@ describe('Car Controller', () => {
 		});
 
 		it('should return 200 with updated car', async () => {
-			const car = { id: '1', immat: 'XY-999-ZZ', modelId: 'm1' };
+			const car = { id: '1', licensePlate: 'XY-999-ZZ', modelId: 'm1' };
 			mockUseCase.execute.mockResolvedValue(ok(car));
 			const ctx = createMockContext({ jsonBody: { model: 'Yaris', brandId: 'b1', licensePlate: 'XY-999-ZZ' }, params: { id: '1' } });
 			await updateCar(ctx);
@@ -98,13 +106,14 @@ describe('Car Controller', () => {
 		});
 
 		it('should extract id from request params', async () => {
-			mockUseCase.execute.mockResolvedValue(ok({ id: '1', immat: 'AB', modelId: 'm1' }));
+			mockUseCase.execute.mockResolvedValue(ok({ id: '1', licensePlate: 'AB', modelId: 'm1' }));
 			const ctx = createMockContext({ jsonBody: { model: 'Yaris', brandId: 'b1', licensePlate: 'AB' }, params: { id: 'car-42' } });
 			await updateCar(ctx);
 			expect(mockUseCase.execute).toHaveBeenCalledWith('car-42', expect.any(Object));
 		});
 	});
 
+	// Partial car update (PATCH) -- only provided fields
 	describe('patchCar()', () => {
 		let mockUseCase: { execute: ReturnType<typeof vi.fn> };
 		beforeEach(() => {
@@ -114,7 +123,7 @@ describe('Car Controller', () => {
 		});
 
 		it('should return 200 with patched car', async () => {
-			const car = { id: '1', immat: 'AB-123-CD', modelId: 'm1' };
+			const car = { id: '1', licensePlate: 'AB-123-CD', modelId: 'm1' };
 			mockUseCase.execute.mockResolvedValue(ok(car));
 			const ctx = createMockContext({ jsonBody: { licensePlate: 'XY-999-ZZ' }, params: { id: '1' } });
 			await patchCar(ctx);
@@ -123,6 +132,7 @@ describe('Car Controller', () => {
 		});
 	});
 
+	// Car deletion by UUID
 	describe('deleteCar()', () => {
 		let mockUseCase: { execute: ReturnType<typeof vi.fn> };
 		beforeEach(() => {

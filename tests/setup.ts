@@ -46,7 +46,7 @@ export function createMockCarRepository() {
 		create: vi.fn(),
 		update: vi.fn(),
 		delete: vi.fn(),
-		existsByImmat: vi.fn(),
+		existsByLicensePlate: vi.fn(),
 	};
 }
 
@@ -85,9 +85,6 @@ export function createMockTravelRepository() {
 		delete: vi.fn(),
 	};
 }
-
-/** @deprecated Use createMockTravelRepository instead. Kept for backward compatibility. */
-export const createMockRouteRepository = createMockTravelRepository;
 
 export function createMockInscriptionRepository() {
 	return {

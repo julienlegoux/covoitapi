@@ -1,6 +1,13 @@
-import { describe, it, expect } from 'vitest';
-import { createCitySchema } from './city.validator.js';
+/**
+ * @module city.schema.test
+ * Unit tests for the city Zod schema (createCitySchema).
+ * Verifies that both cityName and zipcode are required, non-empty strings.
+ */
 
+import { describe, it, expect } from 'vitest';
+import { createCitySchema } from './city.schema.js';
+
+/** Tests for createCitySchema -- validates cityName and zipcode presence. */
 describe('createCitySchema', () => {
 	const validInput = { cityName: 'Paris', zipcode: '75000' };
 

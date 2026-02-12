@@ -1,3 +1,10 @@
+/**
+ * @file Unit tests for the ListUserInscriptionsUseCase.
+ *
+ * Covers inscription listing for a specific user with default and custom
+ * pagination, empty results, and repository error propagation.
+ */
+
 import { container } from 'tsyringe';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { createMockInscriptionRepository, createMockUserRepository } from '../../../../tests/setup.js';
@@ -6,6 +13,7 @@ import { ok, err } from '../../../lib/shared/types/result.js';
 import { DatabaseError } from '../../../lib/errors/repository.errors.js';
 import { ListUserInscriptionsUseCase } from './list-user-inscriptions.use-case.js';
 
+// Test suite for listing a specific user's travel inscriptions
 describe('ListUserInscriptionsUseCase', () => {
 	let useCase: ListUserInscriptionsUseCase;
 	let mockRepo: ReturnType<typeof createMockInscriptionRepository>;
@@ -21,6 +29,7 @@ describe('ListUserInscriptionsUseCase', () => {
 		useCase = container.resolve(ListUserInscriptionsUseCase);
 	});
 
+	// Happy path: returns user's inscriptions with UUID-to-refId resolution
 	it('should return paginated inscriptions for user', async () => {
 		const inscriptions = [{ id: '1', refId: 1, createdAt: new Date(), userRefId: 5, routeRefId: 1, status: 'ACTIVE' }];
 		mockUserRepo.findById.mockResolvedValue(ok(user));
@@ -37,6 +46,7 @@ describe('ListUserInscriptionsUseCase', () => {
 		}
 	});
 
+	// Edge case: user has no inscriptions
 	it('should return empty array when user has none', async () => {
 		mockUserRepo.findById.mockResolvedValue(ok(user));
 		mockRepo.findByUserRefId.mockResolvedValue(ok([]));
@@ -48,6 +58,7 @@ describe('ListUserInscriptionsUseCase', () => {
 		}
 	});
 
+	// DB error during inscription fetch bubbles up
 	it('should propagate repository error', async () => {
 		mockUserRepo.findById.mockResolvedValue(ok(user));
 		mockRepo.findByUserRefId.mockResolvedValue(err(new DatabaseError('db error')));
@@ -55,6 +66,7 @@ describe('ListUserInscriptionsUseCase', () => {
 		expect(result.success).toBe(false);
 	});
 
+	// In-memory pagination: slices the full list with custom page/limit
 	it('should paginate results with custom pagination', async () => {
 		const inscriptions = [
 			{ id: '1', refId: 1, createdAt: new Date(), userRefId: 5, routeRefId: 1, status: 'ACTIVE' },

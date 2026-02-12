@@ -1,3 +1,10 @@
+/**
+ * Unit tests for the InscriptionController.
+ * Covers all five handlers: listInscriptions, listUserInscriptions,
+ * listRoutePassengers, createInscription, and deleteInscription.
+ * Verifies pagination, userId injection from context, Zod validation,
+ * and error propagation (TRAVEL_NOT_FOUND, INSCRIPTION_NOT_FOUND).
+ */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import type { Context } from 'hono';
 import { container } from 'tsyringe';
@@ -8,7 +15,7 @@ import { ListRoutePassengersUseCase } from '../../application/use-cases/inscript
 import { CreateInscriptionUseCase } from '../../application/use-cases/inscription/create-inscription.use-case.js';
 import { DeleteInscriptionUseCase } from '../../application/use-cases/inscription/delete-inscription.use-case.js';
 import { ok, err } from '../../lib/shared/types/result.js';
-import { InscriptionNotFoundError, RouteNotFoundError } from '../../lib/errors/domain.errors.js';
+import { InscriptionNotFoundError, TravelNotFoundError } from '../../lib/errors/domain.errors.js';
 
 function createMockContext(overrides?: { jsonBody?: unknown; params?: Record<string, string>; queryParams?: Record<string, string>; userId?: string }) {
 	const jsonMock = vi.fn((body, status) => ({ body, status }));
@@ -32,6 +39,7 @@ function createMockContext(overrides?: { jsonBody?: unknown; params?: Record<str
 }
 
 describe('Inscription Controller', () => {
+	// Paginated listing of all inscriptions
 	describe('listInscriptions()', () => {
 		let mockUseCase: { execute: ReturnType<typeof vi.fn> };
 		beforeEach(() => {
@@ -54,6 +62,7 @@ describe('Inscription Controller', () => {
 		});
 	});
 
+	// Inscriptions for a specific user (nested resource: /users/:id/inscriptions)
 	describe('listUserInscriptions()', () => {
 		let mockUseCase: { execute: ReturnType<typeof vi.fn> };
 		beforeEach(() => {
@@ -73,6 +82,7 @@ describe('Inscription Controller', () => {
 		});
 	});
 
+	// Passengers for a specific route (nested resource: /travels/:id/passengers)
 	describe('listRoutePassengers()', () => {
 		let mockUseCase: { execute: ReturnType<typeof vi.fn> };
 		beforeEach(() => {
@@ -92,6 +102,7 @@ describe('Inscription Controller', () => {
 		});
 	});
 
+	// Inscription creation with userId injected from auth context
 	describe('createInscription()', () => {
 		let mockUseCase: { execute: ReturnType<typeof vi.fn> };
 		beforeEach(() => {
@@ -116,7 +127,7 @@ describe('Inscription Controller', () => {
 		});
 
 		it('should return error when route not found', async () => {
-			mockUseCase.execute.mockResolvedValue(err(new RouteNotFoundError('r1')));
+			mockUseCase.execute.mockResolvedValue(err(new TravelNotFoundError('r1')));
 			const ctx = createMockContext({ jsonBody: { travelId: 'r1' }, userId: 'u1' });
 			await createInscription(ctx);
 			const [response] = ctx._getJsonCall();
@@ -124,6 +135,7 @@ describe('Inscription Controller', () => {
 		});
 	});
 
+	// Inscription deletion by UUID
 	describe('deleteInscription()', () => {
 		let mockUseCase: { execute: ReturnType<typeof vi.fn> };
 		beforeEach(() => {

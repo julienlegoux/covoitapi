@@ -1,3 +1,10 @@
+/**
+ * @file Unit tests for the ListCitiesUseCase.
+ *
+ * Covers paginated city listing with default and custom pagination,
+ * empty results, and repository error propagation.
+ */
+
 import { container } from 'tsyringe';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { createMockCityRepository } from '../../../../tests/setup.js';
@@ -6,6 +13,7 @@ import { ok, err } from '../../../lib/shared/types/result.js';
 import { DatabaseError } from '../../../lib/errors/repository.errors.js';
 import { ListCitiesUseCase } from './list-cities.use-case.js';
 
+// Test suite for listing cities with pagination
 describe('ListCitiesUseCase', () => {
 	let useCase: ListCitiesUseCase;
 	let mockCityRepository: ReturnType<typeof createMockCityRepository>;
@@ -16,6 +24,7 @@ describe('ListCitiesUseCase', () => {
 		useCase = container.resolve(ListCitiesUseCase);
 	});
 
+	// Happy path: returns cities with default pagination meta
 	it('should return paginated list of cities', async () => {
 		const cities = [{ id: '1', cityName: 'Paris', zipcode: '75000' }];
 		mockCityRepository.findAll.mockResolvedValue(ok({ data: cities, total: 1 }));
@@ -27,6 +36,7 @@ describe('ListCitiesUseCase', () => {
 		}
 	});
 
+	// Edge case: empty dataset
 	it('should return empty array', async () => {
 		mockCityRepository.findAll.mockResolvedValue(ok({ data: [], total: 0 }));
 		const result = await useCase.execute();
@@ -37,12 +47,14 @@ describe('ListCitiesUseCase', () => {
 		}
 	});
 
+	// DB error bubbles up unchanged
 	it('should propagate repository error', async () => {
 		mockCityRepository.findAll.mockResolvedValue(err(new DatabaseError('db error')));
 		const result = await useCase.execute();
 		expect(result.success).toBe(false);
 	});
 
+	// Verifies page/limit conversion to skip/take
 	it('should pass pagination params to repository', async () => {
 		mockCityRepository.findAll.mockResolvedValue(ok({ data: [], total: 0 }));
 		await useCase.execute({ page: 3, limit: 5 });

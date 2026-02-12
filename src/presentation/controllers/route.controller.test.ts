@@ -1,14 +1,21 @@
+/**
+ * Unit tests for the RouteController (travel/route handlers).
+ * Covers listRoutes, getRoute, findRoute (search by query params),
+ * createRoute (with userId from auth context), and deleteRoute.
+ * Verifies HTTP status codes, query parameter extraction, userId injection,
+ * Zod validation, and TRAVEL_NOT_FOUND error propagation.
+ */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import type { Context } from 'hono';
 import { container } from 'tsyringe';
 import { listRoutes, getRoute, findRoute, createRoute, deleteRoute } from './route.controller.js';
-import { ListRoutesUseCase } from '../../application/use-cases/route/list-routes.use-case.js';
-import { GetRouteUseCase } from '../../application/use-cases/route/get-route.use-case.js';
-import { FindRouteUseCase } from '../../application/use-cases/route/find-route.use-case.js';
-import { CreateRouteUseCase } from '../../application/use-cases/route/create-route.use-case.js';
-import { DeleteRouteUseCase } from '../../application/use-cases/route/delete-route.use-case.js';
+import { ListTravelsUseCase } from '../../application/use-cases/travel/list-travels.use-case.js';
+import { GetTravelUseCase } from '../../application/use-cases/travel/get-travel.use-case.js';
+import { FindTravelUseCase } from '../../application/use-cases/travel/find-travel.use-case.js';
+import { CreateTravelUseCase } from '../../application/use-cases/travel/create-travel.use-case.js';
+import { DeleteTravelUseCase } from '../../application/use-cases/travel/delete-travel.use-case.js';
 import { ok, err } from '../../lib/shared/types/result.js';
-import { RouteNotFoundError } from '../../lib/errors/domain.errors.js';
+import { TravelNotFoundError } from '../../lib/errors/domain.errors.js';
 
 function createMockContext(overrides?: { jsonBody?: unknown; params?: Record<string, string>; queryParams?: Record<string, string>; userId?: string }) {
 	const jsonMock = vi.fn((body, status) => ({ body, status }));
@@ -32,12 +39,13 @@ function createMockContext(overrides?: { jsonBody?: unknown; params?: Record<str
 }
 
 describe('Route Controller', () => {
+	// Listing all available travel routes
 	describe('listRoutes()', () => {
 		let mockUseCase: { execute: ReturnType<typeof vi.fn> };
 		beforeEach(() => {
 			container.clearInstances();
 			mockUseCase = { execute: vi.fn() };
-			container.register(ListRoutesUseCase, { useValue: mockUseCase as unknown as ListRoutesUseCase });
+			container.register(ListTravelsUseCase, { useValue: mockUseCase as unknown as ListTravelsUseCase });
 		});
 
 		it('should return 200 with list of routes', async () => {
@@ -50,12 +58,13 @@ describe('Route Controller', () => {
 		});
 	});
 
+	// Getting a single route by UUID
 	describe('getRoute()', () => {
 		let mockUseCase: { execute: ReturnType<typeof vi.fn> };
 		beforeEach(() => {
 			container.clearInstances();
 			mockUseCase = { execute: vi.fn() };
-			container.register(GetRouteUseCase, { useValue: mockUseCase as unknown as GetRouteUseCase });
+			container.register(GetTravelUseCase, { useValue: mockUseCase as unknown as GetTravelUseCase });
 		});
 
 		it('should return 200 with route', async () => {
@@ -69,7 +78,7 @@ describe('Route Controller', () => {
 		});
 
 		it('should return error when route not found', async () => {
-			mockUseCase.execute.mockResolvedValue(err(new RouteNotFoundError('r1')));
+			mockUseCase.execute.mockResolvedValue(err(new TravelNotFoundError('r1')));
 			const ctx = createMockContext({ params: { id: 'r1' } });
 			await getRoute(ctx);
 			const [response] = ctx._getJsonCall();
@@ -77,12 +86,13 @@ describe('Route Controller', () => {
 		});
 	});
 
+	// Searching routes by departureCity, arrivalCity, and date query params
 	describe('findRoute()', () => {
 		let mockUseCase: { execute: ReturnType<typeof vi.fn> };
 		beforeEach(() => {
 			container.clearInstances();
 			mockUseCase = { execute: vi.fn() };
-			container.register(FindRouteUseCase, { useValue: mockUseCase as unknown as FindRouteUseCase });
+			container.register(FindTravelUseCase, { useValue: mockUseCase as unknown as FindTravelUseCase });
 		});
 
 		it('should return 200 with filtered routes', async () => {
@@ -102,12 +112,13 @@ describe('Route Controller', () => {
 		});
 	});
 
+	// Route creation with userId injected from auth context
 	describe('createRoute()', () => {
 		let mockUseCase: { execute: ReturnType<typeof vi.fn> };
 		beforeEach(() => {
 			container.clearInstances();
 			mockUseCase = { execute: vi.fn() };
-			container.register(CreateRouteUseCase, { useValue: mockUseCase as unknown as CreateRouteUseCase });
+			container.register(CreateTravelUseCase, { useValue: mockUseCase as unknown as CreateTravelUseCase });
 		});
 
 		it('should return 201 on success and use userId from context', async () => {
@@ -134,12 +145,13 @@ describe('Route Controller', () => {
 		});
 	});
 
+	// Route deletion by UUID
 	describe('deleteRoute()', () => {
 		let mockUseCase: { execute: ReturnType<typeof vi.fn> };
 		beforeEach(() => {
 			container.clearInstances();
 			mockUseCase = { execute: vi.fn() };
-			container.register(DeleteRouteUseCase, { useValue: mockUseCase as unknown as DeleteRouteUseCase });
+			container.register(DeleteTravelUseCase, { useValue: mockUseCase as unknown as DeleteTravelUseCase });
 		});
 
 		it('should return 204 on successful delete', async () => {
@@ -150,7 +162,7 @@ describe('Route Controller', () => {
 		});
 
 		it('should return error when route not found', async () => {
-			mockUseCase.execute.mockResolvedValue(err(new RouteNotFoundError('r1')));
+			mockUseCase.execute.mockResolvedValue(err(new TravelNotFoundError('r1')));
 			const ctx = createMockContext({ params: { id: 'r1' } });
 			await deleteRoute(ctx);
 			const [response] = ctx._getJsonCall();

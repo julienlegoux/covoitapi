@@ -1,12 +1,12 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { container } from 'tsyringe';
-import { ListRoutesUseCase } from '../../src/application/use-cases/route/list-routes.use-case.js';
-import { GetRouteUseCase } from '../../src/application/use-cases/route/get-route.use-case.js';
-import { FindRouteUseCase } from '../../src/application/use-cases/route/find-route.use-case.js';
-import { CreateRouteUseCase } from '../../src/application/use-cases/route/create-route.use-case.js';
-import { DeleteRouteUseCase } from '../../src/application/use-cases/route/delete-route.use-case.js';
+import { ListTravelsUseCase } from '../../src/application/use-cases/travel/list-travels.use-case.js';
+import { GetTravelUseCase } from '../../src/application/use-cases/travel/get-travel.use-case.js';
+import { FindTravelUseCase } from '../../src/application/use-cases/travel/find-travel.use-case.js';
+import { CreateTravelUseCase } from '../../src/application/use-cases/travel/create-travel.use-case.js';
+import { DeleteTravelUseCase } from '../../src/application/use-cases/travel/delete-travel.use-case.js';
 import { ok, err } from '../../src/lib/shared/types/result.js';
-import { RouteNotFoundError } from '../../src/lib/errors/domain.errors.js';
+import { TravelNotFoundError } from '../../src/lib/errors/domain.errors.js';
 import { authHeaders, registerMockJwtService, registerMockUseCase } from './helpers.js';
 
 vi.mock('../../src/infrastructure/database/generated/prisma/client.js', () => ({
@@ -25,11 +25,11 @@ describe('Travel Routes', () => {
 	beforeEach(() => {
 		container.clearInstances();
 		registerMockJwtService();
-		listMock = registerMockUseCase(ListRoutesUseCase);
-		getMock = registerMockUseCase(GetRouteUseCase);
-		findMock = registerMockUseCase(FindRouteUseCase);
-		createMock = registerMockUseCase(CreateRouteUseCase);
-		deleteMock = registerMockUseCase(DeleteRouteUseCase);
+		listMock = registerMockUseCase(ListTravelsUseCase);
+		getMock = registerMockUseCase(GetTravelUseCase);
+		findMock = registerMockUseCase(FindTravelUseCase);
+		createMock = registerMockUseCase(CreateTravelUseCase);
+		deleteMock = registerMockUseCase(DeleteTravelUseCase);
 	});
 
 	describe('GET /api/travels', () => {
@@ -58,7 +58,7 @@ describe('Travel Routes', () => {
 		});
 
 		it('should return 404 when not found', async () => {
-			getMock.execute.mockResolvedValue(err(new RouteNotFoundError('r1')));
+			getMock.execute.mockResolvedValue(err(new TravelNotFoundError('r1')));
 			const res = await app.request('/api/travels/r1', { headers: authHeaders() });
 			expect(res.status).toBe(404);
 		});
@@ -114,7 +114,7 @@ describe('Travel Routes', () => {
 		});
 
 		it('should return 404 when not found', async () => {
-			deleteMock.execute.mockResolvedValue(err(new RouteNotFoundError('r1')));
+			deleteMock.execute.mockResolvedValue(err(new TravelNotFoundError('r1')));
 			const res = await app.request('/api/travels/r1', {
 				method: 'DELETE',
 				headers: authHeaders(),

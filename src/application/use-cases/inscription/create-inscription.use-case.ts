@@ -1,3 +1,12 @@
+/**
+ * @module CreateInscriptionUseCase
+ *
+ * Registers a passenger for a carpooling travel (route). An "inscription"
+ * represents a user booking a seat on a specific travel. The use case
+ * enforces that the user is not already inscribed and that seats remain
+ * available on the travel.
+ */
+
 import { inject, injectable } from 'tsyringe';
 import type { InscriptionEntity } from '../../../domain/entities/inscription.entity.js';
 import { AlreadyInscribedError, NoSeatsAvailableError, TravelNotFoundError, UserNotFoundError } from '../../../lib/errors/domain.errors.js';
@@ -8,10 +17,32 @@ import type { RepositoryError } from '../../../lib/errors/repository.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import type { Result } from '../../../lib/shared/types/result.js';
 import { err } from '../../../lib/shared/types/result.js';
-import type { CreateInscriptionInput } from '../../dtos/inscription.dto.js';
+import type { CreateInscriptionSchemaType } from '../../schemas/inscription.schema.js';
+import type { WithAuthContext } from '../../../lib/shared/types/auth-context.js';
 
+/**
+ * Union of all possible error types returned by the create inscription use case.
+ *
+ * - {@link UserNotFoundError} - The authenticated user UUID does not exist
+ * - {@link TravelNotFoundError} - The target travel UUID does not exist
+ * - {@link AlreadyInscribedError} - The user is already registered on this travel
+ * - {@link NoSeatsAvailableError} - All seats on the travel are taken
+ * - {@link RepositoryError} - Database-level failure during any step
+ */
 type CreateInscriptionError = UserNotFoundError | TravelNotFoundError | AlreadyInscribedError | NoSeatsAvailableError | RepositoryError;
 
+/**
+ * Registers a passenger on a carpooling travel.
+ *
+ * Business flow:
+ * 1. Resolve the user UUID to get the internal refId
+ * 2. Resolve the travel UUID to get the internal refId and seat count
+ * 3. Check the user is not already inscribed on this travel
+ * 4. Verify that available seats remain (current inscriptions < total seats)
+ * 5. Create the inscription record
+ *
+ * @dependencies InscriptionRepository, TravelRepository, UserRepository
+ */
 @injectable()
 export class CreateInscriptionUseCase {
 	constructor(
@@ -23,7 +54,14 @@ export class CreateInscriptionUseCase {
 		private readonly userRepository: UserRepository,
 	) {}
 
-	async execute(input: CreateInscriptionInput): Promise<Result<InscriptionEntity, CreateInscriptionError>> {
+	/**
+	 * Creates a new inscription for the authenticated user on the specified travel.
+	 *
+	 * @param input - Validated payload containing travelId and the authenticated userId
+	 * @returns A Result containing the created InscriptionEntity on success,
+	 *          or a CreateInscriptionError on failure
+	 */
+	async execute(input: WithAuthContext<CreateInscriptionSchemaType>): Promise<Result<InscriptionEntity, CreateInscriptionError>> {
 		// Resolve user UUID to refId
 		const userResult = await this.userRepository.findById(input.userId);
 		if (!userResult.success) {

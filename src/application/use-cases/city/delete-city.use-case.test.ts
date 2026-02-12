@@ -1,3 +1,9 @@
+/**
+ * @file Unit tests for the DeleteCityUseCase.
+ *
+ * Covers successful deletion, not-found guard, and repository error propagation.
+ */
+
 import { container } from 'tsyringe';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { createMockCityRepository } from '../../../../tests/setup.js';
@@ -7,6 +13,7 @@ import { ok, err } from '../../../lib/shared/types/result.js';
 import { DatabaseError } from '../../../lib/errors/repository.errors.js';
 import { DeleteCityUseCase } from './delete-city.use-case.js';
 
+// Test suite for deleting cities by UUID
 describe('DeleteCityUseCase', () => {
 	let useCase: DeleteCityUseCase;
 	let mockCityRepository: ReturnType<typeof createMockCityRepository>;
@@ -17,6 +24,7 @@ describe('DeleteCityUseCase', () => {
 		useCase = container.resolve(DeleteCityUseCase);
 	});
 
+	// Happy path: city exists and is deleted
 	it('should delete city successfully', async () => {
 		mockCityRepository.findById.mockResolvedValue(ok({ id: '1', cityName: 'Paris', zipcode: '75000' }));
 		mockCityRepository.delete.mockResolvedValue(ok(undefined));
@@ -25,6 +33,7 @@ describe('DeleteCityUseCase', () => {
 		expect(mockCityRepository.delete).toHaveBeenCalledWith('1');
 	});
 
+	// Not-found guard: null lookup returns CityNotFoundError
 	it('should return CityNotFoundError when not found', async () => {
 		mockCityRepository.findById.mockResolvedValue(ok(null));
 		const result = await useCase.execute('999');
@@ -33,6 +42,7 @@ describe('DeleteCityUseCase', () => {
 		expect(mockCityRepository.delete).not.toHaveBeenCalled();
 	});
 
+	// DB error during lookup bubbles up
 	it('should propagate repository error', async () => {
 		mockCityRepository.findById.mockResolvedValue(err(new DatabaseError('db error')));
 		const result = await useCase.execute('1');

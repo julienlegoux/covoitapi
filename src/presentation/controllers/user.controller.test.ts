@@ -1,3 +1,8 @@
+/**
+ * Unit tests for the UserController (updateProfile handler).
+ * Verifies profile update with userId from auth context, Zod validation
+ * (required fields, phone length), and USER_NOT_FOUND error propagation.
+ */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import type { Context } from 'hono';
 import { container } from 'tsyringe';
@@ -23,6 +28,7 @@ function createMockContext(overrides?: { jsonBody?: unknown; userId?: string }) 
 }
 
 describe('User Controller', () => {
+	// Profile update (PATCH /api/users/me) with userId from auth context
 	describe('updateProfile()', () => {
 		let mockUseCase: { execute: ReturnType<typeof vi.fn> };
 

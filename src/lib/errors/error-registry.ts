@@ -1,11 +1,30 @@
+/**
+ * @module error-registry
+ * Central registry mapping error codes to their HTTP status codes and categories.
+ * This module provides the single source of truth for error-to-HTTP-status translation,
+ * used by the result-response utility and error-handler middleware to produce
+ * consistent API responses.
+ */
+
+/**
+ * Defines the shape of an error code entry in the registry.
+ *
+ * @property code - The machine-readable error code string.
+ * @property httpStatus - The HTTP status code to return for this error.
+ * @property category - The error category for classification and logging.
+ */
 export interface ErrorDefinition {
 	code: string;
 	httpStatus: number;
 	category: 'domain' | 'application' | 'infrastructure' | 'auth' | 'system';
 }
 
+/**
+ * Exhaustive registry of all known error codes in the application.
+ * Organized by category: domain (4xx), infrastructure (5xx), auth, and system errors.
+ */
 export const ErrorCodes = {
-	// Domain Errors - Business logic violations
+	// Domain Errors - Business logic violations (typically 4xx)
 	USER_ALREADY_EXISTS: {
 		code: 'USER_ALREADY_EXISTS',
 		httpStatus: 409,
@@ -88,7 +107,7 @@ export const ErrorCodes = {
 		category: 'domain',
 	},
 
-	// Infrastructure Errors - External service failures
+	// Infrastructure Errors - External service failures (typically 5xx)
 	DATABASE_ERROR: {
 		code: 'DATABASE_ERROR',
 		httpStatus: 500,
@@ -125,7 +144,7 @@ export const ErrorCodes = {
 		category: 'infrastructure',
 	},
 
-	// Auth Errors
+	// Auth Errors - Authentication and authorization failures
 	UNAUTHORIZED: {
 		code: 'UNAUTHORIZED',
 		httpStatus: 401,
@@ -157,7 +176,7 @@ export const ErrorCodes = {
 		category: 'infrastructure',
 	},
 
-	// System Errors
+	// System Errors - Internal/unexpected failures
 	INTERNAL_ERROR: {
 		code: 'INTERNAL_ERROR',
 		httpStatus: 500,
@@ -175,8 +194,16 @@ export const ErrorCodes = {
 	},
 } as const satisfies Record<string, ErrorDefinition>;
 
+/** Union type of all registered error code names. */
 export type ErrorCode = keyof typeof ErrorCodes;
 
+/**
+ * Looks up the error definition for a given error code.
+ * Falls back to INTERNAL_ERROR (500) if the code is unrecognized.
+ *
+ * @param code - The error code string to look up.
+ * @returns The matching ErrorDefinition, or a default INTERNAL_ERROR definition.
+ */
 export function getErrorDefinition(code: string): ErrorDefinition {
 	const definition = ErrorCodes[code as ErrorCode];
 	return (
@@ -188,10 +215,23 @@ export function getErrorDefinition(code: string): ErrorDefinition {
 	);
 }
 
+/**
+ * Retrieves the HTTP status code for a given error code.
+ * Shorthand for `getErrorDefinition(code).httpStatus`.
+ *
+ * @param code - The error code string to look up.
+ * @returns The corresponding HTTP status code.
+ */
 export function getHttpStatus(code: string): number {
 	return getErrorDefinition(code).httpStatus;
 }
 
+/**
+ * Type guard that checks if a string is a valid registered error code.
+ *
+ * @param code - The string to check.
+ * @returns True if the code exists in the ErrorCodes registry.
+ */
 export function isErrorCode(code: string): code is ErrorCode {
 	return code in ErrorCodes;
 }

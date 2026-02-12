@@ -1,3 +1,9 @@
+/**
+ * @module prisma-color.repository
+ * Prisma-backed implementation of the {@link ColorRepository} domain interface.
+ * Manages car color records with name and hex code values.
+ */
+
 import { inject, injectable } from 'tsyringe';
 import type { ColorEntity } from '../../../domain/entities/color.entity.js';
 import type { ColorRepository, CreateColorData, UpdateColorData } from '../../../domain/repositories/color.repository.js';
@@ -7,6 +13,12 @@ import { ok, err } from '../../../lib/shared/types/result.js';
 import { DatabaseError } from '../../../lib/errors/repository.errors.js';
 import type { PrismaClient } from '../generated/prisma/client.js';
 
+/**
+ * Prisma implementation of {@link ColorRepository}.
+ * Operates on the `color` table which stores color name and hex values
+ * for car appearance records.
+ * Injected via tsyringe with the PrismaClient token.
+ */
 @injectable()
 export class PrismaColorRepository implements ColorRepository {
 	constructor(
@@ -14,8 +26,16 @@ export class PrismaColorRepository implements ColorRepository {
 		private readonly prisma: PrismaClient,
 	) {}
 
+	/**
+	 * Retrieves all color records with optional pagination.
+	 * Runs findMany and count in parallel for efficient pagination.
+	 * @param params - Optional pagination with `skip` and `take`.
+	 * @returns `ok({ data, total })` with color array and total count,
+	 *          or `err(DatabaseError)` on failure.
+	 */
 	async findAll(params?: { skip: number; take: number }): Promise<Result<{ data: ColorEntity[]; total: number }, DatabaseError>> {
 		try {
+			// Parallel queries: paginated data + total count
 			const [data, total] = await Promise.all([
 				this.prisma.color.findMany({
 					...(params && { skip: params.skip, take: params.take }),
@@ -28,6 +48,12 @@ export class PrismaColorRepository implements ColorRepository {
 		}
 	}
 
+	/**
+	 * Finds a single color by UUID.
+	 * @param id - The UUID of the color.
+	 * @returns `ok(ColorEntity)` if found, `ok(null)` if not found,
+	 *          or `err(DatabaseError)` on failure.
+	 */
 	async findById(id: string): Promise<Result<ColorEntity | null, DatabaseError>> {
 		try {
 			const color = await this.prisma.color.findUnique({
@@ -39,6 +65,13 @@ export class PrismaColorRepository implements ColorRepository {
 		}
 	}
 
+	/**
+	 * Finds a color by its name. Uses `findFirst` since the name field
+	 * may not have a unique constraint at the database level.
+	 * @param name - The color name to search for (e.g. "Red", "Blue").
+	 * @returns `ok(ColorEntity)` if found, `ok(null)` if not found,
+	 *          or `err(DatabaseError)` on failure.
+	 */
 	async findByName(name: string): Promise<Result<ColorEntity | null, DatabaseError>> {
 		try {
 			const color = await this.prisma.color.findFirst({
@@ -50,6 +83,12 @@ export class PrismaColorRepository implements ColorRepository {
 		}
 	}
 
+	/**
+	 * Creates a new color record with a name and hex code.
+	 * @param data - Color creation data with name and hex.
+	 * @returns `ok(ColorEntity)` with the created color,
+	 *          or `err(DatabaseError)` on failure.
+	 */
 	async create(data: CreateColorData): Promise<Result<ColorEntity, DatabaseError>> {
 		try {
 			const color = await this.prisma.color.create({
@@ -64,6 +103,13 @@ export class PrismaColorRepository implements ColorRepository {
 		}
 	}
 
+	/**
+	 * Partially updates a color record identified by UUID.
+	 * @param id - The UUID of the color to update.
+	 * @param data - Partial update payload (name, hex).
+	 * @returns `ok(ColorEntity)` with the updated color,
+	 *          or `err(DatabaseError)` on failure.
+	 */
 	async update(id: string, data: UpdateColorData): Promise<Result<ColorEntity, DatabaseError>> {
 		try {
 			const color = await this.prisma.color.update({
@@ -76,6 +122,11 @@ export class PrismaColorRepository implements ColorRepository {
 		}
 	}
 
+	/**
+	 * Deletes a color record by UUID.
+	 * @param id - The UUID of the color to delete.
+	 * @returns `ok(undefined)` on success, or `err(DatabaseError)` on failure.
+	 */
 	async delete(id: string): Promise<Result<void, DatabaseError>> {
 		try {
 			await this.prisma.color.delete({

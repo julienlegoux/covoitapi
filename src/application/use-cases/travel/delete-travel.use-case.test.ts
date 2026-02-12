@@ -1,3 +1,9 @@
+/**
+ * @file Unit tests for the DeleteTravelUseCase.
+ *
+ * Covers successful deletion, not-found guard, and repository error propagation.
+ */
+
 import { container } from 'tsyringe';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { createMockTravelRepository } from '../../../../tests/setup.js';
@@ -7,6 +13,7 @@ import { ok, err } from '../../../lib/shared/types/result.js';
 import { DatabaseError } from '../../../lib/errors/repository.errors.js';
 import { DeleteTravelUseCase } from './delete-travel.use-case.js';
 
+// Test suite for deleting carpooling travels
 describe('DeleteTravelUseCase', () => {
 	let useCase: DeleteTravelUseCase;
 	let mockTravelRepository: ReturnType<typeof createMockTravelRepository>;
@@ -17,6 +24,7 @@ describe('DeleteTravelUseCase', () => {
 		useCase = container.resolve(DeleteTravelUseCase);
 	});
 
+	// Happy path: travel exists and is deleted
 	it('should delete travel successfully', async () => {
 		mockTravelRepository.findById.mockResolvedValue(ok({ id: 'r1', dateRoute: new Date(), kms: 100, seats: 3, driverId: 'd1', carId: 'c1' }));
 		mockTravelRepository.delete.mockResolvedValue(ok(undefined));
@@ -25,6 +33,7 @@ describe('DeleteTravelUseCase', () => {
 		expect(mockTravelRepository.delete).toHaveBeenCalledWith('r1');
 	});
 
+	// Not-found guard: null lookup returns TravelNotFoundError
 	it('should return TravelNotFoundError when not found', async () => {
 		mockTravelRepository.findById.mockResolvedValue(ok(null));
 		const result = await useCase.execute('999');
@@ -33,6 +42,7 @@ describe('DeleteTravelUseCase', () => {
 		expect(mockTravelRepository.delete).not.toHaveBeenCalled();
 	});
 
+	// DB error during lookup bubbles up
 	it('should propagate repository error', async () => {
 		mockTravelRepository.findById.mockResolvedValue(err(new DatabaseError('db error')));
 		const result = await useCase.execute('r1');

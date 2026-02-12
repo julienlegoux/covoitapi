@@ -1,3 +1,9 @@
+/**
+ * @file Unit tests for the GetTravelUseCase.
+ *
+ * Covers successful retrieval, not-found guard, and repository error propagation.
+ */
+
 import { container } from 'tsyringe';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { createMockTravelRepository } from '../../../../tests/setup.js';
@@ -7,6 +13,7 @@ import { ok, err } from '../../../lib/shared/types/result.js';
 import { DatabaseError } from '../../../lib/errors/repository.errors.js';
 import { GetTravelUseCase } from './get-travel.use-case.js';
 
+// Test suite for retrieving a single travel by UUID
 describe('GetTravelUseCase', () => {
 	let useCase: GetTravelUseCase;
 	let mockTravelRepository: ReturnType<typeof createMockTravelRepository>;
@@ -19,6 +26,7 @@ describe('GetTravelUseCase', () => {
 		useCase = container.resolve(GetTravelUseCase);
 	});
 
+	// Happy path: travel exists and is returned
 	it('should return travel when found', async () => {
 		mockTravelRepository.findById.mockResolvedValue(ok(travel));
 		const result = await useCase.execute('r1');
@@ -26,6 +34,7 @@ describe('GetTravelUseCase', () => {
 		if (result.success) expect(result.value).toEqual(travel);
 	});
 
+	// Not-found guard: null lookup returns TravelNotFoundError
 	it('should return TravelNotFoundError when not found', async () => {
 		mockTravelRepository.findById.mockResolvedValue(ok(null));
 		const result = await useCase.execute('999');
@@ -33,6 +42,7 @@ describe('GetTravelUseCase', () => {
 		if (!result.success) expect(result.error).toBeInstanceOf(TravelNotFoundError);
 	});
 
+	// DB error during lookup bubbles up
 	it('should propagate repository error', async () => {
 		mockTravelRepository.findById.mockResolvedValue(err(new DatabaseError('db error')));
 		const result = await useCase.execute('r1');

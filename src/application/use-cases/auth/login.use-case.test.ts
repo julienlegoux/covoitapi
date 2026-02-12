@@ -1,3 +1,11 @@
+/**
+ * @file Unit tests for the LoginUseCase.
+ *
+ * Covers the login authentication flow including successful credential
+ * verification, JWT token generation, and error paths for unknown emails
+ * and incorrect passwords. All repository and service dependencies are mocked.
+ */
+
 import { container } from 'tsyringe';
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
@@ -9,9 +17,10 @@ import {
 import { InvalidCredentialsError } from '../../../lib/errors/domain.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import { ok } from '../../../lib/shared/types/result.js';
-import type { LoginInput } from '../../dtos/auth.dto.js';
+import type { LoginSchemaType } from '../../schemas/auth.schema.js';
 import { LoginUseCase } from './login.use-case.js';
 
+// Main test suite for the login authentication use case
 describe('LoginUseCase', () => {
 	let loginUseCase: LoginUseCase;
 	let mockAuthRepository: ReturnType<typeof createMockAuthRepository>;
@@ -19,7 +28,7 @@ describe('LoginUseCase', () => {
 	let mockPasswordService: ReturnType<typeof createMockPasswordService>;
 	let mockJwtService: ReturnType<typeof createMockJwtService>;
 
-	const validInput: LoginInput = {
+	const validInput: LoginSchemaType = {
 		email: 'test@example.com',
 		password: 'Password123!',
 	};
@@ -62,6 +71,7 @@ describe('LoginUseCase', () => {
 		loginUseCase = container.resolve(LoginUseCase);
 	});
 
+	// Verifies the happy path: valid email + password yields a JWT token
 	it('should login successfully with valid credentials', async () => {
 		mockAuthRepository.findByEmail.mockResolvedValue(ok(existingAuth));
 		mockPasswordService.verify.mockResolvedValue(ok(true));
@@ -83,6 +93,7 @@ describe('LoginUseCase', () => {
 		expect(mockJwtService.sign).toHaveBeenCalledWith({ userId: 'user-123', role: 'USER' });
 	});
 
+	// Verifies that an unknown email returns InvalidCredentialsError without leaking info
 	it('should return InvalidCredentialsError when user not found', async () => {
 		mockAuthRepository.findByEmail.mockResolvedValue(ok(null));
 
@@ -96,6 +107,7 @@ describe('LoginUseCase', () => {
 		expect(mockJwtService.sign).not.toHaveBeenCalled();
 	});
 
+	// Verifies that a wrong password returns InvalidCredentialsError and skips JWT signing
 	it('should return InvalidCredentialsError when password is wrong', async () => {
 		mockAuthRepository.findByEmail.mockResolvedValue(ok(existingAuth));
 		mockPasswordService.verify.mockResolvedValue(ok(false));
