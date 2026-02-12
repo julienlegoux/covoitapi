@@ -1,301 +1,216 @@
-# CovoitAPI - Full Code Audit Report
+# 🔒 Security Audit — CovoitAPI
 
-## Overall Rating: 7.5 / 10 (Solid Junior-to-Mid Level)
-
-This is an impressively well-structured project for its stage. The clean architecture, Result type pattern, DI container, and comprehensive error registry show strong engineering intent. Below are findings organized by severity and category.
-
----
-
-## ARCHITECTURE & DESIGN (8/10)
-
-### What's Done Well
-- **Clean Architecture** with proper layer separation (domain / application / infrastructure / presentation)
-- **Result\<T, E\> monad** for railway-oriented error handling — avoids throw/catch chaos
-- **DI via TSyringe** with symbol-based tokens — proper inversion of control
-- **Centralized error registry** mapping domain codes to HTTP statuses
-- **Structured logging** with request context via AsyncLocalStorage
-
-### What Needs Improvement
-
-**1. Entity/Prisma type mismatch — `as unknown as` casting (HIGH)**
-- File: `src/infrastructure/database/repositories/prisma-route.repository.ts` lines 26, 43, 84
-- File: `src/infrastructure/database/repositories/prisma-inscription.repository.ts` lines 22, 34, 46, 58
-- `return ok(routes as unknown as RouteEntity[])` — double-casting destroys type safety
-- Root cause: domain entities are flat types with only scalar fields, but Prisma queries use `include` to return nested relations (driver, car, cities). The shapes don't match.
-- **Fix**: Create proper domain entity types that include relations, or map Prisma results to domain entities explicitly in the repository.
-
-**2. Anemic domain entities**
-- All entities in `src/domain/entities/` are plain type aliases — no behavior, no validation, no invariant enforcement
-- Example: `route.entity.ts` is just `{ id, dateRoute, kms, seats, driverId, carId }` — no method to check `hasAvailableSeats()`, no factory method
-- In clean architecture, entities should encapsulate business rules. Currently all logic lives in use cases.
-- **Recommendation**: Not critical at this scale, but as the domain grows, push invariants into entities.
-
-**3. Flat route mounting**
-- File: `src/presentation/routes/index.ts` lines 21-27 — 7 route modules mounted at `app.route('/', ...)` instead of RESTful grouping
-- Results in URLs like `/api/listBrands`, `/api/brand`, `/api/listCars` rather than `/api/brands`, `/api/brands/:id`
-- **Recommendation**: Group under RESTful resource paths (`/api/brands`, `/api/cars`, `/api/routes`, etc.)
+**Date:** 2026-02-12  
+**Scope:** Full codebase review (`src/`, config files, env handling, Prisma schema, seed script)  
+**Stack:** Hono · TypeScript · Prisma + Neon Postgres · Argon2 · JWT HS256 · Zod · Resend
 
 ---
 
-## UNUSED CODE & DEAD FEATURES
+## Executive Summary
 
-### Utility Functions (completely unused)
-| File | Line(s) | Export | Status |
-|------|---------|--------|--------|
-| `src/lib/shared/utils/response.util.ts` | 5 | `successResponse()` | Never imported anywhere |
-| `src/lib/shared/utils/response.util.ts` | 13 | `errorResponse()` | Never imported anywhere |
-| `src/presentation/middleware/request-logger.middleware.ts` | 6 | `requestLogger()` | Defined but never mounted in any route |
-
-### Request Context helpers (all unused)
-| File | Line(s) | Export | Status |
-|------|---------|--------|--------|
-| `src/lib/context/request-context.ts` | 33-36 | `getContextSafe()` | Never called |
-| `src/lib/context/request-context.ts` | 38-40 | `getRequestId()` | Never called |
-| `src/lib/context/request-context.ts` | 42-44 | `getUserId()` | Never called |
-| `src/lib/context/request-context.ts` | 53-55 | `setUserId()` | Never called |
-| `src/lib/context/request-context.ts` | 65-68 | `runWithContextSync()` | Never called |
-
-### Application Error Classes (never instantiated)
-| File | Line(s) | Export | Status |
-|------|---------|--------|--------|
-| `src/application/errors/application.errors.ts` | 11-18 | `ValidationError` | Exported but never thrown |
-| `src/application/errors/application.errors.ts` | 21-25 | `NotFoundError` | Exported but never thrown |
-
-### ColorRepository (full dead feature)
-- `src/lib/shared/di/tokens.ts` line 4 — token defined, never injected
-- `src/lib/shared/di/container.ts` line 33 — registered in DI, never resolved
-- `src/infrastructure/database/repositories/prisma-color.repository.ts` — full implementation, never used
-- `src/domain/repositories/color.repository.ts` — interface defined, never referenced
-- No routes, controllers, or use cases exist for colors
-
-### Two different logger implementations
-- `src/lib/shared/utils/logger.util.ts` — simple console wrapper
-- `src/infrastructure/logging/logger.ts` — structured logger with formatters
-- Both are used in different parts of the codebase — should standardize on one
+The codebase shows a clean architecture with good separation of concerns and several solid security practices (Argon2id hashing, Zod validation, structured error handling that hides internals). However, **multiple critical and high-severity issues** exist around broken access control, missing infrastructure protections, and hardcoded credentials.
 
 ---
 
-## SECURITY (6/10)
+## 🔴 Critical
 
-> Note: CORS and other transport-level protections are acknowledged as not yet implemented and excluded from scoring.
+### C1 — IDOR: Any Driver Can Delete/Modify Any Car
 
-### Issues Found
+**Files:** [car.controller.ts](file:///c:/Users/lgxju/Project/covoitapi/src/presentation/controllers/car.controller.ts) · [delete-car.use-case.ts](file:///c:/Users/lgxju/Project/covoitapi/src/application/use-cases/car/delete-car.use-case.ts)
 
-**4. No authorization — only authentication (CRITICAL)**
-- The `authMiddleware` verifies the JWT and sets `userId` in context, but **no endpoint checks if the authenticated user is authorized** to perform the action.
-- Examples of what any authenticated user can do right now:
-  - `DELETE /brand/:id` — delete any brand
-  - `DELETE /person/:id` — delete any user
-  - `GET /listPersons` — see all users' data
-  - `PUT /person/:idpers` — update any user's profile
-  - `DELETE /route/:id` — delete any route
-  - Create inscriptions for other users (`idpers` is passed in the body, not from the JWT)
-- **Fix**: Endpoints that act on "the current user" should use `c.get('userId')` from the JWT, not accept `idpers` from the body. Admin-only operations need role-based checks.
+The `DELETE /api/v1/cars/:id`, `PUT /api/v1/cars/:id`, and `PATCH /api/v1/cars/:id` endpoints only check that the user has DRIVER role. **No ownership check is performed.** Any authenticated driver can delete or modify any other driver's car.
 
-**5. `userId` from JWT is ignored — user ID comes from request body (CRITICAL)**
-- `src/presentation/controllers/inscription.controller.ts` line 36: `idpers: validated.idpers` — the user ID comes from the POST body
-- `src/presentation/controllers/route.controller.ts` line 43: `idpers: validated.idpers` — same issue
-- This means User A can create routes or inscriptions on behalf of User B.
-- **Fix**: For user-scoped actions, always use `c.get('userId')` set by the auth middleware.
+```typescript
+// car.controller.ts — no userId check
+export async function deleteCar(c: Context): Promise<Response> {
+    const id = c.req.param('id');               // ← attacker-controlled
+    const useCase = container.resolve(DeleteCarUseCase);
+    const result = await useCase.execute(id);   // ← no ownership verification
+}
+```
 
-**6. JWT `userId` cast without validation**
-- `src/infrastructure/services/hono-jwt.service.ts` line 40: `return ok({ userId: decoded.userId as string })`
-- If the token payload doesn't have `userId` or it's not a string, this silently passes `undefined`.
-- **Fix**: Validate the decoded payload shape before returning.
+> [!CAUTION]
+> **Impact:** A malicious driver can enumerate car UUIDs and delete every car in the system, disrupting all travels.
 
-**7. No rate limiting**
-- No rate limiting on `/auth/login` or `/auth/register` — vulnerable to brute-force and credential stuffing attacks.
-- Hono has `hono/rate-limiter` or you can use a simple in-memory/Redis limiter.
-
-**8. No input size limits**
-- `c.req.json()` is called without body size limits. An attacker could send a very large JSON payload.
-- **Fix**: Add body size limit middleware.
-
-**9. Password exposed in Person flow**
-- `POST /person` accepts `password` in the body and hashes it — this is essentially a duplicate registration endpoint without email verification.
-- If `POST /person` is meant for admin use, it should be protected differently. If it's for self-registration, it duplicates `/auth/register`.
+**Fix:** Pass `userId` from context to the use case and verify the car belongs to the requesting driver before mutation.
 
 ---
 
-## NAMING & CONSISTENCY (5/10)
+### C2 — IDOR: Any Driver Can Delete Any Travel
 
-**10. French/English naming mix throughout**
-- Validators: `nom`, `prenom`, `tel`, `ville`, `villeD`, `villeA`, `dateT`, `idpers`, `idtrajet`, `cp`, `permis`, `modele`, `marqueId`, `immatriculation`
-- DTOs: `CreateRouteInput.villeD`, `CreateInscriptionInput.idpers`
-- Routes: `/listBrands`, `/listePostalsCodes` (typo: "liste" vs "list"), `/listInscriptionsUsers/:idpers`
-- **Impact**: Makes the codebase harder to onboard to and creates a mental translation layer. The internal domain (entities, repos) uses English, but the API surface and validation use French.
-- **Recommendation**: Pick one language. Ideally the API is English (international standard) with French only in user-facing labels. Map French external names to English internals in validators/controllers.
+**Files:** [route.controller.ts](file:///c:/Users/lgxju/Project/covoitapi/src/presentation/controllers/route.controller.ts) · [delete-travel.use-case.ts](file:///c:/Users/lgxju/Project/covoitapi/src/application/use-cases/travel/delete-travel.use-case.ts)
 
-**11. Inconsistent URL parameter names**
-- Person: `GET /person/:id` vs `PUT /person/:idpers` vs `PATCH /person/:idpers` vs `DELETE /person/:id`
-- Inscription: `:id`, `:idpers`, `:idtrajet` — three different naming schemes
-- **Fix**: Standardize to `:id` everywhere, use resource nesting for context.
+Same pattern as C1. `DELETE /api/v1/travels/:id` requires DRIVER role but doesn't verify the travel belongs to the requesting driver.
 
-**12. Non-RESTful route naming**
-- `/listBrands` instead of `GET /brands`
-- `/listePostalsCodes` instead of `GET /cities`
-- `/listInscriptionsUsers/:idpers` instead of `GET /users/:id/inscriptions`
-- REST convention: resource names are nouns, HTTP method implies the action.
+```typescript
+// route.controller.ts
+export async function deleteRoute(c: Context): Promise<Response> {
+    const id = c.req.param('id');
+    const useCase = container.resolve(DeleteTravelUseCase);
+    const result = await useCase.execute(id); // ← no ownership check
+}
+```
+
+> [!CAUTION]
+> **Impact:** A driver can cancel other drivers' trips, affecting all passengers inscribed to those travels (cascading delete on inscriptions via FK).
 
 ---
 
-## CODE QUALITY (7.5/10)
+### C3 — IDOR: Any User Can Delete Any Inscription
 
-**13. Duplicate registration logic**
-- `POST /auth/register` (RegisterUseCase) and `POST /person` (CreatePersonUseCase) both create users with hashed passwords.
-- The Person endpoint skips email sending and JWT generation, but creates a user the same way.
-- **Risk**: Divergent validation rules between the two paths. Person validator requires only 8-char password; Auth validator requires uppercase + lowercase + digit.
+**Files:** [inscription.controller.ts](file:///c:/Users/lgxju/Project/covoitapi/src/presentation/controllers/inscription.controller.ts#L119-L127) · [delete-inscription.use-case.ts](file:///c:/Users/lgxju/Project/covoitapi/src/application/use-cases/inscription/delete-inscription.use-case.ts)
 
-**14. No pagination on list endpoints**
-- `listBrands`, `listPersons`, `listCars`, `listRoutes`, `listInscriptions` all call `findAll()` with no limit.
-- **Risk**: As data grows, these endpoints will return unbounded datasets. This is a performance and memory concern, especially on Vercel serverless.
-- **Fix**: Add `limit/offset` or cursor-based pagination.
+`DELETE /api/v1/inscriptions/:id` requires USER role but doesn't verify the inscription belongs to the requesting user.
 
-**15. Missing query parameter validation on `findRoute`**
-- `src/presentation/controllers/route.controller.ts` lines 26-30: Query params `villeD`, `villeA`, `dateT` are read directly from `c.req.query()` with no validation.
-- All other endpoints validate input with Zod schemas, but this one skips validation.
-- **Fix**: Add a Zod schema for query params.
-
-**16. Date handling lacks timezone awareness**
-- `src/infrastructure/database/repositories/prisma-route.repository.ts` lines 65-73: `new Date(filters.date)` uses local timezone, then `setHours(0, 0, 0, 0)`.
-- On Vercel serverless (UTC), this behaves differently than local dev.
-- `dateT` is validated as `z.string().min(1)` — no date format validation at all.
-- **Fix**: Validate date format in the Zod schema (e.g., ISO 8601). Use UTC explicitly.
-
-**17. Route filter logic bug**
-- `src/infrastructure/database/repositories/prisma-route.repository.ts` lines 53-62: The filter uses `in: [departureCity, arrivalCity].filter(Boolean)` on the same `cityName` field.
-- This finds routes that have **either** city in their stops — it doesn't distinguish departure from arrival.
-- The CityRoute join table has no `order` or `type` column to differentiate departure vs. arrival.
-- **Fix**: Add a `type` or `position` column to `CityRoute` to distinguish departure/arrival.
-
-**18. `container.resolve()` called in every controller function**
-- Every controller function calls `container.resolve(SomeUseCase)` inline. This works but:
-  - Creates a new use case instance per request (TSyringe default is transient)
-  - Could be optimized with singleton registration for stateless use cases
-  - Makes controllers harder to test in isolation (tight coupling to the container)
-
-**19. Empty zipcode on auto-created cities**
-- `src/application/use-cases/route/create-route.use-case.ts` line 66
-- Cities created during route creation get `zipcode: ''` — should validate or require zipcode input.
+```typescript
+// inscription.controller.ts
+export async function deleteInscription(c: Context): Promise<Response> {
+    const id = c.req.param('id');
+    const useCase = container.resolve(DeleteInscriptionUseCase);
+    const result = await useCase.execute(id); // ← any user can cancel anyone's booking
+}
+```
 
 ---
 
-## TESTING (7/10)
+## 🟠 High
 
-### What's Done Well
-- 51 test files with co-located unit tests
-- Comprehensive mock factory in `tests/setup.ts`
-- Result type has 50+ test cases
-- Validators thoroughly tested with edge cases
-- Integration tests for all route groups
+### H1 — No Rate Limiting on Auth Endpoints
 
-### What Needs Improvement
+**Files:** [auth.routes.ts](file:///c:/Users/lgxju/Project/covoitapi/src/presentation/routes/auth.routes.ts) · [index.ts](file:///c:/Users/lgxju/Project/covoitapi/src/presentation/routes/index.ts)
 
-**20. No test coverage reporting configured**
-- `vitest.config.ts` has `coverage: { provider: 'v8' }` but no `thresholds` or CI integration.
-- **Recommendation**: Add coverage thresholds (e.g., 80% for branches/lines).
+There is **no rate limiting** anywhere in the application — not on login, registration, or any other endpoint. This makes the API vulnerable to:
 
-**21. Integration tests use mocks — not real DB**
-- `tests/integration/*.test.ts` mock the DI container rather than using a test database.
-- These are effectively "thick unit tests", not true integration tests.
-- **Recommendation**: Add a docker-compose test database for true integration tests, or use Prisma's test utilities.
+- **Credential stuffing / brute-force** attacks on `POST /api/v1/auth/login`
+- **Account enumeration** (the `USER_ALREADY_EXISTS` error on registration reveals whether an email is registered)
+- **DoS** via expensive Argon2 hashing on registration endpoint
 
-**22. Missing test for driver use case**
-- `create-driver.use-case.ts` has no `.test.ts` file — the only use case without tests.
-
-**23. No E2E or contract tests**
-- No test verifies the full HTTP request/response cycle with a real server.
-- The Postman collection exists but isn't automated.
+> [!IMPORTANT]
+> At minimum, apply rate limiting to `/auth/login` and `/auth/register`. Consider using `hono-rate-limiter` or a reverse proxy (Cloudflare, nginx).
 
 ---
 
-## DATABASE DESIGN (7/10)
+### H2 — No CORS Configuration
 
-**24. CityRoute lacks departure/arrival distinction**
-- As mentioned in #17, the join table `CityRoute(routeId, cityId)` has no way to know which city is the departure and which is the arrival.
-- This makes the `findRoute` filter unreliable.
-- **Fix**: Add a `type` enum column (`'departure' | 'arrival' | 'stop'`) or an `order` integer.
+**No CORS middleware is configured anywhere** in the application. This is confirmed by searching the entire `src/` directory for "cors" with zero results.
 
-**25. Cascade deletes are aggressive**
-- Deleting a Brand cascades to Model -> Car -> (blocked by Route Restrict, which was changed to Cascade)
-- Deleting a User cascades to Driver -> Routes -> Inscriptions
-- This means deleting a Brand can wipe out associated routes and inscriptions.
-- **Recommendation**: Use soft deletes for critical entities (User, Route) or restrict cascades.
+Without explicit CORS headers, the browser's same-origin policy may block legitimate frontend requests, while a misconfigured deployment could allow arbitrary origins to make authenticated requests.
 
-**26. No indexes beyond unique constraints**
-- No composite indexes for common query patterns (e.g., `Route.dateRoute` + city filters).
-- The `findByFilters` query would benefit from an index on `dateRoute`.
-
-**27. No `updatedAt` on most entities**
-- Only `User` has `updatedAt`. Car, Route, Brand, City, etc. have no audit trail.
+**Fix:** Add `hono/cors` middleware with an explicit allowlist:
+```typescript
+import { cors } from 'hono/cors';
+app.use('*', cors({ origin: ['https://yourdomain.com'] })); // should be set to * until the frontend is deployed
+```
 
 ---
 
-## API DESIGN (6/10)
+## 🟡 Medium
 
-**28. API versioning** ~~FIXED~~
-- Base path is `/api/v1` — versioned routes allow future evolution without breaking clients.
+### M1 — User Data Enumeration
 
-**29. Delete endpoints return 200 with data instead of 204**
-- REST convention: `DELETE` returns `204 No Content`. Current implementation returns `200` with `{ success: true, data: undefined }`.
+**File:** [user.routes.ts](file:///c:/Users/lgxju/Project/covoitapi/src/presentation/routes/user.routes.ts#L33)
 
-**30. No OpenAPI/Swagger documentation**
-- The Postman collection exists, but no machine-readable API spec.
-- Hono supports `@hono/zod-openapi` which could auto-generate docs from existing Zod schemas.
+`GET /api/v1/users/:id` requires only USER role. **Any authenticated user can look up any other user's profile** by UUID, including their first name, last name, phone number, and email.
 
-**31. Health endpoint is inside the error handler middleware**
-- If the error handler itself throws, the health check fails. Health checks should be as lightweight as possible.
+Similarly, `GET /api/v1/users/:id/inscriptions` lets any user view another user's travel inscriptions.
+
+**Fix:** Either restrict `/:id` to the user's own profile (compare `c.get('userId')` with param `id`) or scope the returned fields.
 
 ---
 
-## INFRASTRUCTURE & DEVOPS (7.5/10)
+### M2 — Missing Security Headers
 
-**32. Environment variables well managed**
-- `.env` and `.env.local` are properly gitignored. `.env.example` provides a clear template for required variables.
-- Environment validation exists at startup (DATABASE_URL, JWT_SECRET throw if missing).
+No `helmet`-style middleware sets security headers. The API doesn't send:
+- `Strict-Transport-Security` (HSTS)
+- `X-Content-Type-Options: nosniff`
+- `X-Frame-Options: DENY`
+- `Content-Security-Policy`
 
-**33. No CI/CD pipeline visible**
-- No `.github/workflows/` files found. Tests and linting are only run manually.
-- **Recommendation**: Add a GitHub Actions workflow for: lint, test, build, deploy.
-
-**34. Prisma client generated into source tree**
-- `src/infrastructure/database/generated/` contains the auto-generated Prisma client committed to git.
-- This adds noise to diffs and can cause merge conflicts.
-- **Recommendation**: Add `generated/` to `.gitignore` and generate at build time.
-
-**35. DI container migration is complete**
-- Old `src/infrastructure/di/container.ts` deleted, all imports updated to new path `src/lib/shared/di/container.ts`.
-- No stray references to old path found.
-
-**36. All npm dependencies are used** — no unused packages found.
+**Fix:** Use Hono's `secureHeaders` middleware:
+```typescript
+import { secureHeaders } from 'hono/secure-headers';
+app.use('*', secureHeaders());
+```
 
 ---
 
-## SUMMARY TABLE
+### M3 — JWT Has No `iss`/`aud`/`jti` Claims
 
-| Category | Rating | Key Issues |
-|---|---|---|
-| Architecture & Design | 8/10 | Type casting, anemic entities |
-| Unused Code | — | 12 unused exports, 1 dead feature (ColorRepository) |
-| Security | 6/10 | No authorization, userId from body |
-| Naming & Consistency | 5/10 | French/English mix, non-RESTful URLs |
-| Code Quality | 7.5/10 | Duplicate registration, no pagination, date bugs |
-| Testing | 7/10 | No real integration tests, missing coverage thresholds |
-| Database Design | 7/10 | CityRoute missing type, aggressive cascades |
-| API Design | 6/10 | No versioning, non-RESTful patterns |
-| Infrastructure | 7.5/10 | No CI/CD, generated files in repo |
+**File:** [hono-jwt.service.ts](file:///c:/Users/lgxju/Project/covoitapi/src/infrastructure/services/hono-jwt.service.ts#L58-L68)
+
+The JWT payload only contains `userId`, `role`, and `exp`. Missing standard claims:
+- **`iss` (issuer)** — prevents token confusion between services
+- **`aud` (audience)** — ensures tokens are used in the right context
+- **`jti` (JWT ID)** — enables token revocation/replay protection
+
+Without `jti`, there is no mechanism for token revocation — a compromised token stays valid until expiry.
 
 ---
 
-## PRIORITY FIX ORDER
+### M4 — Color/Brand CRUD Open to Any Driver
 
-1. **Authorization + userId from JWT** (#4, #5) — security-critical
-2. **Route filter logic + CityRoute schema** (#17, #24) — data correctness
-3. **Remove unused code** (unused functions, ColorRepository, dead error classes) — code hygiene
-4. **Add pagination** (#14) — scalability
-5. **Validate findRoute query params + dates** (#15, #16) — input safety
-6. **Standardize naming to English + RESTful URLs** (#10, #11, #12) — DX & maintainability
-7. **Remove duplicate person/register flow** (#13) — code clarity
-8. **Fix Prisma-to-entity type mapping** (#1) — type safety
-9. **Add CI/CD + coverage thresholds** (#20, #33) — process quality
-10. **Standardize on one logger** — consistency
+**Files:** [color.routes.ts](file:///c:/Users/lgxju/Project/covoitapi/src/presentation/routes/color.routes.ts) · [brand.routes.ts](file:///c:/Users/lgxju/Project/covoitapi/src/presentation/routes/brand.routes.ts)
+
+- **Colors:** `POST /create`, `PATCH /:id`, `DELETE /:id` all require only DRIVER role. Any driver can create, modify, or delete colors used across the system.
+- **Brands:** Create/delete correctly requires ADMIN, but this inconsistency with colors suggests an oversight.
+
+---
+
+### M5 — Email HTML Injection
+
+**File:** [resend-email.service.ts](file:///c:/Users/lgxju/Project/covoitapi/src/infrastructure/services/resend-email.service.ts#L52-L56)
+
+```typescript
+html: `<h1>Welcome, ${firstName}!</h1>
+       <p>Thank you for joining our carpooling platform.</p>`
+```
+
+The `firstName` value is interpolated directly into HTML without sanitization. While at registration `firstName` is null, the profile update allows setting arbitrary strings. If a user sets their first name to `<script>alert(1)</script>` and triggers the welcome email path (unlikely but possible with re-registration logic), this could inject HTML into emails.
+
+---
+
+## 🔵 Low / Informational
+
+
+### L2 — No Request ID Validation on Route Parameters
+
+Route parameters like `:id` are used directly without UUID format validation:
+```typescript
+const id = c.req.param('id'); // Could be any string, not validated as UUID
+```
+
+While Prisma will reject invalid UUIDs at the DB level, this wastes a database round-trip. Validate UUIDs at the schema/middleware level.
+
+### L4 — No Token Refresh Mechanism
+
+JWTs expire after 24h (configurable) but there is no refresh token flow. Users must re-authenticate with credentials after token expiry, which may encourage long-lived tokens or storing passwords client-side.
+
+---
+
+## ✅ What's Done Well
+
+| Area | Assessment |
+|------|-----------|
+| **Password Hashing** | Argon2id with default params — OWASP recommended ✅ |
+| **Error Handling** | Structured errors, internal details hidden on 500 ✅ |
+| **Login Failure** | Generic `InvalidCredentialsError` for all paths (no user enumeration on login) ✅ |
+| **Zod Validation** | All inputs validated before use-case execution ✅ |
+| **Body Limit** | 1 MB global limit prevents large payload attacks ✅ |
+| **Request Correlation** | UUID-based `X-Request-Id` for debugging ✅ |
+| **DI Architecture** | Clean abstraction boundaries allow easy testing ✅ |
+| **GDPR Anonymization** | Self-service deletion + admin deletion with `anonymizedAt` ✅ |
+| **Password Policy** | 8+ chars, uppercase, lowercase, digit ✅ |
+
+---
+
+## Priority Fix Order
+
+| Priority | Issue | Effort |
+|----------|-------|--------|
+| 1 | C1-C3: IDOR ownership checks | Medium |
+| 2 | H1: Rate limiting on auth | Low |
+| 3 | H2: CORS configuration | Low |
+| 4 | M1: User data access scoping | Medium |
+| 5 | M2: Security headers | Low |
+| 6 | M3: JWT claims enrichment | Low |
+| 7 | M4: Color CRUD permissions | Low |
