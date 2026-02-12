@@ -64,4 +64,4 @@ container.register(TOKENS.PasswordService, { useClass: ArgonPasswordService });
 container.register(TOKENS.EmailService, { useClass: ResendEmailService });
 container.register(TOKENS.JwtService, { useClass: HonoJwtService });
 
-export { container };
+export { container } from 'tsyringe';

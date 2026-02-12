@@ -5,7 +5,6 @@
  * during registration. Uses Neon PostgreSQL via Prisma ORM.
  */
 
-import crypto from 'node:crypto';
 import { inject, injectable } from 'tsyringe';
 import type { AuthEntity, CreateAuthData } from '../../../domain/entities/auth.entity.js';
 import type { CreateUserData, PublicUserEntity } from '../../../domain/entities/user.entity.js';
@@ -14,8 +13,7 @@ import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import type { Result } from '../../../lib/shared/types/result.js';
 import { ok, err } from '../../../lib/shared/types/result.js';
 import { DatabaseError } from '../../../lib/errors/repository.errors.js';
-import type { PrismaClient } from '../generated/prisma/client.js';
-import type { $Enums } from '../generated/prisma/client.js';
+import type { PrismaClient, $Enums } from '../generated/prisma/client.js';
 
 /**
  * Prisma implementation of {@link AuthRepository}.

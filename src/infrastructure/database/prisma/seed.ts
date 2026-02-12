@@ -54,7 +54,7 @@ async function main() {
   for (let i = 1; i < lines.length; i++) {
     const cols = lines[i].split(";");
     const make = cols[0]?.trim();
-    const baseModel = cols[cols.length - 1]?.trim().replace(/\r/, "");
+    const baseModel = cols.at(-1)?.trim().replace(/\r/, "");
 
     if (!make || !baseModel) continue;
 
