@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { container } from 'tsyringe';
+import { TOKENS } from '../../src/lib/shared/di/tokens.js';
 import { ListTravelsUseCase } from '../../src/application/use-cases/travel/list-travels.use-case.js';
 import { GetTravelUseCase } from '../../src/application/use-cases/travel/get-travel.use-case.js';
 import { FindTravelUseCase } from '../../src/application/use-cases/travel/find-travel.use-case.js';
@@ -8,6 +9,7 @@ import { DeleteTravelUseCase } from '../../src/application/use-cases/travel/dele
 import { ok, err } from '../../src/lib/shared/types/result.js';
 import { TravelNotFoundError } from '../../src/lib/errors/domain.errors.js';
 import { authHeaders, registerMockJwtService, registerMockUseCase } from './helpers.js';
+import { createMockLogger } from '../setup.js';
 
 vi.mock('../../src/infrastructure/database/generated/prisma/client.js', () => ({
 	PrismaClient: class { $extends() { return this; } },
@@ -24,6 +26,7 @@ describe('Travel Routes', () => {
 
 	beforeEach(() => {
 		container.clearInstances();
+		container.registerInstance(TOKENS.Logger, createMockLogger());
 		registerMockJwtService();
 		listMock = registerMockUseCase(ListTravelsUseCase);
 		getMock = registerMockUseCase(GetTravelUseCase);

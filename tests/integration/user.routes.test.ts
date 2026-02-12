@@ -1,11 +1,13 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { container } from 'tsyringe';
+import { TOKENS } from '../../src/lib/shared/di/tokens.js';
 import { ListUsersUseCase } from '../../src/application/use-cases/user/list-users.use-case.js';
 import { GetUserUseCase } from '../../src/application/use-cases/user/get-user.use-case.js';
 import { AnonymizeUserUseCase } from '../../src/application/use-cases/user/anonymize-user.use-case.js';
 import { ok, err } from '../../src/lib/shared/types/result.js';
 import { UserNotFoundError } from '../../src/lib/errors/domain.errors.js';
 import { authHeaders, registerMockJwtService, registerMockUseCase } from './helpers.js';
+import { createMockLogger } from '../setup.js';
 
 vi.mock('../../src/infrastructure/database/generated/prisma/client.js', () => ({
 	PrismaClient: class { $extends() { return this; } },
@@ -20,6 +22,7 @@ describe('User Routes', () => {
 
 	beforeEach(() => {
 		container.clearInstances();
+		container.registerInstance(TOKENS.Logger, createMockLogger());
 		registerMockJwtService();
 		listMock = registerMockUseCase(ListUsersUseCase);
 		getMock = registerMockUseCase(GetUserUseCase);

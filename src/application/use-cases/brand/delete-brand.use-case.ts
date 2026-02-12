@@ -9,6 +9,7 @@ import { inject, injectable } from 'tsyringe';
 import { BrandNotFoundError } from '../../../lib/errors/domain.errors.js';
 import type { BrandRepository } from '../../../domain/repositories/brand.repository.js';
 import type { RepositoryError } from '../../../lib/errors/repository.errors.js';
+import type { Logger } from '../../../lib/logging/logger.types.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import type { Result } from '../../../lib/shared/types/result.js';
 import { err } from '../../../lib/shared/types/result.js';
@@ -33,10 +34,15 @@ type DeleteBrandError = BrandNotFoundError | RepositoryError;
  */
 @injectable()
 export class DeleteBrandUseCase {
+	private readonly logger: Logger;
+
 	constructor(
 		@inject(TOKENS.BrandRepository)
 		private readonly brandRepository: BrandRepository,
-	) {}
+		@inject(TOKENS.Logger) logger: Logger,
+	) {
+		this.logger = logger.child({ useCase: 'DeleteBrandUseCase' });
+	}
 
 	/**
 	 * Deletes the brand identified by the given UUID.
@@ -51,9 +57,11 @@ export class DeleteBrandUseCase {
 		}
 
 		if (!findResult.value) {
+			this.logger.warn('Brand not found for deletion', { brandId: id });
 			return err(new BrandNotFoundError(id));
 		}
 
+		this.logger.info('Brand deleted', { brandId: id });
 		return this.brandRepository.delete(id);
 	}
 }

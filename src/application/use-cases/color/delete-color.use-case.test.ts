@@ -7,7 +7,7 @@
 
 import { container } from 'tsyringe';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { createMockColorRepository } from '../../../../tests/setup.js';
+import { createMockColorRepository, createMockLogger } from '../../../../tests/setup.js';
 import { ColorNotFoundError } from '../../../lib/errors/domain.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import { ok, err } from '../../../lib/shared/types/result.js';
@@ -22,6 +22,7 @@ describe('DeleteColorUseCase', () => {
 	beforeEach(() => {
 		mockColorRepository = createMockColorRepository();
 		container.registerInstance(TOKENS.ColorRepository, mockColorRepository);
+		container.registerInstance(TOKENS.Logger, createMockLogger());
 		useCase = container.resolve(DeleteColorUseCase);
 	});
 

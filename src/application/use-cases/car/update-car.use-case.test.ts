@@ -8,7 +8,7 @@
 
 import { container } from 'tsyringe';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { createMockCarRepository, createMockModelRepository, createMockBrandRepository } from '../../../../tests/setup.js';
+import { createMockCarRepository, createMockModelRepository, createMockBrandRepository, createMockLogger } from '../../../../tests/setup.js';
 import { CarNotFoundError } from '../../../lib/errors/domain.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import { ok, err } from '../../../lib/shared/types/result.js';
@@ -32,6 +32,7 @@ describe('UpdateCarUseCase', () => {
 		container.registerInstance(TOKENS.CarRepository, mockCarRepository);
 		container.registerInstance(TOKENS.ModelRepository, mockModelRepository);
 		container.registerInstance(TOKENS.BrandRepository, mockBrandRepository);
+		container.registerInstance(TOKENS.Logger, createMockLogger());
 		useCase = container.resolve(UpdateCarUseCase);
 	});
 

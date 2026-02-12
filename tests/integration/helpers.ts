@@ -2,6 +2,7 @@ import { vi } from 'vitest';
 import { container } from 'tsyringe';
 import { TOKENS } from '../../src/lib/shared/di/tokens.js';
 import { ok } from '../../src/lib/shared/types/result.js';
+import { createMockLogger } from '../setup.js';
 
 // Set DATABASE_URL before container module loads
 process.env.DATABASE_URL ??= 'postgresql://mock:mock@localhost:5432/mock';

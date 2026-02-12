@@ -8,6 +8,7 @@
 import { inject, injectable } from 'tsyringe';
 import type { TravelEntity } from '../../../domain/entities/travel.entity.js';
 import { TravelNotFoundError } from '../../../lib/errors/domain.errors.js';
+import type { Logger } from '../../../lib/logging/logger.types.js';
 import type { TravelRepository } from '../../../domain/repositories/travel.repository.js';
 import type { RepositoryError } from '../../../lib/errors/repository.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
@@ -34,10 +35,15 @@ type GetTravelError = TravelNotFoundError | RepositoryError;
  */
 @injectable()
 export class GetTravelUseCase {
+	private readonly logger: Logger;
+
 	constructor(
 		@inject(TOKENS.TravelRepository)
 		private readonly travelRepository: TravelRepository,
-	) {}
+		@inject(TOKENS.Logger) logger: Logger,
+	) {
+		this.logger = logger.child({ useCase: 'GetTravelUseCase' });
+	}
 
 	/**
 	 * Retrieves the travel identified by the given UUID.

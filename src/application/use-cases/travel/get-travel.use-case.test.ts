@@ -6,7 +6,7 @@
 
 import { container } from 'tsyringe';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { createMockTravelRepository } from '../../../../tests/setup.js';
+import { createMockLogger, createMockTravelRepository } from '../../../../tests/setup.js';
 import { TravelNotFoundError } from '../../../lib/errors/domain.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import { ok, err } from '../../../lib/shared/types/result.js';
@@ -23,6 +23,7 @@ describe('GetTravelUseCase', () => {
 	beforeEach(() => {
 		mockTravelRepository = createMockTravelRepository();
 		container.registerInstance(TOKENS.TravelRepository, mockTravelRepository);
+		container.registerInstance(TOKENS.Logger, createMockLogger());
 		useCase = container.resolve(GetTravelUseCase);
 	});
 

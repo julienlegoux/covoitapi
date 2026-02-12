@@ -10,6 +10,7 @@
 import { inject, injectable } from 'tsyringe';
 import type { DriverEntity } from '../../../domain/entities/driver.entity.js';
 import { DriverAlreadyExistsError, UserNotFoundError } from '../../../lib/errors/domain.errors.js';
+import type { Logger } from '../../../lib/logging/logger.types.js';
 import type { AuthRepository } from '../../../domain/repositories/auth.repository.js';
 import type { DriverRepository } from '../../../domain/repositories/driver.repository.js';
 import type { UserRepository } from '../../../domain/repositories/user.repository.js';
@@ -45,6 +46,8 @@ type CreateDriverError = DriverAlreadyExistsError | UserNotFoundError | Reposito
  */
 @injectable()
 export class CreateDriverUseCase {
+	private readonly logger: Logger;
+
 	constructor(
 		@inject(TOKENS.DriverRepository)
 		private readonly driverRepository: DriverRepository,
@@ -52,7 +55,10 @@ export class CreateDriverUseCase {
 		private readonly userRepository: UserRepository,
 		@inject(TOKENS.AuthRepository)
 		private readonly authRepository: AuthRepository,
-	) {}
+		@inject(TOKENS.Logger) logger: Logger,
+	) {
+		this.logger = logger.child({ useCase: 'CreateDriverUseCase' });
+	}
 
 	/**
 	 * Creates a driver profile for the authenticated user.
@@ -68,6 +74,7 @@ export class CreateDriverUseCase {
 			return userResult;
 		}
 		if (!userResult.value) {
+			this.logger.warn('User not found for driver creation', { userId: input.userId });
 			return err(new UserNotFoundError(input.userId));
 		}
 
@@ -79,6 +86,7 @@ export class CreateDriverUseCase {
 		}
 
 		if (existingResult.value) {
+			this.logger.warn('Driver already exists', { userId: input.userId });
 			return err(new DriverAlreadyExistsError(input.userId));
 		}
 
@@ -89,6 +97,7 @@ export class CreateDriverUseCase {
 
 		if (createResult.success) {
 			await this.authRepository.updateRole(user.authRefId, 'DRIVER');
+			this.logger.info('Driver created', { driverId: createResult.value.id });
 		}
 
 		return createResult;

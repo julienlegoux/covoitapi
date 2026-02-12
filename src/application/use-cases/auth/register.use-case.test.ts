@@ -12,6 +12,7 @@ import {
 	createMockAuthRepository,
 	createMockEmailService,
 	createMockJwtService,
+	createMockLogger,
 	createMockPasswordService,
 } from '../../../../tests/setup.js';
 import { UserAlreadyExistsError } from '../../../lib/errors/domain.errors.js';
@@ -44,6 +45,7 @@ describe('RegisterUseCase', () => {
 		container.registerInstance(TOKENS.PasswordService, mockPasswordService);
 		container.registerInstance(TOKENS.EmailService, mockEmailService);
 		container.registerInstance(TOKENS.JwtService, mockJwtService);
+		container.registerInstance(TOKENS.Logger, createMockLogger());
 
 		registerUseCase = container.resolve(RegisterUseCase);
 	});

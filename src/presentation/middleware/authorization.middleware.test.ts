@@ -4,9 +4,12 @@
  * including exact role match, higher-role access, insufficient permissions (403),
  * missing role (401), unknown roles, and multi-role argument behavior.
  */
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { Context, Next } from 'hono';
+import { container } from 'tsyringe';
 import { requireRole } from './authorization.middleware.js';
+import { TOKENS } from '../../lib/shared/di/tokens.js';
+import { createMockLogger } from '../../../tests/setup.js';
 
 function createMockContext(role?: string) {
 	const jsonMock = vi.fn((body: unknown, status: number) => ({ body, status }));
@@ -17,6 +20,7 @@ function createMockContext(role?: string) {
 	return {
 		get: getMock,
 		json: jsonMock,
+		req: { path: '/test', method: 'GET' },
 		_getJsonCall: () => jsonMock.mock.calls[0],
 	} as unknown as Context & {
 		_getJsonCall: () => [unknown, number];
@@ -29,6 +33,11 @@ function createMockNext(): Next {
 
 // Tests for the role hierarchy and permission enforcement
 describe('requireRole', () => {
+	beforeEach(() => {
+		container.clearInstances();
+		container.registerInstance(TOKENS.Logger, createMockLogger());
+	});
+
 	it('should return 401 when role is not set in context', async () => {
 		const ctx = createMockContext(undefined);
 		const next = createMockNext();

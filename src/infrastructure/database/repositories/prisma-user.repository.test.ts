@@ -11,6 +11,7 @@ import { container } from 'tsyringe';
 import { PrismaUserRepository } from './prisma-user.repository.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import { DatabaseError } from '../../../lib/errors/repository.errors.js';
+import { createMockLogger } from '../../../../tests/setup.js';
 
 /** Creates a mock PrismaClient with stubbed user and auth model methods. */
 function createMockPrismaClient() {
@@ -54,6 +55,7 @@ describe('PrismaUserRepository', () => {
 		container.clearInstances();
 		mockPrisma = createMockPrismaClient();
 		container.register(TOKENS.PrismaClient, { useValue: mockPrisma });
+		container.registerInstance(TOKENS.Logger, createMockLogger());
 		repository = container.resolve(PrismaUserRepository);
 	});
 

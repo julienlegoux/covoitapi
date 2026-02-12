@@ -7,6 +7,7 @@
 
 import { inject, injectable } from 'tsyringe';
 import { InscriptionNotFoundError } from '../../../lib/errors/domain.errors.js';
+import type { Logger } from '../../../lib/logging/logger.types.js';
 import type { InscriptionRepository } from '../../../domain/repositories/inscription.repository.js';
 import type { RepositoryError } from '../../../lib/errors/repository.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
@@ -33,10 +34,15 @@ type DeleteInscriptionError = InscriptionNotFoundError | RepositoryError;
  */
 @injectable()
 export class DeleteInscriptionUseCase {
+	private readonly logger: Logger;
+
 	constructor(
 		@inject(TOKENS.InscriptionRepository)
 		private readonly inscriptionRepository: InscriptionRepository,
-	) {}
+		@inject(TOKENS.Logger) logger: Logger,
+	) {
+		this.logger = logger.child({ useCase: 'DeleteInscriptionUseCase' });
+	}
 
 	/**
 	 * Deletes the inscription identified by the given UUID.
@@ -51,9 +57,14 @@ export class DeleteInscriptionUseCase {
 		}
 
 		if (!findResult.value) {
+			this.logger.warn('Inscription not found for deletion', { inscriptionId: id });
 			return err(new InscriptionNotFoundError(id));
 		}
 
-		return this.inscriptionRepository.delete(id);
+		const deleteResult = await this.inscriptionRepository.delete(id);
+		if (deleteResult.success) {
+			this.logger.info('Inscription deleted', { inscriptionId: id });
+		}
+		return deleteResult;
 	}
 }

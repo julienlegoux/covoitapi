@@ -11,6 +11,7 @@ import { ColorNotFoundError } from '../../../lib/errors/domain.errors.js';
 import type { ColorRepository } from '../../../domain/repositories/color.repository.js';
 import type { UpdateColorData } from '../../../domain/repositories/color.repository.js';
 import type { RepositoryError } from '../../../lib/errors/repository.errors.js';
+import type { Logger } from '../../../lib/logging/logger.types.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import type { Result } from '../../../lib/shared/types/result.js';
 import { err } from '../../../lib/shared/types/result.js';
@@ -39,10 +40,15 @@ type UpdateColorError = ColorNotFoundError | RepositoryError;
  */
 @injectable()
 export class UpdateColorUseCase {
+	private readonly logger: Logger;
+
 	constructor(
 		@inject(TOKENS.ColorRepository)
 		private readonly colorRepository: ColorRepository,
-	) {}
+		@inject(TOKENS.Logger) logger: Logger,
+	) {
+		this.logger = logger.child({ useCase: 'UpdateColorUseCase' });
+	}
 
 	/**
 	 * Applies a partial update to the color identified by UUID.
@@ -58,6 +64,7 @@ export class UpdateColorUseCase {
 		}
 
 		if (!findResult.value) {
+			this.logger.warn('Color not found for update', { colorId: input.id });
 			return err(new ColorNotFoundError(input.id));
 		}
 
@@ -69,6 +76,10 @@ export class UpdateColorUseCase {
 			updateData.hex = input.hex;
 		}
 
-		return this.colorRepository.update(input.id, updateData);
+		const result = await this.colorRepository.update(input.id, updateData);
+		if (result.success) {
+			this.logger.info('Color updated', { colorId: input.id });
+		}
+		return result;
 	}
 }

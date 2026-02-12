@@ -9,6 +9,7 @@
 import { inject, injectable } from 'tsyringe';
 import type { InscriptionEntity } from '../../../domain/entities/inscription.entity.js';
 import { TravelNotFoundError } from '../../../lib/errors/domain.errors.js';
+import type { Logger } from '../../../lib/logging/logger.types.js';
 import type { InscriptionRepository } from '../../../domain/repositories/inscription.repository.js';
 import type { TravelRepository } from '../../../domain/repositories/travel.repository.js';
 import type { RepositoryError } from '../../../lib/errors/repository.errors.js';
@@ -37,12 +38,17 @@ type ListRoutePassengersError = TravelNotFoundError | RepositoryError;
  */
 @injectable()
 export class ListRoutePassengersUseCase {
+	private readonly logger: Logger;
+
 	constructor(
 		@inject(TOKENS.InscriptionRepository)
 		private readonly inscriptionRepository: InscriptionRepository,
 		@inject(TOKENS.TravelRepository)
 		private readonly travelRepository: TravelRepository,
-	) {}
+		@inject(TOKENS.Logger) logger: Logger,
+	) {
+		this.logger = logger.child({ useCase: 'ListRoutePassengersUseCase' });
+	}
 
 	/**
 	 * Fetches a paginated list of passengers for the given travel.

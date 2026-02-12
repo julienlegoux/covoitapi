@@ -11,6 +11,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import {
 	createMockAuthRepository,
 	createMockJwtService,
+	createMockLogger,
 	createMockPasswordService,
 	createMockUserRepository,
 } from '../../../../tests/setup.js';
@@ -67,6 +68,7 @@ describe('LoginUseCase', () => {
 		container.registerInstance(TOKENS.UserRepository, mockUserRepository);
 		container.registerInstance(TOKENS.PasswordService, mockPasswordService);
 		container.registerInstance(TOKENS.JwtService, mockJwtService);
+		container.registerInstance(TOKENS.Logger, createMockLogger());
 
 		loginUseCase = container.resolve(LoginUseCase);
 	});

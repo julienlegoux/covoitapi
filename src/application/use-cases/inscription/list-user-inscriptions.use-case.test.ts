@@ -7,7 +7,7 @@
 
 import { container } from 'tsyringe';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { createMockInscriptionRepository, createMockUserRepository } from '../../../../tests/setup.js';
+import { createMockInscriptionRepository, createMockLogger, createMockUserRepository } from '../../../../tests/setup.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import { ok, err } from '../../../lib/shared/types/result.js';
 import { DatabaseError } from '../../../lib/errors/repository.errors.js';
@@ -26,6 +26,7 @@ describe('ListUserInscriptionsUseCase', () => {
 		mockUserRepo = createMockUserRepository();
 		container.registerInstance(TOKENS.InscriptionRepository, mockRepo);
 		container.registerInstance(TOKENS.UserRepository, mockUserRepo);
+		container.registerInstance(TOKENS.Logger, createMockLogger());
 		useCase = container.resolve(ListUserInscriptionsUseCase);
 	});
 

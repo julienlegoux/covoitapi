@@ -16,11 +16,11 @@ import type { PasswordService } from '../../../domain/services/password.service.
 import type { RepositoryError } from '../../../lib/errors/repository.errors.js';
 import type { PasswordError } from '../../../lib/errors/password.errors.js';
 import type { JwtError } from '../../../lib/errors/jwt.errors.js';
+import type { Logger } from '../../../lib/logging/logger.types.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import type { Result } from '../../../lib/shared/types/result.js';
 import { ok, err } from '../../../lib/shared/types/result.js';
 import type { RegisterSchemaType, AuthResponseType } from '../../schemas/auth.schema.js';
-import { logger } from '../../../lib/logging/logger.js';
 
 /**
  * Union of all possible error types returned by the registration use case.
@@ -50,6 +50,8 @@ export type RegisterError = UserAlreadyExistsError | RepositoryError | PasswordE
  */
 @injectable()
 export class RegisterUseCase {
+	private readonly logger: Logger;
+
 	constructor(
 		@inject(TOKENS.AuthRepository)
 		private readonly authRepository: AuthRepository,
@@ -59,7 +61,10 @@ export class RegisterUseCase {
 		private readonly emailService: EmailService,
 		@inject(TOKENS.JwtService)
 		private readonly jwtService: JwtService,
-	) {}
+		@inject(TOKENS.Logger) logger: Logger,
+	) {
+		this.logger = logger.child({ useCase: 'RegisterUseCase' });
+	}
 
 	/**
 	 * Executes the registration flow for a new user.
@@ -77,6 +82,7 @@ export class RegisterUseCase {
 		}
 
 		if (existsResult.value) {
+			this.logger.warn('Registration failed: email already exists', { email: input.email });
 			return err(new UserAlreadyExistsError(input.email));
 		}
 
@@ -100,7 +106,7 @@ export class RegisterUseCase {
 		// Send welcome email (don't fail registration if email fails)
 		const emailResult = await this.emailService.sendWelcomeEmail(auth.email, user.firstName ?? 'there');
 		if (!emailResult.success) {
-			logger.warn('Failed to send welcome email', {
+			this.logger.warn('Failed to send welcome email', {
 				userId: user.id,
 				email: auth.email,
 				errorCode: emailResult.error.code,
@@ -114,6 +120,7 @@ export class RegisterUseCase {
 			return tokenResult;
 		}
 
+		this.logger.info('User registered', { userId: user.id });
 		return ok({
 			userId: user.id,
 			token: tokenResult.value,

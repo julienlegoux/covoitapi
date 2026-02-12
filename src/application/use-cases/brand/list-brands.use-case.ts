@@ -9,6 +9,7 @@ import { inject, injectable } from 'tsyringe';
 import type { BrandEntity } from '../../../domain/entities/brand.entity.js';
 import type { BrandRepository } from '../../../domain/repositories/brand.repository.js';
 import type { RepositoryError } from '../../../lib/errors/repository.errors.js';
+import type { Logger } from '../../../lib/logging/logger.types.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import type { Result } from '../../../lib/shared/types/result.js';
 import { ok } from '../../../lib/shared/types/result.js';
@@ -25,10 +26,15 @@ import { type PaginationParams, type PaginatedResult, toSkipTake, buildPaginatio
  */
 @injectable()
 export class ListBrandsUseCase {
+	private readonly logger: Logger;
+
 	constructor(
 		@inject(TOKENS.BrandRepository)
 		private readonly brandRepository: BrandRepository,
-	) {}
+		@inject(TOKENS.Logger) logger: Logger,
+	) {
+		this.logger = logger.child({ useCase: 'ListBrandsUseCase' });
+	}
 
 	/**
 	 * Fetches a paginated page of brands.

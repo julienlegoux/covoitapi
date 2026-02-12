@@ -7,7 +7,7 @@
 
 import { container } from 'tsyringe';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { createMockUserRepository } from '../../../../tests/setup.js';
+import { createMockLogger, createMockUserRepository } from '../../../../tests/setup.js';
 import { UserNotFoundError } from '../../../lib/errors/domain.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import { ok, err } from '../../../lib/shared/types/result.js';
@@ -22,6 +22,7 @@ describe('AnonymizeUserUseCase', () => {
 	beforeEach(() => {
 		mockUserRepository = createMockUserRepository();
 		container.registerInstance(TOKENS.UserRepository, mockUserRepository);
+		container.registerInstance(TOKENS.Logger, createMockLogger());
 		useCase = container.resolve(AnonymizeUserUseCase);
 	});
 

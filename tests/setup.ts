@@ -2,9 +2,11 @@ import 'reflect-metadata';
 import type { Context, Next } from 'hono';
 import { container } from 'tsyringe';
 import { beforeEach, vi } from 'vitest';
+import { TOKENS } from '../src/lib/shared/di/tokens.js';
 
 beforeEach(() => {
 	container.clearInstances();
+	container.registerInstance(TOKENS.Logger, createMockLogger());
 });
 
 // ─── Repository Mocks ───
@@ -307,13 +309,15 @@ export function createMockDeleteColorUseCase() {
 // ─── Logger Mock ───
 
 export function createMockLogger() {
-	return {
+	const mockLogger = {
 		debug: vi.fn(),
 		info: vi.fn(),
 		warn: vi.fn(),
 		error: vi.fn(),
 		child: vi.fn(),
 	};
+	mockLogger.child.mockReturnValue(mockLogger);
+	return mockLogger;
 }
 
 // ─── Entity Data Factories ───

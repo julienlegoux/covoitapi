@@ -11,6 +11,7 @@ import { authMiddleware } from './auth.middleware.js';
 import { TOKENS } from '../../lib/shared/di/tokens.js';
 import { ok, err } from '../../lib/shared/types/result.js';
 import { TokenExpiredError, TokenInvalidError, TokenMalformedError } from '../../lib/errors/jwt.errors.js';
+import { createMockLogger } from '../../../tests/setup.js';
 
 function createMockContext(token?: string) {
 	const jsonMock = vi.fn((body, status) => ({ body, status }));
@@ -43,6 +44,7 @@ describe('authMiddleware', () => {
 
 	beforeEach(() => {
 		container.clearInstances();
+		container.registerInstance(TOKENS.Logger, createMockLogger());
 		mockJwtService = createMockJwtService();
 		container.register(TOKENS.JwtService, { useValue: mockJwtService });
 		mockNext = vi.fn().mockResolvedValue(undefined);
