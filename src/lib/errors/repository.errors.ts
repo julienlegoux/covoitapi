@@ -45,3 +45,18 @@ export class ConnectionError extends RepositoryError {
 		this.name = 'ConnectionError';
 	}
 }
+
+/**
+ * Thrown when a delete operation fails due to a foreign key constraint.
+ * This means the record is still referenced by other records and cannot be removed.
+ *
+ * @extends RepositoryError
+ * @param entity - The type of entity that could not be deleted (e.g. "brand").
+ * @param cause - The underlying Prisma/database error.
+ */
+export class RelationConstraintError extends RepositoryError {
+	constructor(entity: string, cause?: unknown) {
+		super(`Cannot delete ${entity} because it is still referenced by other records`, 'RELATION_CONSTRAINT', cause);
+		this.name = 'RelationConstraintError';
+	}
+}

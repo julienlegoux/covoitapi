@@ -106,6 +106,11 @@ export const ErrorCodes = {
 		httpStatus: 409,
 		category: 'domain',
 	},
+	RELATION_CONSTRAINT: {
+		code: 'RELATION_CONSTRAINT',
+		httpStatus: 409,
+		category: 'infrastructure',
+	},
 
 	// Infrastructure Errors - External service failures (typically 5xx)
 	DATABASE_ERROR: {
