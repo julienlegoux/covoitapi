@@ -112,6 +112,42 @@ export function createMockColorRepository() {
 	};
 }
 
+// ─── Cache Mocks ───
+
+export function createMockCacheService() {
+	return {
+		get: vi.fn().mockResolvedValue(null),
+		set: vi.fn().mockResolvedValue(undefined),
+		delete: vi.fn().mockResolvedValue(undefined),
+		deleteByPattern: vi.fn().mockResolvedValue(undefined),
+		isHealthy: vi.fn().mockResolvedValue(true),
+	};
+}
+
+export function createMockCacheConfig(overrides?: Partial<{
+	enabled: boolean;
+	keyPrefix: string;
+	ttl: Partial<Record<string, number>>;
+}>) {
+	return {
+		enabled: overrides?.enabled ?? true,
+		keyPrefix: overrides?.keyPrefix ?? 'test:',
+		ttl: {
+			brand: 3600,
+			color: 3600,
+			model: 1800,
+			city: 1800,
+			car: 600,
+			driver: 600,
+			user: 300,
+			auth: 300,
+			travel: 300,
+			inscription: 120,
+			...overrides?.ttl,
+		},
+	};
+}
+
 // ─── Service Mocks ───
 
 export function createMockPasswordService() {
