@@ -50,7 +50,7 @@ export class CachedModelRepository implements ModelRepository {
 
 	async create(data: CreateModelData): Promise<Result<ModelEntity, RepositoryError>> {
 		const result = await this.inner.create(data);
-		if (this.config.enabled) {
+		if (this.config.enabled && result.success) {
 			await invalidatePatterns(this.cache, this.config.keyPrefix, ['model:*'], this.logger);
 		}
 		return result;

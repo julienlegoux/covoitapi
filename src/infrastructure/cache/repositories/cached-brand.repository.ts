@@ -45,7 +45,7 @@ export class CachedBrandRepository implements BrandRepository {
 
 	async create(data: CreateBrandData): Promise<Result<BrandEntity, RepositoryError>> {
 		const result = await this.inner.create(data);
-		if (this.config.enabled) {
+		if (this.config.enabled && result.success) {
 			await invalidatePatterns(this.cache, this.config.keyPrefix, ['brand:*'], this.logger);
 		}
 		return result;
@@ -53,7 +53,7 @@ export class CachedBrandRepository implements BrandRepository {
 
 	async delete(id: string): Promise<Result<void, RepositoryError>> {
 		const result = await this.inner.delete(id);
-		if (this.config.enabled) {
+		if (this.config.enabled && result.success) {
 			await invalidatePatterns(this.cache, this.config.keyPrefix, ['brand:*'], this.logger);
 		}
 		return result;

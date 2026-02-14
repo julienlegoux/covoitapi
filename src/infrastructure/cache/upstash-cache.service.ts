@@ -54,7 +54,11 @@ export class UpstashCacheService implements CacheService {
 			cursor = result[0];
 			const keys = result[1];
 			if (keys.length > 0) {
-				await this.redis.del(...keys);
+				const pipeline = this.redis.pipeline();
+				for (const key of keys) {
+					pipeline.del(key);
+				}
+				await pipeline.exec();
 			}
 		} while (cursor !== '0');
 	}

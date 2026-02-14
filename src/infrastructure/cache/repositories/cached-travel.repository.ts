@@ -50,7 +50,7 @@ export class CachedTravelRepository implements TravelRepository {
 
 	async create(data: CreateTravelData): Promise<Result<TravelEntity, RepositoryError>> {
 		const result = await this.inner.create(data);
-		if (this.config.enabled) {
+		if (this.config.enabled && result.success) {
 			await invalidatePatterns(this.cache, this.config.keyPrefix, ['travel:*'], this.logger);
 		}
 		return result;
@@ -58,8 +58,8 @@ export class CachedTravelRepository implements TravelRepository {
 
 	async delete(id: string): Promise<Result<void, RepositoryError>> {
 		const result = await this.inner.delete(id);
-		if (this.config.enabled) {
-			await invalidatePatterns(this.cache, this.config.keyPrefix, ['travel:*'], this.logger);
+		if (this.config.enabled && result.success) {
+			await invalidatePatterns(this.cache, this.config.keyPrefix, ['travel:*', 'inscription:*'], this.logger);
 		}
 		return result;
 	}

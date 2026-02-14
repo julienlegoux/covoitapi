@@ -15,7 +15,7 @@ import type { Logger } from '../../../lib/logging/logger.types.js';
 import { TOKENS, PRISMA_TOKENS } from '../../../lib/shared/di/tokens.js';
 import type { Result } from '../../../lib/shared/types/result.js';
 import type { CacheConfig } from '../cache.config.js';
-import { cacheAside, invalidatePatterns } from '../cache.utils.js';
+import { invalidatePatterns } from '../cache.utils.js';
 
 @injectable()
 export class CachedAuthRepository implements AuthRepository {
@@ -36,13 +36,11 @@ export class CachedAuthRepository implements AuthRepository {
 	}
 
 	async findByEmail(email: string): Promise<Result<AuthEntity | null, RepositoryError>> {
-		if (!this.config.enabled) return this.inner.findByEmail(email);
-		return cacheAside(this.cache, this.key('findByEmail', email), this.config.ttl.auth, () => this.inner.findByEmail(email), this.logger);
+		return this.inner.findByEmail(email);
 	}
 
 	async existsByEmail(email: string): Promise<Result<boolean, RepositoryError>> {
-		if (!this.config.enabled) return this.inner.existsByEmail(email);
-		return cacheAside(this.cache, this.key('existsByEmail', email), this.config.ttl.auth, () => this.inner.existsByEmail(email), this.logger);
+		return this.inner.existsByEmail(email);
 	}
 
 	async createWithUser(
@@ -50,7 +48,7 @@ export class CachedAuthRepository implements AuthRepository {
 		userData: Omit<CreateUserData, 'authRefId'>,
 	): Promise<Result<{ auth: AuthEntity; user: PublicUserEntity }, RepositoryError>> {
 		const result = await this.inner.createWithUser(authData, userData);
-		if (this.config.enabled) {
+		if (this.config.enabled && result.success) {
 			await invalidatePatterns(this.cache, this.config.keyPrefix, ['auth:*', 'user:*'], this.logger);
 		}
 		return result;
@@ -58,7 +56,7 @@ export class CachedAuthRepository implements AuthRepository {
 
 	async updateRole(refId: number, role: string): Promise<Result<void, RepositoryError>> {
 		const result = await this.inner.updateRole(refId, role);
-		if (this.config.enabled) {
+		if (this.config.enabled && result.success) {
 			await invalidatePatterns(this.cache, this.config.keyPrefix, ['auth:*'], this.logger);
 		}
 		return result;

@@ -50,7 +50,7 @@ export class CachedColorRepository implements ColorRepository {
 
 	async create(data: CreateColorData): Promise<Result<ColorEntity, RepositoryError>> {
 		const result = await this.inner.create(data);
-		if (this.config.enabled) {
+		if (this.config.enabled && result.success) {
 			await invalidatePatterns(this.cache, this.config.keyPrefix, ['color:*'], this.logger);
 		}
 		return result;
@@ -58,7 +58,7 @@ export class CachedColorRepository implements ColorRepository {
 
 	async update(id: string, data: UpdateColorData): Promise<Result<ColorEntity, RepositoryError>> {
 		const result = await this.inner.update(id, data);
-		if (this.config.enabled) {
+		if (this.config.enabled && result.success) {
 			await invalidatePatterns(this.cache, this.config.keyPrefix, ['color:*'], this.logger);
 		}
 		return result;
@@ -66,7 +66,7 @@ export class CachedColorRepository implements ColorRepository {
 
 	async delete(id: string): Promise<Result<void, RepositoryError>> {
 		const result = await this.inner.delete(id);
-		if (this.config.enabled) {
+		if (this.config.enabled && result.success) {
 			await invalidatePatterns(this.cache, this.config.keyPrefix, ['color:*'], this.logger);
 		}
 		return result;

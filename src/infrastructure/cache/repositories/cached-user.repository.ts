@@ -51,7 +51,7 @@ export class CachedUserRepository implements UserRepository {
 
 	async create(data: CreateUserData): Promise<Result<PublicUserEntity, RepositoryError>> {
 		const result = await this.inner.create(data);
-		if (this.config.enabled) {
+		if (this.config.enabled && result.success) {
 			await invalidatePatterns(this.cache, this.config.keyPrefix, ['user:*'], this.logger);
 		}
 		return result;
@@ -59,7 +59,7 @@ export class CachedUserRepository implements UserRepository {
 
 	async update(id: string, data: UpdateUserData): Promise<Result<PublicUserEntity, RepositoryError>> {
 		const result = await this.inner.update(id, data);
-		if (this.config.enabled) {
+		if (this.config.enabled && result.success) {
 			await invalidatePatterns(this.cache, this.config.keyPrefix, ['user:*'], this.logger);
 		}
 		return result;
@@ -67,7 +67,7 @@ export class CachedUserRepository implements UserRepository {
 
 	async delete(id: string): Promise<Result<void, RepositoryError>> {
 		const result = await this.inner.delete(id);
-		if (this.config.enabled) {
+		if (this.config.enabled && result.success) {
 			await invalidatePatterns(this.cache, this.config.keyPrefix, ['user:*'], this.logger);
 		}
 		return result;
@@ -75,7 +75,7 @@ export class CachedUserRepository implements UserRepository {
 
 	async anonymize(id: string): Promise<Result<void, RepositoryError>> {
 		const result = await this.inner.anonymize(id);
-		if (this.config.enabled) {
+		if (this.config.enabled && result.success) {
 			await invalidatePatterns(this.cache, this.config.keyPrefix, ['user:*', 'auth:*', 'driver:*', 'inscription:*'], this.logger);
 		}
 		return result;

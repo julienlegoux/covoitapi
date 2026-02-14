@@ -66,7 +66,7 @@ container.registerInstance(TOKENS.Logger, logger);
 
 // Register cache configuration and service
 container.registerInstance(TOKENS.CacheConfig, createCacheConfig());
-container.register(TOKENS.CacheService, { useClass: UpstashCacheService });
+container.registerSingleton(TOKENS.CacheService, UpstashCacheService);
 
 // Register Prisma repository implementations (PRISMA_TOKENS → raw DB access)
 container.register(PRISMA_TOKENS.AuthRepository, { useClass: PrismaAuthRepository });

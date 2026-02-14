@@ -40,7 +40,7 @@ export class CachedDriverRepository implements DriverRepository {
 
 	async create(data: CreateDriverData): Promise<Result<DriverEntity, RepositoryError>> {
 		const result = await this.inner.create(data);
-		if (this.config.enabled) {
+		if (this.config.enabled && result.success) {
 			await invalidatePatterns(this.cache, this.config.keyPrefix, ['driver:*'], this.logger);
 		}
 		return result;

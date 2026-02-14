@@ -67,7 +67,7 @@ export class CachedInscriptionRepository implements InscriptionRepository {
 
 	async create(data: CreateInscriptionData): Promise<Result<InscriptionEntity, RepositoryError>> {
 		const result = await this.inner.create(data);
-		if (this.config.enabled) {
+		if (this.config.enabled && result.success) {
 			await invalidatePatterns(this.cache, this.config.keyPrefix, ['inscription:*', 'travel:*'], this.logger);
 		}
 		return result;
@@ -75,7 +75,7 @@ export class CachedInscriptionRepository implements InscriptionRepository {
 
 	async delete(id: string): Promise<Result<void, RepositoryError>> {
 		const result = await this.inner.delete(id);
-		if (this.config.enabled) {
+		if (this.config.enabled && result.success) {
 			await invalidatePatterns(this.cache, this.config.keyPrefix, ['inscription:*', 'travel:*'], this.logger);
 		}
 		return result;

@@ -50,7 +50,7 @@ export class CachedCityRepository implements CityRepository {
 
 	async create(data: CreateCityData): Promise<Result<CityEntity, RepositoryError>> {
 		const result = await this.inner.create(data);
-		if (this.config.enabled) {
+		if (this.config.enabled && result.success) {
 			await invalidatePatterns(this.cache, this.config.keyPrefix, ['city:*'], this.logger);
 		}
 		return result;
@@ -58,7 +58,7 @@ export class CachedCityRepository implements CityRepository {
 
 	async delete(id: string): Promise<Result<void, RepositoryError>> {
 		const result = await this.inner.delete(id);
-		if (this.config.enabled) {
+		if (this.config.enabled && result.success) {
 			await invalidatePatterns(this.cache, this.config.keyPrefix, ['city:*'], this.logger);
 		}
 		return result;
