@@ -26,7 +26,7 @@ export {
 	InscriptionNotFoundError,
 	InvalidCredentialsError,
 	NoSeatsAvailableError,
-	TravelNotFoundError,
+	TripNotFoundError,
 	UserAlreadyExistsError,
 	UserNotFoundError,
 } from './domain.errors.js';

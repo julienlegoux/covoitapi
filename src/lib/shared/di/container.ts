@@ -26,7 +26,7 @@ import { PrismaCityRepository } from '../../../infrastructure/database/repositor
 import { PrismaDriverRepository } from '../../../infrastructure/database/repositories/prisma-driver.repository.js';
 import { PrismaInscriptionRepository } from '../../../infrastructure/database/repositories/prisma-inscription.repository.js';
 import { PrismaModelRepository } from '../../../infrastructure/database/repositories/prisma-model.repository.js';
-import { PrismaTravelRepository } from '../../../infrastructure/database/repositories/prisma-travel.repository.js';
+import { PrismaTripRepository } from '../../../infrastructure/database/repositories/prisma-trip.repository.js';
 import { PrismaColorRepository } from '../../../infrastructure/database/repositories/prisma-color.repository.js';
 import { PrismaAuthRepository } from '../../../infrastructure/database/repositories/prisma-auth.repository.js';
 import { PrismaUserRepository } from '../../../infrastructure/database/repositories/prisma-user.repository.js';
@@ -38,7 +38,7 @@ import { CachedCityRepository } from '../../../infrastructure/cache/repositories
 import { CachedModelRepository } from '../../../infrastructure/cache/repositories/cached-model.repository.js';
 import { CachedCarRepository } from '../../../infrastructure/cache/repositories/cached-car.repository.js';
 import { CachedDriverRepository } from '../../../infrastructure/cache/repositories/cached-driver.repository.js';
-import { CachedTravelRepository } from '../../../infrastructure/cache/repositories/cached-travel.repository.js';
+import { CachedTripRepository } from '../../../infrastructure/cache/repositories/cached-trip.repository.js';
 import { CachedInscriptionRepository } from '../../../infrastructure/cache/repositories/cached-inscription.repository.js';
 import { UpstashCacheService } from '../../../infrastructure/cache/upstash-cache.service.js';
 import { createCacheConfig } from '../../../infrastructure/cache/cache.config.js';
@@ -76,7 +76,7 @@ container.register(PRISMA_TOKENS.CityRepository, { useClass: PrismaCityRepositor
 container.register(PRISMA_TOKENS.ModelRepository, { useClass: PrismaModelRepository });
 container.register(PRISMA_TOKENS.CarRepository, { useClass: PrismaCarRepository });
 container.register(PRISMA_TOKENS.DriverRepository, { useClass: PrismaDriverRepository });
-container.register(PRISMA_TOKENS.TravelRepository, { useClass: PrismaTravelRepository });
+container.register(PRISMA_TOKENS.TripRepository, { useClass: PrismaTripRepository });
 container.register(PRISMA_TOKENS.InscriptionRepository, { useClass: PrismaInscriptionRepository });
 container.register(PRISMA_TOKENS.ColorRepository, { useClass: PrismaColorRepository });
 
@@ -88,7 +88,7 @@ container.register(TOKENS.CityRepository, { useClass: CachedCityRepository });
 container.register(TOKENS.ModelRepository, { useClass: CachedModelRepository });
 container.register(TOKENS.CarRepository, { useClass: CachedCarRepository });
 container.register(TOKENS.DriverRepository, { useClass: CachedDriverRepository });
-container.register(TOKENS.TravelRepository, { useClass: CachedTravelRepository });
+container.register(TOKENS.TripRepository, { useClass: CachedTripRepository });
 container.register(TOKENS.InscriptionRepository, { useClass: CachedInscriptionRepository });
 container.register(TOKENS.ColorRepository, { useClass: CachedColorRepository });
 

@@ -19,7 +19,7 @@ describe('DeleteInscriptionUseCase', () => {
 	let useCase: DeleteInscriptionUseCase;
 	let mockRepo: ReturnType<typeof createMockInscriptionRepository>;
 
-	const inscription = { id: 'ins-1', refId: 1, createdAt: new Date(), userRefId: 1, routeRefId: 1 };
+	const inscription = { id: 'ins-1', refId: 1, createdAt: new Date(), userRefId: 1, tripRefId: 1 };
 
 	beforeEach(() => {
 		mockRepo = createMockInscriptionRepository();

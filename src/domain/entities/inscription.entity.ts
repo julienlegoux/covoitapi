@@ -1,7 +1,7 @@
 /**
  * @module inscription.entity
  * Defines the inscription (booking) domain entity and its associated types.
- * An Inscription represents a passenger's registration for a specific travel route.
+ * An Inscription represents a passenger's registration for a specific trip.
  */
 
 /**
@@ -11,7 +11,7 @@
  * @property refId - Auto-incremented integer, used internally as a foreign key reference.
  * @property createdAt - Timestamp when the inscription was created.
  * @property userRefId - Integer FK referencing the passenger's User refId.
- * @property routeRefId - Integer FK referencing the Travel (route) refId.
+ * @property tripRefId - Integer FK referencing the Trip refId.
  * @property status - Current status of the inscription (e.g. "PENDING", "CONFIRMED", "CANCELLED").
  */
 export type InscriptionEntity = {
@@ -19,12 +19,12 @@ export type InscriptionEntity = {
 	refId: number;
 	createdAt: Date;
 	userRefId: number;
-	routeRefId: number;
+	tripRefId: number;
 	status: string;
 };
 
 /**
  * Data required to create a new inscription.
- * Only the user and route references are needed; status defaults on creation.
+ * Only the user and trip references are needed; status defaults on creation.
  */
-export type CreateInscriptionData = Pick<InscriptionEntity, 'userRefId' | 'routeRefId'>;
+export type CreateInscriptionData = Pick<InscriptionEntity, 'userRefId' | 'tripRefId'>;

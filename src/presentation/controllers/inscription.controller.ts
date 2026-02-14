@@ -1,17 +1,17 @@
 /**
  * @module InscriptionController
- * Handles passenger inscriptions (sign-ups) to carpooling travels.
- * Provides listing of all inscriptions, per-user inscriptions, per-route passengers,
+ * Handles passenger inscriptions (sign-ups) to carpooling trips.
+ * Provides listing of all inscriptions, per-user inscriptions, per-trip passengers,
  * creation, and deletion. All endpoints require authentication with USER+ role.
  *
  * Some handlers are mounted as nested resource routes in the main router
- * (e.g. GET /api/users/:id/inscriptions, GET /api/travels/:id/passengers).
+ * (e.g. GET /api/users/:id/inscriptions, GET /api/trips/:id/passengers).
  */
 import type { Context } from 'hono';
 import { CreateInscriptionUseCase } from '../../application/use-cases/inscription/create-inscription.use-case.js';
 import { DeleteInscriptionUseCase } from '../../application/use-cases/inscription/delete-inscription.use-case.js';
 import { ListInscriptionsUseCase } from '../../application/use-cases/inscription/list-inscriptions.use-case.js';
-import { ListRoutePassengersUseCase } from '../../application/use-cases/inscription/list-route-passengers.use-case.js';
+import { ListTripPassengersUseCase } from '../../application/use-cases/inscription/list-trip-passengers.use-case.js';
 import { ListUserInscriptionsUseCase } from '../../application/use-cases/inscription/list-user-inscriptions.use-case.js';
 import { container } from '../../lib/shared/di/container.js';
 import { paginationSchema } from '../../lib/shared/utils/pagination.util.js';
@@ -72,27 +72,27 @@ export async function listUserInscriptions(c: Context): Promise<Response> {
 }
 
 /**
- * Lists all passengers inscribed to a specific travel/route with pagination.
+ * Lists all passengers inscribed to a specific trip with pagination.
  *
- * **GET /api/travels/:id/passengers** -- Auth required, USER+
+ * **GET /api/trips/:id/passengers** -- Auth required, USER+
  *
- * @param c - Hono request context with `id` route parameter (travel UUID)
+ * @param c - Hono request context with `id` route parameter (trip UUID)
  *            and optional `page`/`limit` query params
  * @returns 200 with `{ success: true, data: { data: Passenger[], meta: PaginationMeta } }`
  */
-export async function listRoutePassengers(c: Context): Promise<Response> {
-	const routeId = uuidSchema.parse(c.req.param('id'));
+export async function listTripPassengers(c: Context): Promise<Response> {
+	const tripId = uuidSchema.parse(c.req.param('id'));
 	const pagination = paginationSchema.parse({
 		page: c.req.query('page'),
 		limit: c.req.query('limit'),
 	});
-	const useCase = container.resolve(ListRoutePassengersUseCase);
-	const result = await useCase.execute(routeId, pagination);
+	const useCase = container.resolve(ListTripPassengersUseCase);
+	const result = await useCase.execute(tripId, pagination);
 	return resultToResponse(c, result);
 }
 
 /**
- * Creates a new inscription (signs up the authenticated user for a travel).
+ * Creates a new inscription (signs up the authenticated user for a trip).
  *
  * **POST /api/inscriptions** -- Auth required, USER+
  *
@@ -101,10 +101,10 @@ export async function listRoutePassengers(c: Context): Promise<Response> {
  *
  * @param c - Hono request context with JSON body and `userId` set on context
  * @returns 201 with `{ success: true, data: Inscription }` on success,
- *          or an error response (e.g. 404 TRAVEL_NOT_FOUND).
+ *          or an error response (e.g. 404 TRIP_NOT_FOUND).
  *          Throws ZodError on invalid input.
  *
- * Request body: `{ travelId: string }`
+ * Request body: `{ tripId: string }`
  */
 export async function createInscription(c: Context): Promise<Response> {
 	const body = await c.req.json();

@@ -1,5 +1,5 @@
 /**
- * @file Unit tests for the PrismaTravelRepository.
+ * @file Unit tests for the PrismaTripRepository.
  *
  * Tests all 5 methods: findAll, findById, findByFilters, create, delete.
  * Each method is tested for success and DB error propagation.
@@ -7,14 +7,14 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { container } from 'tsyringe';
-import { PrismaTravelRepository } from './prisma-travel.repository.js';
+import { PrismaTripRepository } from './prisma-trip.repository.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import { DatabaseError } from '../../../lib/errors/repository.errors.js';
 import { createMockLogger } from '../../../../tests/setup.js';
 
 function createMockPrisma() {
     return {
-        travel: {
+        trip: {
             findUnique: vi.fn(),
             findMany: vi.fn(),
             create: vi.fn(),
@@ -24,24 +24,24 @@ function createMockPrisma() {
     };
 }
 
-describe('PrismaTravelRepository', () => {
-    let repository: PrismaTravelRepository;
+describe('PrismaTripRepository', () => {
+    let repository: PrismaTripRepository;
     let mockPrisma: ReturnType<typeof createMockPrisma>;
 
-    const mockTravel = { id: 'travel-1', kms: 150, seats: 3, driverRefId: 1, carRefId: 1 };
+    const mockTrip = { id: 'trip-1', kms: 150, seats: 3, driverRefId: 1, carRefId: 1 };
 
     beforeEach(() => {
         container.clearInstances();
         mockPrisma = createMockPrisma();
         container.register(TOKENS.PrismaClient, { useValue: mockPrisma });
         container.registerInstance(TOKENS.Logger, createMockLogger());
-        repository = container.resolve(PrismaTravelRepository);
+        repository = container.resolve(PrismaTripRepository);
     });
 
     describe('findAll()', () => {
         it('should return ok with data and total', async () => {
-            mockPrisma.travel.findMany.mockResolvedValue([mockTravel]);
-            mockPrisma.travel.count.mockResolvedValue(1);
+            mockPrisma.trip.findMany.mockResolvedValue([mockTrip]);
+            mockPrisma.trip.count.mockResolvedValue(1);
 
             const result = await repository.findAll();
 
@@ -53,16 +53,16 @@ describe('PrismaTravelRepository', () => {
         });
 
         it('should pass pagination params', async () => {
-            mockPrisma.travel.findMany.mockResolvedValue([]);
-            mockPrisma.travel.count.mockResolvedValue(0);
+            mockPrisma.trip.findMany.mockResolvedValue([]);
+            mockPrisma.trip.count.mockResolvedValue(0);
 
             await repository.findAll({ skip: 0, take: 10 });
 
-            expect(mockPrisma.travel.findMany).toHaveBeenCalledWith(expect.objectContaining({ skip: 0, take: 10 }));
+            expect(mockPrisma.trip.findMany).toHaveBeenCalledWith(expect.objectContaining({ skip: 0, take: 10 }));
         });
 
         it('should return err(DatabaseError) on failure', async () => {
-            mockPrisma.travel.findMany.mockRejectedValue(new Error('DB error'));
+            mockPrisma.trip.findMany.mockRejectedValue(new Error('DB error'));
 
             const result = await repository.findAll();
 
@@ -74,22 +74,22 @@ describe('PrismaTravelRepository', () => {
     });
 
     describe('findById()', () => {
-        it('should return ok(travel) when found', async () => {
-            mockPrisma.travel.findUnique.mockResolvedValue(mockTravel);
+        it('should return ok(trip) when found', async () => {
+            mockPrisma.trip.findUnique.mockResolvedValue(mockTrip);
 
-            const result = await repository.findById('travel-1');
+            const result = await repository.findById('trip-1');
 
             expect(result.success).toBe(true);
             if (result.success) {
-                expect(result.value).toEqual(mockTravel);
+                expect(result.value).toEqual(mockTrip);
             }
-            expect(mockPrisma.travel.findUnique).toHaveBeenCalledWith(expect.objectContaining({
-                where: { id: 'travel-1' },
+            expect(mockPrisma.trip.findUnique).toHaveBeenCalledWith(expect.objectContaining({
+                where: { id: 'trip-1' },
             }));
         });
 
         it('should return ok(null) when not found', async () => {
-            mockPrisma.travel.findUnique.mockResolvedValue(null);
+            mockPrisma.trip.findUnique.mockResolvedValue(null);
 
             const result = await repository.findById('non-existent');
 
@@ -100,9 +100,9 @@ describe('PrismaTravelRepository', () => {
         });
 
         it('should return err(DatabaseError) on failure', async () => {
-            mockPrisma.travel.findUnique.mockRejectedValue(new Error('DB error'));
+            mockPrisma.trip.findUnique.mockRejectedValue(new Error('DB error'));
 
-            const result = await repository.findById('travel-1');
+            const result = await repository.findById('trip-1');
 
             expect(result.success).toBe(false);
             if (!result.success) {
@@ -112,8 +112,8 @@ describe('PrismaTravelRepository', () => {
     });
 
     describe('findByFilters()', () => {
-        it('should return ok(travels) with no filters', async () => {
-            mockPrisma.travel.findMany.mockResolvedValue([mockTravel]);
+        it('should return ok(trips) with no filters', async () => {
+            mockPrisma.trip.findMany.mockResolvedValue([mockTrip]);
 
             const result = await repository.findByFilters({});
 
@@ -124,38 +124,39 @@ describe('PrismaTravelRepository', () => {
         });
 
         it('should build city filter conditions for departure city', async () => {
-            mockPrisma.travel.findMany.mockResolvedValue([]);
+            mockPrisma.trip.findMany.mockResolvedValue([]);
 
             await repository.findByFilters({ departureCity: 'Paris' });
 
-            expect(mockPrisma.travel.findMany).toHaveBeenCalledWith(expect.objectContaining({
+            expect(mockPrisma.trip.findMany).toHaveBeenCalledWith(expect.objectContaining({
                 where: expect.objectContaining({
-                    AND: expect.arrayContaining([
-                        expect.objectContaining({
-                            cities: { some: { type: 'DEPARTURE', city: { cityName: 'Paris' } } },
-                        }),
-                    ]),
+                    cities: {
+                        some: {
+                            city: { cityName: { contains: 'Paris', mode: 'insensitive' } },
+                            type: 'DEPARTURE',
+                        },
+                    },
                 }),
             }));
         });
 
         it('should build date filter conditions', async () => {
-            mockPrisma.travel.findMany.mockResolvedValue([]);
+            mockPrisma.trip.findMany.mockResolvedValue([]);
 
             await repository.findByFilters({ date: new Date('2025-06-15') });
 
-            expect(mockPrisma.travel.findMany).toHaveBeenCalledWith(expect.objectContaining({
+            expect(mockPrisma.trip.findMany).toHaveBeenCalledWith(expect.objectContaining({
                 where: expect.objectContaining({
-                    dateRoute: expect.objectContaining({
+                    dateTrip: expect.objectContaining({
                         gte: expect.any(Date),
-                        lte: expect.any(Date),
+                        lt: expect.any(Date),
                     }),
                 }),
             }));
         });
 
         it('should return err(DatabaseError) on failure', async () => {
-            mockPrisma.travel.findMany.mockRejectedValue(new Error('DB error'));
+            mockPrisma.trip.findMany.mockRejectedValue(new Error('DB error'));
 
             const result = await repository.findByFilters({});
 
@@ -167,11 +168,11 @@ describe('PrismaTravelRepository', () => {
     });
 
     describe('create()', () => {
-        it('should return ok(travel) on success', async () => {
-            mockPrisma.travel.create.mockResolvedValue(mockTravel);
+        it('should return ok(trip) on success', async () => {
+            mockPrisma.trip.create.mockResolvedValue(mockTrip);
 
             const result = await repository.create({
-                dateRoute: new Date('2025-06-15'),
+                dateTrip: new Date('2025-06-15'),
                 kms: 150,
                 seats: 3,
                 driverRefId: 1,
@@ -180,15 +181,15 @@ describe('PrismaTravelRepository', () => {
 
             expect(result.success).toBe(true);
             if (result.success) {
-                expect(result.value).toEqual(mockTravel);
+                expect(result.value).toEqual(mockTrip);
             }
         });
 
         it('should pass city refs as nested create', async () => {
-            mockPrisma.travel.create.mockResolvedValue(mockTravel);
+            mockPrisma.trip.create.mockResolvedValue(mockTrip);
 
             await repository.create({
-                dateRoute: new Date('2025-06-15'),
+                dateTrip: new Date('2025-06-15'),
                 kms: 150,
                 seats: 3,
                 driverRefId: 1,
@@ -196,7 +197,7 @@ describe('PrismaTravelRepository', () => {
                 cityRefIds: [10, 20],
             });
 
-            expect(mockPrisma.travel.create).toHaveBeenCalledWith({
+            expect(mockPrisma.trip.create).toHaveBeenCalledWith(expect.objectContaining({
                 data: expect.objectContaining({
                     cities: {
                         create: [
@@ -205,14 +206,14 @@ describe('PrismaTravelRepository', () => {
                         ],
                     },
                 }),
-            });
+            }));
         });
 
         it('should return err(DatabaseError) on failure', async () => {
-            mockPrisma.travel.create.mockRejectedValue(new Error('Create failed'));
+            mockPrisma.trip.create.mockRejectedValue(new Error('Create failed'));
 
             const result = await repository.create({
-                dateRoute: new Date('2025-06-15'),
+                dateTrip: new Date('2025-06-15'),
                 kms: 150,
                 seats: 3,
                 driverRefId: 1,
@@ -228,18 +229,18 @@ describe('PrismaTravelRepository', () => {
 
     describe('delete()', () => {
         it('should return ok(undefined) on success', async () => {
-            mockPrisma.travel.delete.mockResolvedValue({});
+            mockPrisma.trip.delete.mockResolvedValue({});
 
-            const result = await repository.delete('travel-1');
+            const result = await repository.delete('trip-1');
 
             expect(result.success).toBe(true);
-            expect(mockPrisma.travel.delete).toHaveBeenCalledWith({ where: { id: 'travel-1' } });
+            expect(mockPrisma.trip.delete).toHaveBeenCalledWith({ where: { id: 'trip-1' } });
         });
 
         it('should return err(DatabaseError) on failure', async () => {
-            mockPrisma.travel.delete.mockRejectedValue(new Error('Delete failed'));
+            mockPrisma.trip.delete.mockRejectedValue(new Error('Delete failed'));
 
-            const result = await repository.delete('travel-1');
+            const result = await repository.delete('trip-1');
 
             expect(result.success).toBe(false);
             if (!result.success) {

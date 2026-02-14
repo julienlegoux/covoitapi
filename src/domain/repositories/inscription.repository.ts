@@ -1,8 +1,8 @@
 /**
  * @module inscription.repository
  * Defines the inscription (booking) repository interface.
- * This contract abstracts persistence operations for passenger inscriptions on travel routes,
- * including paginated listing, lookup by user/route, duplicate checking, and capacity counting.
+ * This contract abstracts persistence operations for passenger inscriptions on trips,
+ * including paginated listing, lookup by user/trip, duplicate checking, and capacity counting.
  */
 
 import type { Result } from '../../lib/shared/types/result.js';
@@ -32,11 +32,11 @@ export interface InscriptionRepository {
 	findByUserRefId(userRefId: number): Promise<Result<InscriptionEntity[], RepositoryError>>;
 
 	/**
-	 * Retrieves all inscriptions for a specific route.
-	 * @param routeRefId - The integer refId of the travel route.
-	 * @returns An array of InscriptionEntity records for the route.
+	 * Retrieves all inscriptions for a specific trip.
+	 * @param tripRefId - The integer refId of the trip.
+	 * @returns An array of InscriptionEntity records for the trip.
 	 */
-	findByRouteRefId(routeRefId: number): Promise<Result<InscriptionEntity[], RepositoryError>>;
+	findByTripRefId(tripRefId: number): Promise<Result<InscriptionEntity[], RepositoryError>>;
 
 	/**
 	 * Retrieves all inscriptions for a user, identified by their UUID.
@@ -47,12 +47,12 @@ export interface InscriptionRepository {
 	findByUserId(userId: string): Promise<Result<InscriptionEntity[], RepositoryError>>;
 
 	/**
-	 * Retrieves all inscriptions for a travel, identified by its UUID.
-	 * Uses Prisma relation filter to avoid resolving the travel UUID to refId.
-	 * @param travelId - The UUID of the travel.
-	 * @returns An array of InscriptionEntity records for the travel.
+	 * Retrieves all inscriptions for a trip, identified by its UUID.
+	 * Uses Prisma relation filter to avoid resolving the trip UUID to refId.
+	 * @param tripId - The UUID of the trip.
+	 * @returns An array of InscriptionEntity records for the trip.
 	 */
-	findByTravelId(travelId: string): Promise<Result<InscriptionEntity[], RepositoryError>>;
+	findByTripId(tripId: string): Promise<Result<InscriptionEntity[], RepositoryError>>;
 
 	/**
 	 * Finds an inscription by its UUID and verifies it belongs to the given user.
@@ -64,8 +64,8 @@ export interface InscriptionRepository {
 	findByIdAndUserId(id: string, userId: string): Promise<Result<InscriptionEntity | null, RepositoryError>>;
 
 	/**
-	 * Creates a new inscription (books a passenger on a route).
-	 * @param data - The user and route references for the inscription.
+	 * Creates a new inscription (books a passenger on a trip).
+	 * @param data - The user and trip references for the inscription.
 	 * @returns The newly created InscriptionEntity.
 	 */
 	create(data: CreateInscriptionData): Promise<Result<InscriptionEntity, RepositoryError>>;
@@ -78,19 +78,19 @@ export interface InscriptionRepository {
 	delete(id: string): Promise<Result<void, RepositoryError>>;
 
 	/**
-	 * Checks whether a user is already inscribed on a specific route.
+	 * Checks whether a user is already inscribed on a specific trip.
 	 * Used to prevent duplicate bookings.
 	 * @param userRefId - The integer refId of the user.
-	 * @param routeRefId - The integer refId of the travel route.
+	 * @param tripRefId - The integer refId of the trip.
 	 * @returns True if the inscription already exists.
 	 */
-	existsByUserAndRoute(userRefId: number, routeRefId: number): Promise<Result<boolean, RepositoryError>>;
+	existsByUserAndTrip(userRefId: number, tripRefId: number): Promise<Result<boolean, RepositoryError>>;
 
 	/**
-	 * Counts the number of inscriptions for a given route.
+	 * Counts the number of inscriptions for a given trip.
 	 * Used to check seat availability before booking.
-	 * @param routeRefId - The integer refId of the travel route.
-	 * @returns The count of inscriptions on the route.
+	 * @param tripRefId - The integer refId of the trip.
+	 * @returns The count of inscriptions on the trip.
 	 */
-	countByRouteRefId(routeRefId: number): Promise<Result<number, RepositoryError>>;
+	countByTripRefId(tripRefId: number): Promise<Result<number, RepositoryError>>;
 }

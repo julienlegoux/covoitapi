@@ -1,9 +1,9 @@
 /**
  * @module prisma-inscription.repository
  * Prisma-backed implementation of the {@link InscriptionRepository} domain interface.
- * Manages passenger inscriptions (sign-ups) to carpooling travels.
- * Inscriptions link a user to a travel via integer refId foreign keys
- * (userRefId, routeRefId).
+ * Manages passenger inscriptions (sign-ups) to carpooling trips.
+ * Inscriptions link a user to a trip via integer refId foreign keys
+ * (userRefId, tripRefId).
  */
 
 import { inject, injectable } from 'tsyringe';
@@ -19,8 +19,8 @@ import type { PrismaClient } from '../generated/prisma/client.js';
 /**
  * Prisma implementation of {@link InscriptionRepository}.
  * Operates on the `inscription` table which represents a passenger's
- * registration for a carpooling travel. Uses integer refId FKs
- * (userRefId, routeRefId) to link to user and travel tables.
+ * registration for a carpooling trip. Uses integer refId FKs
+ * (userRefId, tripRefId) to link to user and trip tables.
  * Injected via tsyringe with the PrismaClient token.
  */
 @injectable()
@@ -37,7 +37,7 @@ export class PrismaInscriptionRepository implements InscriptionRepository {
 
 	/**
 	 * Retrieves all inscriptions with optional pagination.
-	 * Includes related user and travel data. Runs findMany and count
+	 * Includes related user and trip data. Runs findMany and count
 	 * in parallel for efficient pagination.
 	 * @param params - Optional pagination with `skip` and `take`.
 	 * @returns `ok({ data, total })` with paginated inscriptions and total count,
@@ -49,8 +49,8 @@ export class PrismaInscriptionRepository implements InscriptionRepository {
 			const [inscriptions, total] = await Promise.all([
 				this.prisma.inscription.findMany({
 					...(params && { skip: params.skip, take: params.take }),
-					// Include both user and travel relations for the list view
-					include: { user: true, travel: true },
+					// Include both user and trip relations for the list view
+					include: { user: true, trip: true },
 				}),
 				this.prisma.inscription.count(),
 			]);
@@ -62,7 +62,7 @@ export class PrismaInscriptionRepository implements InscriptionRepository {
 	}
 
 	/**
-	 * Finds a single inscription by UUID with related user and travel data.
+	 * Finds a single inscription by UUID with related user and trip data.
 	 * @param id - The UUID of the inscription.
 	 * @returns `ok(InscriptionEntity)` if found, `ok(null)` if not found,
 	 *          or `err(DatabaseError)` on failure.
@@ -71,7 +71,7 @@ export class PrismaInscriptionRepository implements InscriptionRepository {
 		try {
 			const inscription = await this.prisma.inscription.findUnique({
 				where: { id },
-				include: { user: true, travel: true },
+				include: { user: true, trip: true },
 			});
 			return ok(inscription as unknown as InscriptionEntity | null);
 		} catch (e) {
@@ -82,7 +82,7 @@ export class PrismaInscriptionRepository implements InscriptionRepository {
 
 	/**
 	 * Finds all inscriptions for a given user, identified by their integer refId.
-	 * Includes the related travel data (but not the user, since it is already known).
+	 * Includes the related trip data (but not the user, since it is already known).
 	 * @param userRefId - The integer auto-incremented refId of the user.
 	 * @returns `ok(InscriptionEntity[])` on success, or `err(DatabaseError)` on failure.
 	 */
@@ -90,8 +90,8 @@ export class PrismaInscriptionRepository implements InscriptionRepository {
 		try {
 			const inscriptions = await this.prisma.inscription.findMany({
 				where: { userRefId },
-				// Include travel but not user (caller already knows the user)
-				include: { travel: true },
+				// Include trip but not user (caller already knows the user)
+				include: { trip: true },
 			});
 			return ok(inscriptions as unknown as InscriptionEntity[]);
 		} catch (e) {
@@ -101,22 +101,22 @@ export class PrismaInscriptionRepository implements InscriptionRepository {
 	}
 
 	/**
-	 * Finds all inscriptions for a given travel/route, identified by its integer refId.
-	 * Includes the related user data (but not travel, since it is already known).
-	 * @param routeRefId - The integer auto-incremented refId of the travel.
+	 * Finds all inscriptions for a given trip, identified by its integer refId.
+	 * Includes the related user data (but not trip, since it is already known).
+	 * @param tripRefId - The integer auto-incremented refId of the trip.
 	 * @returns `ok(InscriptionEntity[])` on success, or `err(DatabaseError)` on failure.
 	 */
-	async findByRouteRefId(routeRefId: number): Promise<Result<InscriptionEntity[], DatabaseError>> {
+	async findByTripRefId(tripRefId: number): Promise<Result<InscriptionEntity[], DatabaseError>> {
 		try {
 			const inscriptions = await this.prisma.inscription.findMany({
-				where: { routeRefId },
-				// Include user but not travel (caller already knows the travel)
+				where: { tripRefId },
+				// Include user but not trip (caller already knows the trip)
 				include: { user: true },
 			});
 			return ok(inscriptions as unknown as InscriptionEntity[]);
 		} catch (e) {
-			this.logger.error('Failed to find inscriptions by route ref ID', e instanceof Error ? e : null, { operation: 'findByRouteRefId', routeRefId });
-			return err(new DatabaseError('Failed to find inscriptions by route ref id', e));
+			this.logger.error('Failed to find inscriptions by trip ref ID', e instanceof Error ? e : null, { operation: 'findByTripRefId', tripRefId });
+			return err(new DatabaseError('Failed to find inscriptions by trip ref id', e));
 		}
 	}
 
@@ -130,7 +130,7 @@ export class PrismaInscriptionRepository implements InscriptionRepository {
 		try {
 			const inscriptions = await this.prisma.inscription.findMany({
 				where: { user: { id: userId } },
-				include: { travel: true },
+				include: { trip: true },
 			});
 			return ok(inscriptions as unknown as InscriptionEntity[]);
 		} catch (e) {
@@ -140,21 +140,21 @@ export class PrismaInscriptionRepository implements InscriptionRepository {
 	}
 
 	/**
-	 * Finds all inscriptions for a travel, identified by its UUID via a relation filter.
-	 * Eliminates the need to first resolve the travel UUID to a refId.
-	 * @param travelId - The UUID of the travel.
+	 * Finds all inscriptions for a trip, identified by its UUID via a relation filter.
+	 * Eliminates the need to first resolve the trip UUID to a refId.
+	 * @param tripId - The UUID of the trip.
 	 * @returns `ok(InscriptionEntity[])` on success, or `err(DatabaseError)` on failure.
 	 */
-	async findByTravelId(travelId: string): Promise<Result<InscriptionEntity[], DatabaseError>> {
+	async findByTripId(tripId: string): Promise<Result<InscriptionEntity[], DatabaseError>> {
 		try {
 			const inscriptions = await this.prisma.inscription.findMany({
-				where: { travel: { id: travelId } },
+				where: { trip: { id: tripId } },
 				include: { user: true },
 			});
 			return ok(inscriptions as unknown as InscriptionEntity[]);
 		} catch (e) {
-			this.logger.error('Failed to find inscriptions by travel id', e instanceof Error ? e : null, { operation: 'findByTravelId', travelId });
-			return err(new DatabaseError('Failed to find inscriptions by travel id', e));
+			this.logger.error('Failed to find inscriptions by trip id', e instanceof Error ? e : null, { operation: 'findByTripId', tripId });
+			return err(new DatabaseError('Failed to find inscriptions by trip id', e));
 		}
 	}
 
@@ -179,8 +179,8 @@ export class PrismaInscriptionRepository implements InscriptionRepository {
 	}
 
 	/**
-	 * Creates a new inscription linking a user to a travel via integer refIds.
-	 * @param data - Inscription creation data with userRefId and routeRefId.
+	 * Creates a new inscription linking a user to a trip via integer refIds.
+	 * @param data - Inscription creation data with userRefId and tripRefId.
 	 * @returns `ok(InscriptionEntity)` with the created inscription,
 	 *          or `err(DatabaseError)` on failure.
 	 */
@@ -189,12 +189,12 @@ export class PrismaInscriptionRepository implements InscriptionRepository {
 			const inscription = await this.prisma.inscription.create({
 				data: {
 					userRefId: data.userRefId,
-					routeRefId: data.routeRefId,
+					tripRefId: data.tripRefId,
 				},
 			});
 			return ok(inscription);
 		} catch (e) {
-			this.logger.error('Failed to create inscription', e instanceof Error ? e : null, { operation: 'create', userRefId: data.userRefId, routeRefId: data.routeRefId });
+			this.logger.error('Failed to create inscription', e instanceof Error ? e : null, { operation: 'create', userRefId: data.userRefId, tripRefId: data.tripRefId });
 			return err(new DatabaseError('Failed to create inscription', e));
 		}
 	}
@@ -217,41 +217,41 @@ export class PrismaInscriptionRepository implements InscriptionRepository {
 	}
 
 	/**
-	 * Checks if a user is already inscribed to a specific travel.
+	 * Checks if a user is already inscribed to a specific trip.
 	 * Uses a count query for efficiency to avoid loading the full record.
 	 * @param userRefId - The integer refId of the user.
-	 * @param routeRefId - The integer refId of the travel.
+	 * @param tripRefId - The integer refId of the trip.
 	 * @returns `ok(true)` if an inscription exists, `ok(false)` otherwise,
 	 *          or `err(DatabaseError)` on failure.
 	 */
-	async existsByUserAndRoute(userRefId: number, routeRefId: number): Promise<Result<boolean, DatabaseError>> {
+	async existsByUserAndTrip(userRefId: number, tripRefId: number): Promise<Result<boolean, DatabaseError>> {
 		try {
 			// Count query is more efficient than findFirst for existence checks
 			const count = await this.prisma.inscription.count({
-				where: { userRefId, routeRefId },
+				where: { userRefId, tripRefId },
 			});
 			return ok(count > 0);
 		} catch (e) {
-			this.logger.error('Failed to check inscription existence', e instanceof Error ? e : null, { operation: 'existsByUserAndRoute', userRefId, routeRefId });
+			this.logger.error('Failed to check inscription existence', e instanceof Error ? e : null, { operation: 'existsByUserAndTrip', userRefId, tripRefId });
 			return err(new DatabaseError('Failed to check inscription existence', e));
 		}
 	}
 
 	/**
-	 * Counts the number of inscriptions for a given travel/route.
+	 * Counts the number of inscriptions for a given trip.
 	 * Used to check seat availability before allowing new inscriptions.
-	 * @param routeRefId - The integer refId of the travel.
+	 * @param tripRefId - The integer refId of the trip.
 	 * @returns `ok(number)` with the inscription count, or `err(DatabaseError)` on failure.
 	 */
-	async countByRouteRefId(routeRefId: number): Promise<Result<number, DatabaseError>> {
+	async countByTripRefId(tripRefId: number): Promise<Result<number, DatabaseError>> {
 		try {
 			const count = await this.prisma.inscription.count({
-				where: { routeRefId },
+				where: { tripRefId },
 			});
 			return ok(count);
 		} catch (e) {
-			this.logger.error('Failed to count inscriptions for route', e instanceof Error ? e : null, { operation: 'countByRouteRefId', routeRefId });
-			return err(new DatabaseError('Failed to count inscriptions for route', e));
+			this.logger.error('Failed to count inscriptions for trip', e instanceof Error ? e : null, { operation: 'countByTripRefId', tripRefId });
+			return err(new DatabaseError('Failed to count inscriptions for trip', e));
 		}
 	}
 }

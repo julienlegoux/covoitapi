@@ -2,7 +2,7 @@
  * @file Unit tests for the PrismaInscriptionRepository.
  *
  * Tests key methods: findAll, findById, create, delete,
- * existsByUserAndRoute, countByRouteRefId. Each method is tested
+ * existsByUserAndTrip, countByTripRefId. Each method is tested
  * for success and DB error propagation.
  */
 
@@ -30,7 +30,7 @@ describe('PrismaInscriptionRepository', () => {
     let repository: PrismaInscriptionRepository;
     let mockPrisma: ReturnType<typeof createMockPrisma>;
 
-    const mockInscription = { id: 'ins-1', refId: 1, userRefId: 1, routeRefId: 1 };
+    const mockInscription = { id: 'ins-1', refId: 1, userRefId: 1, tripRefId: 1 };
 
     beforeEach(() => {
         container.clearInstances();
@@ -122,7 +122,7 @@ describe('PrismaInscriptionRepository', () => {
             }
             expect(mockPrisma.inscription.findMany).toHaveBeenCalledWith({
                 where: { user: { id: 'user-uuid-1' } },
-                include: { travel: true },
+                include: { trip: true },
             });
         });
 
@@ -149,18 +149,18 @@ describe('PrismaInscriptionRepository', () => {
         });
     });
 
-    describe('findByTravelId()', () => {
-        it('should return ok(inscriptions) via travel UUID relation filter', async () => {
+    describe('findByTripId()', () => {
+        it('should return ok(inscriptions) via trip UUID relation filter', async () => {
             mockPrisma.inscription.findMany.mockResolvedValue([mockInscription]);
 
-            const result = await repository.findByTravelId('travel-uuid-1');
+            const result = await repository.findByTripId('trip-uuid-1');
 
             expect(result.success).toBe(true);
             if (result.success) {
                 expect(result.value).toHaveLength(1);
             }
             expect(mockPrisma.inscription.findMany).toHaveBeenCalledWith({
-                where: { travel: { id: 'travel-uuid-1' } },
+                where: { trip: { id: 'trip-uuid-1' } },
                 include: { user: true },
             });
         });
@@ -168,7 +168,7 @@ describe('PrismaInscriptionRepository', () => {
         it('should return err(DatabaseError) on failure', async () => {
             mockPrisma.inscription.findMany.mockRejectedValue(new Error('DB error'));
 
-            const result = await repository.findByTravelId('travel-uuid-1');
+            const result = await repository.findByTripId('trip-uuid-1');
 
             expect(result.success).toBe(false);
             if (!result.success) {
@@ -219,21 +219,21 @@ describe('PrismaInscriptionRepository', () => {
         it('should return ok(inscription) on success', async () => {
             mockPrisma.inscription.create.mockResolvedValue(mockInscription);
 
-            const result = await repository.create({ userRefId: 1, routeRefId: 1 });
+            const result = await repository.create({ userRefId: 1, tripRefId: 1 });
 
             expect(result.success).toBe(true);
             if (result.success) {
                 expect(result.value).toEqual(mockInscription);
             }
             expect(mockPrisma.inscription.create).toHaveBeenCalledWith({
-                data: { userRefId: 1, routeRefId: 1 },
+                data: { userRefId: 1, tripRefId: 1 },
             });
         });
 
         it('should return err(DatabaseError) on failure', async () => {
             mockPrisma.inscription.create.mockRejectedValue(new Error('Unique constraint'));
 
-            const result = await repository.create({ userRefId: 1, routeRefId: 1 });
+            const result = await repository.create({ userRefId: 1, tripRefId: 1 });
 
             expect(result.success).toBe(false);
             if (!result.success) {
@@ -264,25 +264,25 @@ describe('PrismaInscriptionRepository', () => {
         });
     });
 
-    describe('existsByUserAndRoute()', () => {
+    describe('existsByUserAndTrip()', () => {
         it('should return ok(true) when inscription exists', async () => {
             mockPrisma.inscription.count.mockResolvedValue(1);
 
-            const result = await repository.existsByUserAndRoute(1, 1);
+            const result = await repository.existsByUserAndTrip(1, 1);
 
             expect(result.success).toBe(true);
             if (result.success) {
                 expect(result.value).toBe(true);
             }
             expect(mockPrisma.inscription.count).toHaveBeenCalledWith({
-                where: { userRefId: 1, routeRefId: 1 },
+                where: { userRefId: 1, tripRefId: 1 },
             });
         });
 
         it('should return ok(false) when not inscribed', async () => {
             mockPrisma.inscription.count.mockResolvedValue(0);
 
-            const result = await repository.existsByUserAndRoute(1, 2);
+            const result = await repository.existsByUserAndTrip(1, 2);
 
             expect(result.success).toBe(true);
             if (result.success) {
@@ -293,7 +293,7 @@ describe('PrismaInscriptionRepository', () => {
         it('should return err(DatabaseError) on failure', async () => {
             mockPrisma.inscription.count.mockRejectedValue(new Error('DB down'));
 
-            const result = await repository.existsByUserAndRoute(1, 1);
+            const result = await repository.existsByUserAndTrip(1, 1);
 
             expect(result.success).toBe(false);
             if (!result.success) {
@@ -302,25 +302,25 @@ describe('PrismaInscriptionRepository', () => {
         });
     });
 
-    describe('countByRouteRefId()', () => {
+    describe('countByTripRefId()', () => {
         it('should return ok(count) on success', async () => {
             mockPrisma.inscription.count.mockResolvedValue(5);
 
-            const result = await repository.countByRouteRefId(1);
+            const result = await repository.countByTripRefId(1);
 
             expect(result.success).toBe(true);
             if (result.success) {
                 expect(result.value).toBe(5);
             }
             expect(mockPrisma.inscription.count).toHaveBeenCalledWith({
-                where: { routeRefId: 1 },
+                where: { tripRefId: 1 },
             });
         });
 
         it('should return err(DatabaseError) on failure', async () => {
             mockPrisma.inscription.count.mockRejectedValue(new Error('DB error'));
 
-            const result = await repository.countByRouteRefId(1);
+            const result = await repository.countByTripRefId(1);
 
             expect(result.success).toBe(false);
             if (!result.success) {

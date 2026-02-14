@@ -1,6 +1,6 @@
 /**
  * @file Unit tests for CachedInscriptionRepository.
- * Verifies cross-domain invalidation (inscription + travel).
+ * Verifies cross-domain invalidation (inscription + trip).
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
@@ -59,12 +59,12 @@ describe('CachedInscriptionRepository', () => {
         });
     });
 
-    describe('findByTravelId()', () => {
+    describe('findByTripId()', () => {
         it('should use cache-aside', async () => {
             cache.get.mockResolvedValue(null);
-            inner.findByTravelId.mockResolvedValue(ok([]));
-            await repo.findByTravelId('travel-uuid-1');
-            expect(inner.findByTravelId).toHaveBeenCalledWith('travel-uuid-1');
+            inner.findByTripId.mockResolvedValue(ok([]));
+            await repo.findByTripId('trip-uuid-1');
+            expect(inner.findByTripId).toHaveBeenCalledWith('trip-uuid-1');
         });
     });
 
@@ -77,32 +77,32 @@ describe('CachedInscriptionRepository', () => {
         });
     });
 
-    describe('existsByUserAndRoute()', () => {
+    describe('existsByUserAndTrip()', () => {
         it('should cache boolean result', async () => {
             cache.get.mockResolvedValue(null);
-            inner.existsByUserAndRoute.mockResolvedValue(ok(false));
-            await repo.existsByUserAndRoute(1, 2);
+            inner.existsByUserAndTrip.mockResolvedValue(ok(false));
+            await repo.existsByUserAndTrip(1, 2);
             expect(cache.set).toHaveBeenCalled();
         });
     });
 
     describe('create()', () => {
-        it('should cross-invalidate inscription and travel on success', async () => {
+        it('should cross-invalidate inscription and trip on success', async () => {
             inner.create.mockResolvedValue(ok({ id: 'i1' }));
-            await repo.create({ userRefId: 1, routeRefId: 1 });
-            // 2 patterns: inscription:*, travel:*
+            await repo.create({ userRefId: 1, tripRefId: 1 });
+            // 2 patterns: inscription:*, trip:*
             expect(cache.deleteByPattern).toHaveBeenCalledTimes(2);
         });
 
         it('should NOT invalidate on failure', async () => {
             inner.create.mockResolvedValue(err(new DatabaseError('fail')));
-            await repo.create({ userRefId: 1, routeRefId: 1 });
+            await repo.create({ userRefId: 1, tripRefId: 1 });
             expect(cache.deleteByPattern).not.toHaveBeenCalled();
         });
     });
 
     describe('delete()', () => {
-        it('should cross-invalidate inscription and travel on success', async () => {
+        it('should cross-invalidate inscription and trip on success', async () => {
             inner.delete.mockResolvedValue(ok(undefined));
             await repo.delete('i1');
             expect(cache.deleteByPattern).toHaveBeenCalledTimes(2);

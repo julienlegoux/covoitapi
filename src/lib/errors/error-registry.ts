@@ -70,14 +70,8 @@ export const ErrorCodes = {
 		httpStatus: 409,
 		category: 'domain',
 	},
-	TRAVEL_NOT_FOUND: {
-		code: 'TRAVEL_NOT_FOUND',
-		httpStatus: 404,
-		category: 'domain',
-	},
-	/** @deprecated Use TRAVEL_NOT_FOUND instead. Kept for backward compatibility. */
-	ROUTE_NOT_FOUND: {
-		code: 'ROUTE_NOT_FOUND',
+	TRIP_NOT_FOUND: {
+		code: 'TRIP_NOT_FOUND',
 		httpStatus: 404,
 		category: 'domain',
 	},

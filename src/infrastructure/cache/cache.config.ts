@@ -13,7 +13,7 @@ export type CacheTTLConfig = {
 	driver: number;
 	user: number;
 	auth: number;
-	travel: number;
+	trip: number;
 	inscription: number;
 };
 
@@ -43,7 +43,7 @@ export function createCacheConfig(): CacheConfig {
 			driver: envInt('CACHE_TTL_DRIVER', 600),
 			user: envInt('CACHE_TTL_USER', 300),
 			auth: envInt('CACHE_TTL_AUTH', 300),
-			travel: envInt('CACHE_TTL_TRAVEL', 300),
+			trip: envInt('CACHE_TTL_TRIP', 300),
 			inscription: envInt('CACHE_TTL_INSCRIPTION', 120),
 		},
 	};

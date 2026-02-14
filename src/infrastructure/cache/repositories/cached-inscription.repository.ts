@@ -2,8 +2,8 @@
  * @module cached-inscription.repository
  * Cache-aside decorator for {@link InscriptionRepository}.
  * Wraps the inner PrismaInscriptionRepository, caching reads and invalidating on writes.
- * Write operations cross-invalidate both inscription and travel caches,
- * since inscription changes affect travel seat availability and passenger lists.
+ * Write operations cross-invalidate both inscription and trip caches,
+ * since inscription changes affect trip seat availability and passenger lists.
  */
 
 import { inject, injectable } from 'tsyringe';
@@ -50,9 +50,9 @@ export class CachedInscriptionRepository implements InscriptionRepository {
 		return cacheAside(this.cache, this.key('findByUserRefId', String(userRefId)), this.config.ttl.inscription, () => this.inner.findByUserRefId(userRefId), this.logger);
 	}
 
-	async findByRouteRefId(routeRefId: number): Promise<Result<InscriptionEntity[], RepositoryError>> {
-		if (!this.config.enabled) return this.inner.findByRouteRefId(routeRefId);
-		return cacheAside(this.cache, this.key('findByRouteRefId', String(routeRefId)), this.config.ttl.inscription, () => this.inner.findByRouteRefId(routeRefId), this.logger);
+	async findByTripRefId(tripRefId: number): Promise<Result<InscriptionEntity[], RepositoryError>> {
+		if (!this.config.enabled) return this.inner.findByTripRefId(tripRefId);
+		return cacheAside(this.cache, this.key('findByTripRefId', String(tripRefId)), this.config.ttl.inscription, () => this.inner.findByTripRefId(tripRefId), this.logger);
 	}
 
 	async findByUserId(userId: string): Promise<Result<InscriptionEntity[], RepositoryError>> {
@@ -60,9 +60,9 @@ export class CachedInscriptionRepository implements InscriptionRepository {
 		return cacheAside(this.cache, this.key('findByUserId', userId), this.config.ttl.inscription, () => this.inner.findByUserId(userId), this.logger);
 	}
 
-	async findByTravelId(travelId: string): Promise<Result<InscriptionEntity[], RepositoryError>> {
-		if (!this.config.enabled) return this.inner.findByTravelId(travelId);
-		return cacheAside(this.cache, this.key('findByTravelId', travelId), this.config.ttl.inscription, () => this.inner.findByTravelId(travelId), this.logger);
+	async findByTripId(tripId: string): Promise<Result<InscriptionEntity[], RepositoryError>> {
+		if (!this.config.enabled) return this.inner.findByTripId(tripId);
+		return cacheAside(this.cache, this.key('findByTripId', tripId), this.config.ttl.inscription, () => this.inner.findByTripId(tripId), this.logger);
 	}
 
 	async findByIdAndUserId(id: string, userId: string): Promise<Result<InscriptionEntity | null, RepositoryError>> {
@@ -70,20 +70,20 @@ export class CachedInscriptionRepository implements InscriptionRepository {
 		return cacheAside(this.cache, this.key('findByIdAndUserId', `${id}:${userId}`), this.config.ttl.inscription, () => this.inner.findByIdAndUserId(id, userId), this.logger);
 	}
 
-	async existsByUserAndRoute(userRefId: number, routeRefId: number): Promise<Result<boolean, RepositoryError>> {
-		if (!this.config.enabled) return this.inner.existsByUserAndRoute(userRefId, routeRefId);
-		return cacheAside(this.cache, this.key('existsByUserAndRoute', JSON.stringify({ userRefId, routeRefId })), this.config.ttl.inscription, () => this.inner.existsByUserAndRoute(userRefId, routeRefId), this.logger);
+	async existsByUserAndTrip(userRefId: number, tripRefId: number): Promise<Result<boolean, RepositoryError>> {
+		if (!this.config.enabled) return this.inner.existsByUserAndTrip(userRefId, tripRefId);
+		return cacheAside(this.cache, this.key('existsByUserAndTrip', JSON.stringify({ userRefId, tripRefId })), this.config.ttl.inscription, () => this.inner.existsByUserAndTrip(userRefId, tripRefId), this.logger);
 	}
 
-	async countByRouteRefId(routeRefId: number): Promise<Result<number, RepositoryError>> {
-		if (!this.config.enabled) return this.inner.countByRouteRefId(routeRefId);
-		return cacheAside(this.cache, this.key('countByRouteRefId', String(routeRefId)), this.config.ttl.inscription, () => this.inner.countByRouteRefId(routeRefId), this.logger);
+	async countByTripRefId(tripRefId: number): Promise<Result<number, RepositoryError>> {
+		if (!this.config.enabled) return this.inner.countByTripRefId(tripRefId);
+		return cacheAside(this.cache, this.key('countByTripRefId', String(tripRefId)), this.config.ttl.inscription, () => this.inner.countByTripRefId(tripRefId), this.logger);
 	}
 
 	async create(data: CreateInscriptionData): Promise<Result<InscriptionEntity, RepositoryError>> {
 		const result = await this.inner.create(data);
 		if (this.config.enabled && result.success) {
-			await invalidatePatterns(this.cache, this.config.keyPrefix, ['inscription:*', 'travel:*'], this.logger);
+			await invalidatePatterns(this.cache, this.config.keyPrefix, ['inscription:*', 'trip:*'], this.logger);
 		}
 		return result;
 	}
@@ -91,7 +91,7 @@ export class CachedInscriptionRepository implements InscriptionRepository {
 	async delete(id: string): Promise<Result<void, RepositoryError>> {
 		const result = await this.inner.delete(id);
 		if (this.config.enabled && result.success) {
-			await invalidatePatterns(this.cache, this.config.keyPrefix, ['inscription:*', 'travel:*'], this.logger);
+			await invalidatePatterns(this.cache, this.config.keyPrefix, ['inscription:*', 'trip:*'], this.logger);
 		}
 		return result;
 	}

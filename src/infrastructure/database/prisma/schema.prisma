@@ -13,7 +13,7 @@ enum Role {
   ADMIN
 }
 
-enum CityTravelType {
+enum CityTripType {
   DEPARTURE
   ARRIVAL
 }
@@ -65,16 +65,16 @@ model Driver {
   anonymizedAt  DateTime? @map("anonymized_at")
 
   user    User     @relation(fields: [userRefId], references: [refId], onDelete: Cascade)
-  travels Travel[]
-  cars    Car[]
+  trips Trip[]
+  cars  Car[]
 
   @@map("drivers")
 }
 
-model Travel {
+model Trip {
   id           String   @id @default(uuid())
   refId        Int      @unique @default(autoincrement()) @map("ref_id")
-  dateRoute    DateTime @map("date_route")
+  dateTrip     DateTime @map("date_trip")
   kms          Int
   seats        Int
   driverRefId  Int      @map("driver_ref_id")
@@ -83,9 +83,9 @@ model Travel {
   driver       Driver          @relation(fields: [driverRefId], references: [refId], onDelete: Cascade)
   car          Car             @relation(fields: [carRefId], references: [refId], onDelete: Restrict)
   inscriptions Inscription[]
-  cities       CityTravel[]
+  cities       CityTrip[]
 
-  @@map("routes")
+  @@map("trips")
 }
 
 model Inscription {
@@ -93,13 +93,13 @@ model Inscription {
   refId        Int               @unique @default(autoincrement()) @map("ref_id")
   createdAt    DateTime          @default(now()) @map("created_at")
   userRefId    Int               @map("user_ref_id")
-  routeRefId   Int               @map("route_ref_id")
+  tripRefId    Int               @map("trip_ref_id")
   status       InscriptionStatus @default(ACTIVE)
 
-  user   User   @relation(fields: [userRefId], references: [refId], onDelete: Cascade)
-  travel Travel @relation(fields: [routeRefId], references: [refId], onDelete: Cascade)
+  user User @relation(fields: [userRefId], references: [refId], onDelete: Cascade)
+  trip Trip  @relation(fields: [tripRefId], references: [refId], onDelete: Cascade)
 
-  @@unique([userRefId, routeRefId])
+  @@unique([userRefId, tripRefId])
   @@map("inscriptions")
 }
 
@@ -109,21 +109,21 @@ model City {
   cityName String @map("city_name")
   zipcode  String
 
-  travels CityTravel[]
+  trips CityTrip[]
 
   @@map("cities")
 }
 
-model CityTravel {
-  routeRefId Int            @map("route_ref_id")
-  cityRefId  Int            @map("city_ref_id")
-  type       CityTravelType
+model CityTrip {
+  tripRefId Int          @map("trip_ref_id")
+  cityRefId Int          @map("city_ref_id")
+  type      CityTripType
 
-  travel Travel @relation(fields: [routeRefId], references: [refId], onDelete: Cascade)
-  city   City   @relation(fields: [cityRefId], references: [refId], onDelete: Cascade)
+  trip Trip @relation(fields: [tripRefId], references: [refId], onDelete: Cascade)
+  city City @relation(fields: [cityRefId], references: [refId], onDelete: Cascade)
 
-  @@id([routeRefId, cityRefId])
-  @@map("city_routes")
+  @@id([tripRefId, cityRefId])
+  @@map("city_trips")
 }
 
 model Car {
@@ -135,7 +135,7 @@ model Car {
 
   model   Model    @relation(fields: [modelRefId], references: [refId], onDelete: Restrict)
   driver  Driver   @relation(fields: [driverRefId], references: [refId], onDelete: Cascade)
-  travels Travel[]
+  trips Trip[]
 
   @@map("cars")
 }

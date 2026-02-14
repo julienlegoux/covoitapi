@@ -27,7 +27,7 @@ export const PRISMA_TOKENS = {
 	ModelRepository: Symbol('PrismaModelRepository'),
 	CarRepository: Symbol('PrismaCarRepository'),
 	DriverRepository: Symbol('PrismaDriverRepository'),
-	TravelRepository: Symbol('PrismaTravelRepository'),
+	TripRepository: Symbol('PrismaTripRepository'),
 	InscriptionRepository: Symbol('PrismaInscriptionRepository'),
 } as const;
 
@@ -37,7 +37,7 @@ export const PRISMA_TOKENS = {
  * **Repositories** — resolve to CachedXRepository decorators (wrapping PrismaXRepository):
  * - AuthRepository, UserRepository, BrandRepository, ColorRepository,
  *   CityRepository, ModelRepository, CarRepository, DriverRepository,
- *   TravelRepository, InscriptionRepository
+ *   TripRepository, InscriptionRepository
  *
  * **Services** — resolve to infrastructure service implementations:
  * - EmailService → ResendEmailService
@@ -58,7 +58,7 @@ export const TOKENS = {
 	ModelRepository: Symbol('ModelRepository'),
 	CarRepository: Symbol('CarRepository'),
 	DriverRepository: Symbol('DriverRepository'),
-	TravelRepository: Symbol('TravelRepository'),
+	TripRepository: Symbol('TripRepository'),
 	InscriptionRepository: Symbol('InscriptionRepository'),
 	EmailService: Symbol('EmailService'),
 	PasswordService: Symbol('PasswordService'),

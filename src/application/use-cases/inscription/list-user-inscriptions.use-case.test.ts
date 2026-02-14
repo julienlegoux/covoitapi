@@ -27,7 +27,7 @@ describe('ListUserInscriptionsUseCase', () => {
 
 	// Happy path: returns user's inscriptions via UUID relation filter
 	it('should return paginated inscriptions for user', async () => {
-		const inscriptions = [{ id: '1', refId: 1, createdAt: new Date(), userRefId: 5, routeRefId: 1, status: 'ACTIVE' }];
+		const inscriptions = [{ id: '1', refId: 1, createdAt: new Date(), userRefId: 5, tripRefId: 1, status: 'ACTIVE' }];
 		mockRepo.findByUserId.mockResolvedValue(ok(inscriptions));
 
 		const result = await useCase.execute('u1');
@@ -61,9 +61,9 @@ describe('ListUserInscriptionsUseCase', () => {
 	// In-memory pagination: slices the full list with custom page/limit
 	it('should paginate results with custom pagination', async () => {
 		const inscriptions = [
-			{ id: '1', refId: 1, createdAt: new Date(), userRefId: 5, routeRefId: 1, status: 'ACTIVE' },
-			{ id: '2', refId: 2, createdAt: new Date(), userRefId: 5, routeRefId: 2, status: 'ACTIVE' },
-			{ id: '3', refId: 3, createdAt: new Date(), userRefId: 5, routeRefId: 3, status: 'ACTIVE' },
+			{ id: '1', refId: 1, createdAt: new Date(), userRefId: 5, tripRefId: 1, status: 'ACTIVE' },
+			{ id: '2', refId: 2, createdAt: new Date(), userRefId: 5, tripRefId: 2, status: 'ACTIVE' },
+			{ id: '3', refId: 3, createdAt: new Date(), userRefId: 5, tripRefId: 3, status: 'ACTIVE' },
 		];
 		mockRepo.findByUserId.mockResolvedValue(ok(inscriptions));
 

@@ -8,16 +8,16 @@
 // Entities
 export * from './entities/user.entity.js';
 export * from './entities/driver.entity.js';
-export * from './entities/travel.entity.js';
+export * from './entities/trip.entity.js';
 export * from './entities/inscription.entity.js';
-export * from './entities/city-travel.entity.js';
+export * from './entities/city-trip.entity.js';
 
 // Errors
 export * from '../lib/errors/domain.errors.js';
 
 // Repositories
 export type { UserRepository } from './repositories/user.repository.js';
-export type { TravelRepository, TravelFilters } from './repositories/travel.repository.js';
+export type { TripRepository, TripFilters } from './repositories/trip.repository.js';
 
 // Services
 export type { EmailService, SendEmailOptions } from './services/email.service.js';

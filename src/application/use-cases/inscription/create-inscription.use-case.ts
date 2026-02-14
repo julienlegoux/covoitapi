@@ -1,18 +1,18 @@
 /**
  * @module CreateInscriptionUseCase
  *
- * Registers a passenger for a carpooling travel (route). An "inscription"
- * represents a user booking a seat on a specific travel. The use case
+ * Registers a passenger for a carpooling trip. An "inscription"
+ * represents a user booking a seat on a specific trip. The use case
  * enforces that the user is not already inscribed and that seats remain
- * available on the travel.
+ * available on the trip.
  */
 
 import { inject, injectable } from 'tsyringe';
 import type { InscriptionEntity } from '../../../domain/entities/inscription.entity.js';
-import { AlreadyInscribedError, NoSeatsAvailableError, TravelNotFoundError, UserNotFoundError } from '../../../lib/errors/domain.errors.js';
+import { AlreadyInscribedError, NoSeatsAvailableError, TripNotFoundError, UserNotFoundError } from '../../../lib/errors/domain.errors.js';
 import type { Logger } from '../../../lib/logging/logger.types.js';
 import type { InscriptionRepository } from '../../../domain/repositories/inscription.repository.js';
-import type { TravelRepository } from '../../../domain/repositories/travel.repository.js';
+import type { TripRepository } from '../../../domain/repositories/trip.repository.js';
 import type { UserRepository } from '../../../domain/repositories/user.repository.js';
 import type { RepositoryError } from '../../../lib/errors/repository.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
@@ -25,24 +25,24 @@ import type { WithAuthContext } from '../../../lib/shared/types/auth-context.js'
  * Union of all possible error types returned by the create inscription use case.
  *
  * - {@link UserNotFoundError} - The authenticated user UUID does not exist
- * - {@link TravelNotFoundError} - The target travel UUID does not exist
- * - {@link AlreadyInscribedError} - The user is already registered on this travel
- * - {@link NoSeatsAvailableError} - All seats on the travel are taken
+ * - {@link TripNotFoundError} - The target trip UUID does not exist
+ * - {@link AlreadyInscribedError} - The user is already registered on this trip
+ * - {@link NoSeatsAvailableError} - All seats on the trip are taken
  * - {@link RepositoryError} - Database-level failure during any step
  */
-type CreateInscriptionError = UserNotFoundError | TravelNotFoundError | AlreadyInscribedError | NoSeatsAvailableError | RepositoryError;
+type CreateInscriptionError = UserNotFoundError | TripNotFoundError | AlreadyInscribedError | NoSeatsAvailableError | RepositoryError;
 
 /**
- * Registers a passenger on a carpooling travel.
+ * Registers a passenger on a carpooling trip.
  *
  * Business flow:
  * 1. Resolve the user UUID to get the internal refId
- * 2. Resolve the travel UUID to get the internal refId and seat count
- * 3. Check the user is not already inscribed on this travel
+ * 2. Resolve the trip UUID to get the internal refId and seat count
+ * 3. Check the user is not already inscribed on this trip
  * 4. Verify that available seats remain (current inscriptions < total seats)
  * 5. Create the inscription record
  *
- * @dependencies InscriptionRepository, TravelRepository, UserRepository
+ * @dependencies InscriptionRepository, TripRepository, UserRepository
  */
 @injectable()
 export class CreateInscriptionUseCase {
@@ -51,8 +51,8 @@ export class CreateInscriptionUseCase {
 	constructor(
 		@inject(TOKENS.InscriptionRepository)
 		private readonly inscriptionRepository: InscriptionRepository,
-		@inject(TOKENS.TravelRepository)
-		private readonly travelRepository: TravelRepository,
+		@inject(TOKENS.TripRepository)
+		private readonly tripRepository: TripRepository,
 		@inject(TOKENS.UserRepository)
 		private readonly userRepository: UserRepository,
 		@inject(TOKENS.Logger) logger: Logger,
@@ -61,9 +61,9 @@ export class CreateInscriptionUseCase {
 	}
 
 	/**
-	 * Creates a new inscription for the authenticated user on the specified travel.
+	 * Creates a new inscription for the authenticated user on the specified trip.
 	 *
-	 * @param input - Validated payload containing travelId and the authenticated userId
+	 * @param input - Validated payload containing tripId and the authenticated userId
 	 * @returns A Result containing the created InscriptionEntity on success,
 	 *          or a CreateInscriptionError on failure
 	 */
@@ -78,44 +78,44 @@ export class CreateInscriptionUseCase {
 			return err(new UserNotFoundError(input.userId));
 		}
 
-		// Check travel exists and get refId
-		const travelResult = await this.travelRepository.findById(input.travelId);
-		if (!travelResult.success) {
-			return travelResult;
+		// Check trip exists and get refId
+		const tripResult = await this.tripRepository.findById(input.tripId);
+		if (!tripResult.success) {
+			return tripResult;
 		}
-		if (!travelResult.value) {
-			this.logger.warn('Travel not found for inscription creation', { travelId: input.travelId });
-			return err(new TravelNotFoundError(input.travelId));
+		if (!tripResult.value) {
+			this.logger.warn('Trip not found for inscription creation', { tripId: input.tripId });
+			return err(new TripNotFoundError(input.tripId));
 		}
 
 		const userRefId = userResult.value.refId;
-		const routeRefId = travelResult.value.refId;
+		const tripRefId = tripResult.value.refId;
 
 		// Check not already inscribed
-		const existsResult = await this.inscriptionRepository.existsByUserAndRoute(userRefId, routeRefId);
+		const existsResult = await this.inscriptionRepository.existsByUserAndTrip(userRefId, tripRefId);
 		if (!existsResult.success) {
 			return existsResult;
 		}
 		if (existsResult.value) {
-			this.logger.warn('User already inscribed on travel', { userId: input.userId, travelId: input.travelId });
-			return err(new AlreadyInscribedError(input.userId, input.travelId));
+			this.logger.warn('User already inscribed on trip', { userId: input.userId, tripId: input.tripId });
+			return err(new AlreadyInscribedError(input.userId, input.tripId));
 		}
 
 		// Check seats available
-		const countResult = await this.inscriptionRepository.countByRouteRefId(routeRefId);
+		const countResult = await this.inscriptionRepository.countByTripRefId(tripRefId);
 		if (!countResult.success) {
 			return countResult;
 		}
 
-		const travel = travelResult.value;
-		if (countResult.value >= travel.seats) {
-			this.logger.warn('No seats available for inscription', { travelId: input.travelId });
-			return err(new NoSeatsAvailableError(input.travelId));
+		const trip = tripResult.value;
+		if (countResult.value >= trip.seats) {
+			this.logger.warn('No seats available for inscription', { tripId: input.tripId });
+			return err(new NoSeatsAvailableError(input.tripId));
 		}
 
 		const result = await this.inscriptionRepository.create({
 			userRefId,
-			routeRefId,
+			tripRefId,
 		});
 
 		if (result.success) {

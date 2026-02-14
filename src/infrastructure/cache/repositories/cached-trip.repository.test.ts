@@ -1,35 +1,35 @@
 /**
- * @file Unit tests for CachedTravelRepository.
- * Verifies cross-domain invalidation: travel.delete() → travel + inscription caches.
+ * @file Unit tests for CachedTripRepository.
+ * Verifies cross-domain invalidation: trip.delete() → trip + inscription caches.
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { container } from 'tsyringe';
-import { CachedTravelRepository } from './cached-travel.repository.js';
+import { CachedTripRepository } from './cached-trip.repository.js';
 import { TOKENS, PRISMA_TOKENS } from '../../../lib/shared/di/tokens.js';
 import { ok, err } from '../../../lib/shared/types/result.js';
 import { DatabaseError } from '../../../lib/errors/repository.errors.js';
 import {
-    createMockTravelRepository,
+    createMockTripRepository,
     createMockCacheService,
     createMockCacheConfig,
     createMockLogger,
 } from '../../../../tests/setup.js';
 
-describe('CachedTravelRepository', () => {
-    let repo: CachedTravelRepository;
-    let inner: ReturnType<typeof createMockTravelRepository>;
+describe('CachedTripRepository', () => {
+    let repo: CachedTripRepository;
+    let inner: ReturnType<typeof createMockTripRepository>;
     let cache: ReturnType<typeof createMockCacheService>;
 
     beforeEach(() => {
         container.clearInstances();
-        inner = createMockTravelRepository();
+        inner = createMockTripRepository();
         cache = createMockCacheService();
-        container.register(PRISMA_TOKENS.TravelRepository, { useValue: inner });
+        container.register(PRISMA_TOKENS.TripRepository, { useValue: inner });
         container.registerInstance(TOKENS.CacheService, cache);
         container.registerInstance(TOKENS.CacheConfig, createMockCacheConfig());
         container.registerInstance(TOKENS.Logger, createMockLogger());
-        repo = container.resolve(CachedTravelRepository);
+        repo = container.resolve(CachedTripRepository);
     });
 
     describe('findAll()', () => {
@@ -51,25 +51,25 @@ describe('CachedTravelRepository', () => {
     });
 
     describe('create()', () => {
-        it('should invalidate travel cache on success', async () => {
+        it('should invalidate trip cache on success', async () => {
             inner.create.mockResolvedValue(ok({ id: 't1' }));
-            await repo.create({ dateRoute: new Date(), kms: 100, seats: 3, driverRefId: 1, carRefId: 1 });
-            // Only travel:*
+            await repo.create({ dateTrip: new Date(), kms: 100, seats: 3, driverRefId: 1, carRefId: 1 });
+            // Only trip:*
             expect(cache.deleteByPattern).toHaveBeenCalledTimes(1);
         });
 
         it('should NOT invalidate on failure', async () => {
             inner.create.mockResolvedValue(err(new DatabaseError('fail')));
-            await repo.create({ dateRoute: new Date(), kms: 100, seats: 3, driverRefId: 1, carRefId: 1 });
+            await repo.create({ dateTrip: new Date(), kms: 100, seats: 3, driverRefId: 1, carRefId: 1 });
             expect(cache.deleteByPattern).not.toHaveBeenCalled();
         });
     });
 
     describe('delete()', () => {
-        it('should cross-invalidate travel AND inscription on success', async () => {
+        it('should cross-invalidate trip AND inscription on success', async () => {
             inner.delete.mockResolvedValue(ok(undefined));
             await repo.delete('t1');
-            // 2 patterns: travel:*, inscription:*
+            // 2 patterns: trip:*, inscription:*
             expect(cache.deleteByPattern).toHaveBeenCalledTimes(2);
         });
 
