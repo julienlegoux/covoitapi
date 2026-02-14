@@ -18,6 +18,14 @@ export interface DriverRepository {
 	findByUserRefId(userRefId: number): Promise<Result<DriverEntity | null, RepositoryError>>;
 
 	/**
+	 * Finds a driver record by the associated user's UUID via Prisma relation filter.
+	 * Eliminates the need to first resolve the user UUID to a refId.
+	 * @param userId - The UUID of the linked User record.
+	 * @returns The matching DriverEntity, or null if the user is not a driver.
+	 */
+	findByUserId(userId: string): Promise<Result<DriverEntity | null, RepositoryError>>;
+
+	/**
 	 * Creates a new driver record.
 	 * @param data - The driver data including license number and user reference.
 	 * @returns The newly created DriverEntity.

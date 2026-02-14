@@ -7,7 +7,7 @@
 
 import { container } from 'tsyringe';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { createMockCarRepository, createMockUserRepository, createMockDriverRepository, createMockLogger } from '../../../../tests/setup.js';
+import { createMockCarRepository, createMockDriverRepository, createMockLogger } from '../../../../tests/setup.js';
 import { CarNotFoundError, ForbiddenError } from '../../../lib/errors/domain.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import { ok, err } from '../../../lib/shared/types/result.js';
@@ -18,27 +18,22 @@ import { DeleteCarUseCase } from './delete-car.use-case.js';
 describe('DeleteCarUseCase', () => {
 	let useCase: DeleteCarUseCase;
 	let mockCarRepository: ReturnType<typeof createMockCarRepository>;
-	let mockUserRepository: ReturnType<typeof createMockUserRepository>;
 	let mockDriverRepository: ReturnType<typeof createMockDriverRepository>;
 
-	const user = { id: 'user-1', refId: 1, firstName: 'John', lastName: 'Doe', phone: '0600000000' };
 	const driver = { id: 'driver-1', refId: 1, userRefId: 1, licenseNumber: 'LIC-001' };
 	const car = { id: 'car-1', refId: 1, licensePlate: 'AB-123-CD', modelRefId: 10, driverRefId: 1 };
 
 	beforeEach(() => {
 		mockCarRepository = createMockCarRepository();
-		mockUserRepository = createMockUserRepository();
 		mockDriverRepository = createMockDriverRepository();
 		container.registerInstance(TOKENS.CarRepository, mockCarRepository);
-		container.registerInstance(TOKENS.UserRepository, mockUserRepository);
 		container.registerInstance(TOKENS.DriverRepository, mockDriverRepository);
 		container.registerInstance(TOKENS.Logger, createMockLogger());
 		useCase = container.resolve(DeleteCarUseCase);
 	});
 
 	function mockDriverResolution() {
-		mockUserRepository.findById.mockResolvedValue(ok(user));
-		mockDriverRepository.findByUserRefId.mockResolvedValue(ok(driver));
+		mockDriverRepository.findByUserId.mockResolvedValue(ok(driver));
 	}
 
 	// Happy path: car exists, owner matches, car is deleted

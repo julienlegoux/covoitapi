@@ -1,14 +1,12 @@
 /**
- * Unit tests for the authMiddleware.
+ * Unit tests for the createAuthMiddleware factory.
  * Verifies JWT token extraction from x-auth-token header, JwtService delegation,
  * context population (userId, role), and error responses for missing/expired/
  * invalid/malformed tokens.
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import type { Context, Next } from 'hono';
-import { container } from 'tsyringe';
-import { authMiddleware } from './auth.middleware.js';
-import { TOKENS } from '../../lib/shared/di/tokens.js';
+import { createAuthMiddleware } from './auth.middleware.js';
 import { ok, err } from '../../lib/shared/types/result.js';
 import { TokenExpiredError, TokenInvalidError, TokenMalformedError } from '../../lib/errors/jwt.errors.js';
 import { createMockLogger } from '../../../tests/setup.js';
@@ -19,6 +17,8 @@ function createMockContext(token?: string) {
 	return {
 		req: {
 			header: vi.fn((name: string) => (name === 'x-auth-token' ? token : undefined)),
+			path: '/test',
+			method: 'GET',
 		},
 		json: jsonMock,
 		set: setMock,
@@ -40,13 +40,14 @@ function createMockJwtService() {
 // Tests for token validation, context population, and JWT error scenarios
 describe('authMiddleware', () => {
 	let mockJwtService: ReturnType<typeof createMockJwtService>;
+	let mockLogger: ReturnType<typeof createMockLogger>;
+	let authMiddleware: ReturnType<typeof createAuthMiddleware>;
 	let mockNext: Next;
 
 	beforeEach(() => {
-		container.clearInstances();
-		container.registerInstance(TOKENS.Logger, createMockLogger());
 		mockJwtService = createMockJwtService();
-		container.register(TOKENS.JwtService, { useValue: mockJwtService });
+		mockLogger = createMockLogger();
+		authMiddleware = createAuthMiddleware(mockJwtService, mockLogger);
 		mockNext = vi.fn().mockResolvedValue(undefined);
 	});
 

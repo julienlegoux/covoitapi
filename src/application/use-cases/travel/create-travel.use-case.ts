@@ -14,7 +14,6 @@ import type { Logger } from '../../../lib/logging/logger.types.js';
 import type { DriverRepository } from '../../../domain/repositories/driver.repository.js';
 import type { CarRepository } from '../../../domain/repositories/car.repository.js';
 import type { CityRepository } from '../../../domain/repositories/city.repository.js';
-import type { UserRepository } from '../../../domain/repositories/user.repository.js';
 import type { TravelRepository } from '../../../domain/repositories/travel.repository.js';
 import type { RepositoryError } from '../../../lib/errors/repository.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
@@ -43,7 +42,7 @@ type CreateTravelError = DriverNotFoundError | CarNotFoundError | RepositoryErro
  *
  * Cities that do not yet exist are auto-created with an empty zipcode.
  *
- * @dependencies TravelRepository, DriverRepository, CityRepository, UserRepository, CarRepository
+ * @dependencies TravelRepository, DriverRepository, CityRepository, CarRepository
  */
 @injectable()
 export class CreateTravelUseCase {
@@ -56,8 +55,6 @@ export class CreateTravelUseCase {
 		private readonly driverRepository: DriverRepository,
 		@inject(TOKENS.CityRepository)
 		private readonly cityRepository: CityRepository,
-		@inject(TOKENS.UserRepository)
-		private readonly userRepository: UserRepository,
 		@inject(TOKENS.CarRepository)
 		private readonly carRepository: CarRepository,
 		@inject(TOKENS.Logger) logger: Logger,
@@ -74,17 +71,8 @@ export class CreateTravelUseCase {
 	 *          or a CreateTravelError on failure
 	 */
 	async execute(input: WithAuthContext<CreateTravelSchemaType>): Promise<Result<TravelEntity, CreateTravelError>> {
-		// Resolve user UUID to get driver
-		const userResult = await this.userRepository.findById(input.userId);
-		if (!userResult.success) {
-			return userResult;
-		}
-		if (!userResult.value) {
-			this.logger.warn('Driver not found for travel creation', { userId: input.userId });
-			return err(new DriverNotFoundError(input.userId));
-		}
-
-		const driverResult = await this.driverRepository.findByUserRefId(userResult.value.refId);
+		// Resolve user UUID to driver via relation filter (single query)
+		const driverResult = await this.driverRepository.findByUserId(input.userId);
 		if (!driverResult.success) {
 			return driverResult;
 		}

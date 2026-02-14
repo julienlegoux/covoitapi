@@ -32,8 +32,7 @@ import { Hono } from 'hono';
 import { bodyLimit } from 'hono/body-limit';
 import { cors } from 'hono/cors';
 import { secureHeaders } from 'hono/secure-headers';
-import { errorHandler } from '../middleware/error-handler.middleware.js';
-import { requestLogger } from '../middleware/request-logger.middleware.js';
+import { errorHandler, requestLogger } from '../middleware/index.js';
 import { v1Routes } from './v1/index.js';
 
 const app = new Hono().basePath('/api');

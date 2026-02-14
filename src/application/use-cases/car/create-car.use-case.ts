@@ -13,7 +13,6 @@ import { CarAlreadyExistsError, BrandNotFoundError, DriverNotFoundError } from '
 import type { CarRepository } from '../../../domain/repositories/car.repository.js';
 import type { ModelRepository } from '../../../domain/repositories/model.repository.js';
 import type { BrandRepository } from '../../../domain/repositories/brand.repository.js';
-import type { UserRepository } from '../../../domain/repositories/user.repository.js';
 import type { DriverRepository } from '../../../domain/repositories/driver.repository.js';
 import type { RepositoryError } from '../../../lib/errors/repository.errors.js';
 import type { Logger } from '../../../lib/logging/logger.types.js';
@@ -43,7 +42,7 @@ type CreateCarError = CarAlreadyExistsError | BrandNotFoundError | DriverNotFoun
  * 4. Find or create the model by name + brand refId
  * 5. Persist the car with the license plate, resolved model refId, and driver refId
  *
- * @dependencies CarRepository, ModelRepository, BrandRepository, UserRepository, DriverRepository
+ * @dependencies CarRepository, ModelRepository, BrandRepository, DriverRepository
  */
 @injectable()
 export class CreateCarUseCase {
@@ -56,8 +55,6 @@ export class CreateCarUseCase {
 		private readonly modelRepository: ModelRepository,
 		@inject(TOKENS.BrandRepository)
 		private readonly brandRepository: BrandRepository,
-		@inject(TOKENS.UserRepository)
-		private readonly userRepository: UserRepository,
 		@inject(TOKENS.DriverRepository)
 		private readonly driverRepository: DriverRepository,
 		@inject(TOKENS.Logger) logger: Logger,
@@ -72,17 +69,8 @@ export class CreateCarUseCase {
 	 * @returns A Result containing the created CarEntity on success, or a CreateCarError on failure
 	 */
 	async execute(input: WithAuthContext<CreateCarSchemaType>): Promise<Result<CarEntity, CreateCarError>> {
-		// Resolve user UUID to driver
-		const userResult = await this.userRepository.findById(input.userId);
-		if (!userResult.success) {
-			return userResult;
-		}
-		if (!userResult.value) {
-			this.logger.warn('Driver not found for car creation', { userId: input.userId });
-			return err(new DriverNotFoundError(input.userId));
-		}
-
-		const driverResult = await this.driverRepository.findByUserRefId(userResult.value.refId);
+		// Resolve user UUID to driver via relation filter (single query)
+		const driverResult = await this.driverRepository.findByUserId(input.userId);
 		if (!driverResult.success) {
 			return driverResult;
 		}

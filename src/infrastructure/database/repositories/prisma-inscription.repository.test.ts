@@ -17,6 +17,7 @@ function createMockPrisma() {
     return {
         inscription: {
             findUnique: vi.fn(),
+            findFirst: vi.fn(),
             findMany: vi.fn(),
             create: vi.fn(),
             delete: vi.fn(),
@@ -101,6 +102,111 @@ describe('PrismaInscriptionRepository', () => {
             mockPrisma.inscription.findUnique.mockRejectedValue(new Error('DB error'));
 
             const result = await repository.findById('ins-1');
+
+            expect(result.success).toBe(false);
+            if (!result.success) {
+                expect(result.error).toBeInstanceOf(DatabaseError);
+            }
+        });
+    });
+
+    describe('findByUserId()', () => {
+        it('should return ok(inscriptions) via user UUID relation filter', async () => {
+            mockPrisma.inscription.findMany.mockResolvedValue([mockInscription]);
+
+            const result = await repository.findByUserId('user-uuid-1');
+
+            expect(result.success).toBe(true);
+            if (result.success) {
+                expect(result.value).toHaveLength(1);
+            }
+            expect(mockPrisma.inscription.findMany).toHaveBeenCalledWith({
+                where: { user: { id: 'user-uuid-1' } },
+                include: { travel: true },
+            });
+        });
+
+        it('should return ok([]) when user has no inscriptions', async () => {
+            mockPrisma.inscription.findMany.mockResolvedValue([]);
+
+            const result = await repository.findByUserId('user-uuid-999');
+
+            expect(result.success).toBe(true);
+            if (result.success) {
+                expect(result.value).toEqual([]);
+            }
+        });
+
+        it('should return err(DatabaseError) on failure', async () => {
+            mockPrisma.inscription.findMany.mockRejectedValue(new Error('DB error'));
+
+            const result = await repository.findByUserId('user-uuid-1');
+
+            expect(result.success).toBe(false);
+            if (!result.success) {
+                expect(result.error).toBeInstanceOf(DatabaseError);
+            }
+        });
+    });
+
+    describe('findByTravelId()', () => {
+        it('should return ok(inscriptions) via travel UUID relation filter', async () => {
+            mockPrisma.inscription.findMany.mockResolvedValue([mockInscription]);
+
+            const result = await repository.findByTravelId('travel-uuid-1');
+
+            expect(result.success).toBe(true);
+            if (result.success) {
+                expect(result.value).toHaveLength(1);
+            }
+            expect(mockPrisma.inscription.findMany).toHaveBeenCalledWith({
+                where: { travel: { id: 'travel-uuid-1' } },
+                include: { user: true },
+            });
+        });
+
+        it('should return err(DatabaseError) on failure', async () => {
+            mockPrisma.inscription.findMany.mockRejectedValue(new Error('DB error'));
+
+            const result = await repository.findByTravelId('travel-uuid-1');
+
+            expect(result.success).toBe(false);
+            if (!result.success) {
+                expect(result.error).toBeInstanceOf(DatabaseError);
+            }
+        });
+    });
+
+    describe('findByIdAndUserId()', () => {
+        it('should return ok(inscription) when found and owned', async () => {
+            mockPrisma.inscription.findFirst.mockResolvedValue(mockInscription);
+
+            const result = await repository.findByIdAndUserId('ins-1', 'user-uuid-1');
+
+            expect(result.success).toBe(true);
+            if (result.success) {
+                expect(result.value).toEqual(mockInscription);
+            }
+            expect(mockPrisma.inscription.findFirst).toHaveBeenCalledWith({
+                where: { id: 'ins-1', user: { id: 'user-uuid-1' } },
+            });
+        });
+
+        it('should return ok(null) when not found or not owned', async () => {
+            mockPrisma.inscription.findFirst.mockResolvedValue(null);
+
+            const result = await repository.findByIdAndUserId('ins-1', 'wrong-user');
+
+            expect(result.success).toBe(true);
+            if (result.success) {
+                expect(result.value).toBeNull();
+            }
+        });
+
+        it('should return err(DatabaseError) on failure', async () => {
+            mockPrisma.inscription.findFirst.mockRejectedValue(new Error('DB error'));
+
+            const result = await repository.findByIdAndUserId('ins-1', 'user-uuid-1');
 
             expect(result.success).toBe(false);
             if (!result.success) {

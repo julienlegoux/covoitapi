@@ -12,8 +12,7 @@
  * - DELETE /:id      -- Delete car (DRIVER+)
  */
 import { Hono } from 'hono';
-import { authMiddleware } from '../middleware/auth.middleware.js';
-import { requireRole } from '../middleware/authorization.middleware.js';
+import { authMiddleware, requireRole } from '../middleware/index.js';
 import { createCar, deleteCar, listCars, patchCar, updateCar } from '../controllers/car.controller.js';
 
 const carRoutes = new Hono();

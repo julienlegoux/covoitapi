@@ -15,30 +15,23 @@
  */
 import type { Context, Next } from 'hono';
 import type { Logger } from '../../lib/logging/logger.types.js';
-import { container } from '../../lib/shared/di/container.js';
-import { TOKENS } from '../../lib/shared/di/tokens.js';
 
 /**
- * Role hierarchy mapping. Higher numbers indicate greater privileges.
- * A user with a higher-level role can access endpoints requiring lower-level roles.
- */
-const ROLE_HIERARCHY: Record<string, number> = {
-	USER: 1,
-	DRIVER: 2,
-	ADMIN: 3,
-};
-
-/**
- * Creates a Hono middleware that enforces minimum role requirements.
+ * Creates a role-checking middleware factory.
  *
+ * The returned function accepts one or more role names and produces a
+ * Hono middleware that enforces the minimum required role level.
  * When multiple roles are specified, the minimum level among them is used
  * as the threshold (i.e., the least-privileged role wins).
  *
- * @param roles - One or more role names (e.g. 'USER', 'DRIVER', 'ADMIN')
- * @returns Hono middleware function that checks `c.get('role')` against the hierarchy
+ * @param roleHierarchy - Mapping of role names to numeric privilege levels
+ * @param logger - Logger instance for authorization failure logging
+ * @returns A function that accepts role names and returns a Hono middleware
  *
  * @example
  * ```ts
+ * const requireRole = createRequireRole(ROLE_HIERARCHY, logger);
+ *
  * // Only DRIVER and ADMIN can access
  * app.post('/cars', requireRole('DRIVER'), createCar);
  *
@@ -46,38 +39,39 @@ const ROLE_HIERARCHY: Record<string, number> = {
  * app.delete('/brands/:id', requireRole('ADMIN'), deleteBrand);
  * ```
  */
-export function requireRole(...roles: string[]) {
-	return async (c: Context, next: Next) => {
-		const logger = container.resolve<Logger>(TOKENS.Logger);
-		const userRole = c.get('role') as string | undefined;
+export function createRequireRole(roleHierarchy: Record<string, number>, logger: Logger) {
+	return (...roles: string[]) => {
+		return async (c: Context, next: Next) => {
+			const userRole = c.get('role') as string | undefined;
 
-		if (!userRole) {
-			logger.warn('Authorization failed: no role in context', {
-				path: c.req.path,
-				method: c.req.method,
-			});
-			return c.json(
-				{ success: false, error: { code: 'UNAUTHORIZED', message: 'Authentication required' } },
-				401,
-			);
-		}
+			if (!userRole) {
+				logger.warn('Authorization failed: no role in context', {
+					path: c.req.path,
+					method: c.req.method,
+				});
+				return c.json(
+					{ success: false, error: { code: 'UNAUTHORIZED', message: 'Authentication required' } },
+					401,
+				);
+			}
 
-		const userLevel = ROLE_HIERARCHY[userRole] ?? 0;
-		const minRequired = Math.min(...roles.map((r) => ROLE_HIERARCHY[r] ?? Infinity));
+			const userLevel = roleHierarchy[userRole] ?? 0;
+			const minRequired = Math.min(...roles.map((r) => roleHierarchy[r] ?? Infinity));
 
-		if (userLevel < minRequired) {
-			logger.warn('Authorization failed: insufficient role', {
-				path: c.req.path,
-				method: c.req.method,
-				userRole,
-				requiredRoles: roles,
-			});
-			return c.json(
-				{ success: false, error: { code: 'FORBIDDEN', message: 'Insufficient permissions' } },
-				403,
-			);
-		}
+			if (userLevel < minRequired) {
+				logger.warn('Authorization failed: insufficient role', {
+					path: c.req.path,
+					method: c.req.method,
+					userRole,
+					requiredRoles: roles,
+				});
+				return c.json(
+					{ success: false, error: { code: 'FORBIDDEN', message: 'Insufficient permissions' } },
+					403,
+				);
+			}
 
-		await next();
+			await next();
+		};
 	};
 }

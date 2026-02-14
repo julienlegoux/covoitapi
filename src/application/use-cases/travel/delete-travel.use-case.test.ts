@@ -7,7 +7,7 @@
 
 import { container } from 'tsyringe';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { createMockLogger, createMockTravelRepository, createMockUserRepository, createMockDriverRepository } from '../../../../tests/setup.js';
+import { createMockLogger, createMockTravelRepository, createMockDriverRepository } from '../../../../tests/setup.js';
 import { TravelNotFoundError, ForbiddenError } from '../../../lib/errors/domain.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import { ok, err } from '../../../lib/shared/types/result.js';
@@ -18,27 +18,22 @@ import { DeleteTravelUseCase } from './delete-travel.use-case.js';
 describe('DeleteTravelUseCase', () => {
 	let useCase: DeleteTravelUseCase;
 	let mockTravelRepository: ReturnType<typeof createMockTravelRepository>;
-	let mockUserRepository: ReturnType<typeof createMockUserRepository>;
 	let mockDriverRepository: ReturnType<typeof createMockDriverRepository>;
 
-	const user = { id: 'user-1', refId: 1, firstName: 'John', lastName: 'Doe', phone: '0600000000' };
 	const driver = { id: 'driver-1', refId: 1, userRefId: 1, licenseNumber: 'LIC-001' };
 	const travel = { id: 'r1', refId: 1, dateRoute: new Date(), kms: 100, seats: 3, driverRefId: 1, carRefId: 1 };
 
 	beforeEach(() => {
 		mockTravelRepository = createMockTravelRepository();
-		mockUserRepository = createMockUserRepository();
 		mockDriverRepository = createMockDriverRepository();
 		container.registerInstance(TOKENS.TravelRepository, mockTravelRepository);
-		container.registerInstance(TOKENS.UserRepository, mockUserRepository);
 		container.registerInstance(TOKENS.DriverRepository, mockDriverRepository);
 		container.registerInstance(TOKENS.Logger, createMockLogger());
 		useCase = container.resolve(DeleteTravelUseCase);
 	});
 
 	function mockDriverResolution() {
-		mockUserRepository.findById.mockResolvedValue(ok(user));
-		mockDriverRepository.findByUserRefId.mockResolvedValue(ok(driver));
+		mockDriverRepository.findByUserId.mockResolvedValue(ok(driver));
 	}
 
 	// Happy path: travel exists, owner matches, travel is deleted

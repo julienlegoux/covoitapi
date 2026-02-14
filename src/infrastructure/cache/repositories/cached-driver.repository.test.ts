@@ -47,6 +47,22 @@ describe('CachedDriverRepository', () => {
         });
     });
 
+    describe('findByUserId()', () => {
+        it('should return cached data on hit', async () => {
+            cache.get.mockResolvedValue({ __cached: true, data: { id: 'd1' } });
+            const result = await repo.findByUserId('user-uuid-1');
+            expect(result.success).toBe(true);
+            expect(inner.findByUserId).not.toHaveBeenCalled();
+        });
+
+        it('should call inner on miss', async () => {
+            cache.get.mockResolvedValue(null);
+            inner.findByUserId.mockResolvedValue(ok(null));
+            await repo.findByUserId('user-uuid-1');
+            expect(inner.findByUserId).toHaveBeenCalledWith('user-uuid-1');
+        });
+    });
+
     describe('create()', () => {
         it('should invalidate on success', async () => {
             inner.create.mockResolvedValue(ok({ id: 'd1' }));

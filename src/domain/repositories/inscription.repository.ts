@@ -39,6 +39,31 @@ export interface InscriptionRepository {
 	findByRouteRefId(routeRefId: number): Promise<Result<InscriptionEntity[], RepositoryError>>;
 
 	/**
+	 * Retrieves all inscriptions for a user, identified by their UUID.
+	 * Uses Prisma relation filter to avoid resolving the user UUID to refId.
+	 * @param userId - The UUID of the user.
+	 * @returns An array of InscriptionEntity records for the user.
+	 */
+	findByUserId(userId: string): Promise<Result<InscriptionEntity[], RepositoryError>>;
+
+	/**
+	 * Retrieves all inscriptions for a travel, identified by its UUID.
+	 * Uses Prisma relation filter to avoid resolving the travel UUID to refId.
+	 * @param travelId - The UUID of the travel.
+	 * @returns An array of InscriptionEntity records for the travel.
+	 */
+	findByTravelId(travelId: string): Promise<Result<InscriptionEntity[], RepositoryError>>;
+
+	/**
+	 * Finds an inscription by its UUID and verifies it belongs to the given user.
+	 * Combines existence check and ownership verification in a single query.
+	 * @param id - The UUID of the inscription.
+	 * @param userId - The UUID of the user (ownership check).
+	 * @returns The matching InscriptionEntity, or null if not found or not owned.
+	 */
+	findByIdAndUserId(id: string, userId: string): Promise<Result<InscriptionEntity | null, RepositoryError>>;
+
+	/**
 	 * Creates a new inscription (books a passenger on a route).
 	 * @param data - The user and route references for the inscription.
 	 * @returns The newly created InscriptionEntity.

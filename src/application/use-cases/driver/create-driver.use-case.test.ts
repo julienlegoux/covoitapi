@@ -71,7 +71,7 @@ describe('CreateDriverUseCase', () => {
 	// Happy path: driver is created and role upgrade is triggered
 	it('should create a driver successfully', async () => {
 		mockUserRepository.findById.mockResolvedValue(ok(mockUser));
-		mockDriverRepository.findByUserRefId.mockResolvedValue(ok(null));
+		mockDriverRepository.findByUserId.mockResolvedValue(ok(null));
 		mockDriverRepository.create.mockResolvedValue(ok(mockDriver));
 		mockAuthRepository.updateRole.mockResolvedValue(ok(undefined));
 
@@ -82,7 +82,7 @@ describe('CreateDriverUseCase', () => {
 			expect(result.value).toEqual(mockDriver);
 		}
 		expect(mockUserRepository.findById).toHaveBeenCalledWith(validInput.userId);
-		expect(mockDriverRepository.findByUserRefId).toHaveBeenCalledWith(mockUser.refId);
+		expect(mockDriverRepository.findByUserId).toHaveBeenCalledWith(validInput.userId);
 		expect(mockDriverRepository.create).toHaveBeenCalledWith({
 			driverLicense: validInput.driverLicense,
 			userRefId: mockUser.refId,
@@ -92,7 +92,7 @@ describe('CreateDriverUseCase', () => {
 	// Verifies the Auth role is changed from USER to DRIVER
 	it('should upgrade user role to DRIVER after successful creation', async () => {
 		mockUserRepository.findById.mockResolvedValue(ok(mockUser));
-		mockDriverRepository.findByUserRefId.mockResolvedValue(ok(null));
+		mockDriverRepository.findByUserId.mockResolvedValue(ok(null));
 		mockDriverRepository.create.mockResolvedValue(ok(mockDriver));
 		mockAuthRepository.updateRole.mockResolvedValue(ok(undefined));
 
@@ -104,7 +104,7 @@ describe('CreateDriverUseCase', () => {
 	// Verifies role is not upgraded when driver creation itself fails
 	it('should not upgrade role when driver creation fails', async () => {
 		mockUserRepository.findById.mockResolvedValue(ok(mockUser));
-		mockDriverRepository.findByUserRefId.mockResolvedValue(ok(null));
+		mockDriverRepository.findByUserId.mockResolvedValue(ok(null));
 		mockDriverRepository.create.mockResolvedValue(err(new DatabaseError('DB error')));
 
 		const result = await useCase.execute(validInput);
@@ -116,7 +116,7 @@ describe('CreateDriverUseCase', () => {
 	// Duplicate guard: user already has a driver profile
 	it('should return DriverAlreadyExistsError when driver already exists', async () => {
 		mockUserRepository.findById.mockResolvedValue(ok(mockUser));
-		mockDriverRepository.findByUserRefId.mockResolvedValue(ok(mockDriver));
+		mockDriverRepository.findByUserId.mockResolvedValue(ok(mockDriver));
 
 		const result = await useCase.execute(validInput);
 
@@ -129,9 +129,9 @@ describe('CreateDriverUseCase', () => {
 	});
 
 	// DB error during driver existence check bubbles up
-	it('should return error when findByUserRefId fails', async () => {
+	it('should return error when findByUserId fails', async () => {
 		mockUserRepository.findById.mockResolvedValue(ok(mockUser));
-		mockDriverRepository.findByUserRefId.mockResolvedValue(err(new DatabaseError('DB error')));
+		mockDriverRepository.findByUserId.mockResolvedValue(err(new DatabaseError('DB error')));
 
 		const result = await useCase.execute(validInput);
 
@@ -146,7 +146,7 @@ describe('CreateDriverUseCase', () => {
 	// Role update failure is tolerated: driver creation still succeeds
 	it('should still return success even if role update fails', async () => {
 		mockUserRepository.findById.mockResolvedValue(ok(mockUser));
-		mockDriverRepository.findByUserRefId.mockResolvedValue(ok(null));
+		mockDriverRepository.findByUserId.mockResolvedValue(ok(null));
 		mockDriverRepository.create.mockResolvedValue(ok(mockDriver));
 		mockAuthRepository.updateRole.mockResolvedValue(err(new DatabaseError('Role update failed')));
 

@@ -74,6 +74,7 @@ export function createMockModelRepository() {
 export function createMockDriverRepository() {
 	return {
 		findByUserRefId: vi.fn(),
+		findByUserId: vi.fn(),
 		create: vi.fn(),
 	};
 }
@@ -94,6 +95,9 @@ export function createMockInscriptionRepository() {
 		findById: vi.fn(),
 		findByUserRefId: vi.fn(),
 		findByRouteRefId: vi.fn(),
+		findByUserId: vi.fn(),
+		findByTravelId: vi.fn(),
+		findByIdAndUserId: vi.fn(),
 		create: vi.fn(),
 		delete: vi.fn(),
 		existsByUserAndRoute: vi.fn(),
@@ -254,11 +258,13 @@ export function createMockPrismaClient() {
 		},
 		driver: {
 			findUnique: vi.fn(),
+			findFirst: vi.fn(),
 			create: vi.fn(),
 			count: vi.fn(),
 		},
 		inscription: {
 			findUnique: vi.fn(),
+			findFirst: vi.fn(),
 			findMany: vi.fn(),
 			create: vi.fn(),
 			delete: vi.fn(),

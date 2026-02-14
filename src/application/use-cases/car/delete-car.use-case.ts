@@ -8,7 +8,6 @@
 import { inject, injectable } from 'tsyringe';
 import { CarNotFoundError, DriverNotFoundError, ForbiddenError } from '../../../lib/errors/domain.errors.js';
 import type { CarRepository } from '../../../domain/repositories/car.repository.js';
-import type { UserRepository } from '../../../domain/repositories/user.repository.js';
 import type { DriverRepository } from '../../../domain/repositories/driver.repository.js';
 import type { RepositoryError } from '../../../lib/errors/repository.errors.js';
 import type { Logger } from '../../../lib/logging/logger.types.js';
@@ -35,7 +34,7 @@ type DeleteCarError = CarNotFoundError | DriverNotFoundError | ForbiddenError | 
  * 3. Verify the car belongs to the requesting driver
  * 4. Delete the car record
  *
- * @dependencies CarRepository, UserRepository, DriverRepository
+ * @dependencies CarRepository, DriverRepository
  */
 @injectable()
 export class DeleteCarUseCase {
@@ -44,8 +43,6 @@ export class DeleteCarUseCase {
 	constructor(
 		@inject(TOKENS.CarRepository)
 		private readonly carRepository: CarRepository,
-		@inject(TOKENS.UserRepository)
-		private readonly userRepository: UserRepository,
 		@inject(TOKENS.DriverRepository)
 		private readonly driverRepository: DriverRepository,
 		@inject(TOKENS.Logger) logger: Logger,
@@ -70,16 +67,8 @@ export class DeleteCarUseCase {
 			return err(new CarNotFoundError(input.id));
 		}
 
-		// Ownership check: resolve user → driver, compare driverRefId
-		const userResult = await this.userRepository.findById(input.userId);
-		if (!userResult.success) {
-			return userResult;
-		}
-		if (!userResult.value) {
-			return err(new DriverNotFoundError(input.userId));
-		}
-
-		const driverResult = await this.driverRepository.findByUserRefId(userResult.value.refId);
+		// Ownership check: resolve user UUID → driver via relation filter (single query)
+		const driverResult = await this.driverRepository.findByUserId(input.userId);
 		if (!driverResult.success) {
 			return driverResult;
 		}

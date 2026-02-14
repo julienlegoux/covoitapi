@@ -11,8 +11,7 @@
  * - DELETE /:id      -- Delete color (ADMIN only)
  */
 import { Hono } from 'hono';
-import { authMiddleware } from '../middleware/auth.middleware.js';
-import { requireRole } from '../middleware/authorization.middleware.js';
+import { authMiddleware, requireRole } from '../middleware/index.js';
 import { listColors, createColor, updateColor, deleteColor } from '../controllers/color.controller.js';
 
 const colorRoutes = new Hono();

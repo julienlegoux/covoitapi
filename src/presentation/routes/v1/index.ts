@@ -1,6 +1,5 @@
 import { Hono } from 'hono';
-import { authMiddleware } from '../../middleware/auth.middleware.js';
-import { requireRole } from '../../middleware/authorization.middleware.js';
+import { authMiddleware, requireRole } from '../../middleware/index.js';
 import { authRoutes } from '../auth.routes.js';
 import { brandRoutes } from '../brand.routes.js';
 import { carRoutes } from '../car.routes.js';

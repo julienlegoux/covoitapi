@@ -12,8 +12,7 @@
  * - DELETE /:id      -- Delete travel (DRIVER+)
  */
 import { Hono } from 'hono';
-import { authMiddleware } from '../middleware/auth.middleware.js';
-import { requireRole } from '../middleware/authorization.middleware.js';
+import { authMiddleware, requireRole } from '../middleware/index.js';
 import { createRoute, deleteRoute, findRoute, getRoute, listRoutes } from '../controllers/route.controller.js';
 
 const travelRoutes = new Hono();

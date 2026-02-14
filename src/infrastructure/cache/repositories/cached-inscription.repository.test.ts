@@ -50,6 +50,33 @@ describe('CachedInscriptionRepository', () => {
         });
     });
 
+    describe('findByUserId()', () => {
+        it('should use cache-aside', async () => {
+            cache.get.mockResolvedValue(null);
+            inner.findByUserId.mockResolvedValue(ok([]));
+            await repo.findByUserId('user-uuid-1');
+            expect(inner.findByUserId).toHaveBeenCalledWith('user-uuid-1');
+        });
+    });
+
+    describe('findByTravelId()', () => {
+        it('should use cache-aside', async () => {
+            cache.get.mockResolvedValue(null);
+            inner.findByTravelId.mockResolvedValue(ok([]));
+            await repo.findByTravelId('travel-uuid-1');
+            expect(inner.findByTravelId).toHaveBeenCalledWith('travel-uuid-1');
+        });
+    });
+
+    describe('findByIdAndUserId()', () => {
+        it('should use cache-aside', async () => {
+            cache.get.mockResolvedValue(null);
+            inner.findByIdAndUserId.mockResolvedValue(ok(null));
+            await repo.findByIdAndUserId('ins-1', 'user-uuid-1');
+            expect(inner.findByIdAndUserId).toHaveBeenCalledWith('ins-1', 'user-uuid-1');
+        });
+    });
+
     describe('existsByUserAndRoute()', () => {
         it('should cache boolean result', async () => {
             cache.get.mockResolvedValue(null);

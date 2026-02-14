@@ -38,6 +38,11 @@ export class CachedDriverRepository implements DriverRepository {
 		return cacheAside(this.cache, this.key('findByUserRefId', String(userRefId)), this.config.ttl.driver, () => this.inner.findByUserRefId(userRefId), this.logger);
 	}
 
+	async findByUserId(userId: string): Promise<Result<DriverEntity | null, RepositoryError>> {
+		if (!this.config.enabled) return this.inner.findByUserId(userId);
+		return cacheAside(this.cache, this.key('findByUserId', userId), this.config.ttl.driver, () => this.inner.findByUserId(userId), this.logger);
+	}
+
 	async create(data: CreateDriverData): Promise<Result<DriverEntity, RepositoryError>> {
 		const result = await this.inner.create(data);
 		if (this.config.enabled && result.success) {

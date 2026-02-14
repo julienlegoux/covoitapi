@@ -13,7 +13,6 @@ import { CarNotFoundError, BrandNotFoundError, DriverNotFoundError, ForbiddenErr
 import type { CarRepository } from '../../../domain/repositories/car.repository.js';
 import type { ModelRepository } from '../../../domain/repositories/model.repository.js';
 import type { BrandRepository } from '../../../domain/repositories/brand.repository.js';
-import type { UserRepository } from '../../../domain/repositories/user.repository.js';
 import type { DriverRepository } from '../../../domain/repositories/driver.repository.js';
 import type { RepositoryError } from '../../../lib/errors/repository.errors.js';
 import type { Logger } from '../../../lib/logging/logger.types.js';
@@ -45,7 +44,7 @@ type UpdateCarError = CarNotFoundError | BrandNotFoundError | DriverNotFoundErro
  *    then find or create the model to get its refId
  * 6. Persist the update
  *
- * @dependencies CarRepository, ModelRepository, BrandRepository, UserRepository, DriverRepository
+ * @dependencies CarRepository, ModelRepository, BrandRepository, DriverRepository
  */
 @injectable()
 export class UpdateCarUseCase {
@@ -58,8 +57,6 @@ export class UpdateCarUseCase {
 		private readonly modelRepository: ModelRepository,
 		@inject(TOKENS.BrandRepository)
 		private readonly brandRepository: BrandRepository,
-		@inject(TOKENS.UserRepository)
-		private readonly userRepository: UserRepository,
 		@inject(TOKENS.DriverRepository)
 		private readonly driverRepository: DriverRepository,
 		@inject(TOKENS.Logger) logger: Logger,
@@ -86,16 +83,8 @@ export class UpdateCarUseCase {
 			return err(new CarNotFoundError(id));
 		}
 
-		// Ownership check: resolve user → driver, compare driverRefId
-		const userResult = await this.userRepository.findById(userId);
-		if (!userResult.success) {
-			return userResult;
-		}
-		if (!userResult.value) {
-			return err(new DriverNotFoundError(userId));
-		}
-
-		const driverResult = await this.driverRepository.findByUserRefId(userResult.value.refId);
+		// Ownership check: resolve user UUID → driver via relation filter (single query)
+		const driverResult = await this.driverRepository.findByUserId(userId);
 		if (!driverResult.success) {
 			return driverResult;
 		}

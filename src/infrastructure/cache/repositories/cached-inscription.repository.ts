@@ -55,6 +55,21 @@ export class CachedInscriptionRepository implements InscriptionRepository {
 		return cacheAside(this.cache, this.key('findByRouteRefId', String(routeRefId)), this.config.ttl.inscription, () => this.inner.findByRouteRefId(routeRefId), this.logger);
 	}
 
+	async findByUserId(userId: string): Promise<Result<InscriptionEntity[], RepositoryError>> {
+		if (!this.config.enabled) return this.inner.findByUserId(userId);
+		return cacheAside(this.cache, this.key('findByUserId', userId), this.config.ttl.inscription, () => this.inner.findByUserId(userId), this.logger);
+	}
+
+	async findByTravelId(travelId: string): Promise<Result<InscriptionEntity[], RepositoryError>> {
+		if (!this.config.enabled) return this.inner.findByTravelId(travelId);
+		return cacheAside(this.cache, this.key('findByTravelId', travelId), this.config.ttl.inscription, () => this.inner.findByTravelId(travelId), this.logger);
+	}
+
+	async findByIdAndUserId(id: string, userId: string): Promise<Result<InscriptionEntity | null, RepositoryError>> {
+		if (!this.config.enabled) return this.inner.findByIdAndUserId(id, userId);
+		return cacheAside(this.cache, this.key('findByIdAndUserId', `${id}:${userId}`), this.config.ttl.inscription, () => this.inner.findByIdAndUserId(id, userId), this.logger);
+	}
+
 	async existsByUserAndRoute(userRefId: number, routeRefId: number): Promise<Result<boolean, RepositoryError>> {
 		if (!this.config.enabled) return this.inner.existsByUserAndRoute(userRefId, routeRefId);
 		return cacheAside(this.cache, this.key('existsByUserAndRoute', JSON.stringify({ userRefId, routeRefId })), this.config.ttl.inscription, () => this.inner.existsByUserAndRoute(userRefId, routeRefId), this.logger);

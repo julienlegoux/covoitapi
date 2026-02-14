@@ -20,26 +20,25 @@ import { ZodError } from 'zod';
 import { DomainError } from '../../lib/errors/domain.errors.js';
 import { getHttpStatus, isErrorCode } from '../../lib/errors/error-registry.js';
 import type { Logger } from '../../lib/logging/logger.types.js';
-import { container } from '../../lib/shared/di/container.js';
-import { TOKENS } from '../../lib/shared/di/tokens.js';
 import type { ErrorResponse } from '../../lib/errors/error.types.js';
 
 /**
- * Hono middleware that catches errors thrown by downstream handlers
+ * Creates a Hono middleware that catches errors thrown by downstream handlers
  * and converts them to standardized JSON error responses.
  *
- * @param c - Hono request context
- * @param next - Next middleware/handler in the chain
- * @returns Undefined on success (passes through), or a JSON error Response on failure
+ * @param logger - Logger instance for logging unexpected errors
+ * @returns Hono middleware function
  */
-export async function errorHandler(c: Context, next: Next): Promise<Response | undefined> {
-	try {
-		await next();
-	} catch (error) {
-		const response = buildErrorResponse(error);
-		const status = getStatusCode(error);
-		return c.json(response, status as ContentfulStatusCode);
-	}
+export function createErrorHandler(logger: Logger) {
+	return async (c: Context, next: Next): Promise<Response | undefined> => {
+		try {
+			await next();
+		} catch (error) {
+			const response = buildErrorResponse(error, logger);
+			const status = getStatusCode(error);
+			return c.json(response, status as ContentfulStatusCode);
+		}
+	};
 }
 
 /**
@@ -49,9 +48,10 @@ export async function errorHandler(c: Context, next: Next): Promise<Response | u
  * - Unknown: logs the error and returns a generic INTERNAL_ERROR
  *
  * @param error - The caught error (any type)
+ * @param logger - Logger instance for logging unexpected errors
  * @returns Structured error response object
  */
-function buildErrorResponse(error: unknown): ErrorResponse {
+function buildErrorResponse(error: unknown, logger: Logger): ErrorResponse {
 	if (error instanceof ZodError) {
 		const details: Record<string, string[]> = {};
 		for (const issue of error.issues) {
@@ -81,7 +81,6 @@ function buildErrorResponse(error: unknown): ErrorResponse {
 		};
 	}
 
-	const logger = container.resolve<Logger>(TOKENS.Logger);
 	logger.error('Unexpected error', error instanceof Error ? error : null);
 	return {
 		success: false,

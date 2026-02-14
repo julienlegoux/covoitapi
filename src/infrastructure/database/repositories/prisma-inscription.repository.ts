@@ -121,6 +121,64 @@ export class PrismaInscriptionRepository implements InscriptionRepository {
 	}
 
 	/**
+	 * Finds all inscriptions for a user, identified by their UUID via a relation filter.
+	 * Eliminates the need to first resolve the user UUID to a refId.
+	 * @param userId - The UUID of the user.
+	 * @returns `ok(InscriptionEntity[])` on success, or `err(DatabaseError)` on failure.
+	 */
+	async findByUserId(userId: string): Promise<Result<InscriptionEntity[], DatabaseError>> {
+		try {
+			const inscriptions = await this.prisma.inscription.findMany({
+				where: { user: { id: userId } },
+				include: { travel: true },
+			});
+			return ok(inscriptions as unknown as InscriptionEntity[]);
+		} catch (e) {
+			this.logger.error('Failed to find inscriptions by user id', e instanceof Error ? e : null, { operation: 'findByUserId', userId });
+			return err(new DatabaseError('Failed to find inscriptions by user id', e));
+		}
+	}
+
+	/**
+	 * Finds all inscriptions for a travel, identified by its UUID via a relation filter.
+	 * Eliminates the need to first resolve the travel UUID to a refId.
+	 * @param travelId - The UUID of the travel.
+	 * @returns `ok(InscriptionEntity[])` on success, or `err(DatabaseError)` on failure.
+	 */
+	async findByTravelId(travelId: string): Promise<Result<InscriptionEntity[], DatabaseError>> {
+		try {
+			const inscriptions = await this.prisma.inscription.findMany({
+				where: { travel: { id: travelId } },
+				include: { user: true },
+			});
+			return ok(inscriptions as unknown as InscriptionEntity[]);
+		} catch (e) {
+			this.logger.error('Failed to find inscriptions by travel id', e instanceof Error ? e : null, { operation: 'findByTravelId', travelId });
+			return err(new DatabaseError('Failed to find inscriptions by travel id', e));
+		}
+	}
+
+	/**
+	 * Finds an inscription by its UUID and verifies it belongs to the given user.
+	 * Combines existence check and ownership verification in a single query.
+	 * @param id - The UUID of the inscription.
+	 * @param userId - The UUID of the user (ownership check).
+	 * @returns `ok(InscriptionEntity)` if found and owned, `ok(null)` otherwise,
+	 *          or `err(DatabaseError)` on failure.
+	 */
+	async findByIdAndUserId(id: string, userId: string): Promise<Result<InscriptionEntity | null, DatabaseError>> {
+		try {
+			const inscription = await this.prisma.inscription.findFirst({
+				where: { id, user: { id: userId } },
+			});
+			return ok(inscription as unknown as InscriptionEntity | null);
+		} catch (e) {
+			this.logger.error('Failed to find inscription by id and user id', e instanceof Error ? e : null, { operation: 'findByIdAndUserId', inscriptionId: id, userId });
+			return err(new DatabaseError('Failed to find inscription by id and user id', e));
+		}
+	}
+
+	/**
 	 * Creates a new inscription linking a user to a travel via integer refIds.
 	 * @param data - Inscription creation data with userRefId and routeRefId.
 	 * @returns `ok(InscriptionEntity)` with the created inscription,

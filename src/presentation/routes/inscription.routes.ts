@@ -15,8 +15,7 @@
  * - GET /api/travels/:id/passengers
  */
 import { Hono } from 'hono';
-import { authMiddleware } from '../middleware/auth.middleware.js';
-import { requireRole } from '../middleware/authorization.middleware.js';
+import { authMiddleware, requireRole } from '../middleware/index.js';
 import {
 	createInscription,
 	deleteInscription,

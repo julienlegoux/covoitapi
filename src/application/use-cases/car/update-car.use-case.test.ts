@@ -3,12 +3,12 @@
  *
  * Covers partial updates (license plate only, model resolution with existing
  * and new models), ownership verification, not-found guard, and repository
- * error propagation from car, model, brand, user, and driver repositories.
+ * error propagation from car, model, brand, and driver repositories.
  */
 
 import { container } from 'tsyringe';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { createMockCarRepository, createMockModelRepository, createMockBrandRepository, createMockUserRepository, createMockDriverRepository, createMockLogger } from '../../../../tests/setup.js';
+import { createMockCarRepository, createMockModelRepository, createMockBrandRepository, createMockDriverRepository, createMockLogger } from '../../../../tests/setup.js';
 import { CarNotFoundError, ForbiddenError } from '../../../lib/errors/domain.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import { ok, err } from '../../../lib/shared/types/result.js';
@@ -21,32 +21,27 @@ describe('UpdateCarUseCase', () => {
 	let mockCarRepository: ReturnType<typeof createMockCarRepository>;
 	let mockModelRepository: ReturnType<typeof createMockModelRepository>;
 	let mockBrandRepository: ReturnType<typeof createMockBrandRepository>;
-	let mockUserRepository: ReturnType<typeof createMockUserRepository>;
 	let mockDriverRepository: ReturnType<typeof createMockDriverRepository>;
 
 	const existingCar = { id: 'car-1', refId: 1, licensePlate: 'AB-123-CD', modelRefId: 10, driverRefId: 1 };
 	const brand = { id: 'brand-1', refId: 5, name: 'Toyota' };
-	const user = { id: 'user-1', refId: 1, firstName: 'John', lastName: 'Doe', phone: '0600000000' };
 	const driver = { id: 'driver-1', refId: 1, userRefId: 1, licenseNumber: 'LIC-001' };
 
 	beforeEach(() => {
 		mockCarRepository = createMockCarRepository();
 		mockModelRepository = createMockModelRepository();
 		mockBrandRepository = createMockBrandRepository();
-		mockUserRepository = createMockUserRepository();
 		mockDriverRepository = createMockDriverRepository();
 		container.registerInstance(TOKENS.CarRepository, mockCarRepository);
 		container.registerInstance(TOKENS.ModelRepository, mockModelRepository);
 		container.registerInstance(TOKENS.BrandRepository, mockBrandRepository);
-		container.registerInstance(TOKENS.UserRepository, mockUserRepository);
 		container.registerInstance(TOKENS.DriverRepository, mockDriverRepository);
 		container.registerInstance(TOKENS.Logger, createMockLogger());
 		useCase = container.resolve(UpdateCarUseCase);
 	});
 
 	function mockDriverResolution() {
-		mockUserRepository.findById.mockResolvedValue(ok(user));
-		mockDriverRepository.findByUserRefId.mockResolvedValue(ok(driver));
+		mockDriverRepository.findByUserId.mockResolvedValue(ok(driver));
 	}
 
 	// Partial update: only license plate, no model resolution needed

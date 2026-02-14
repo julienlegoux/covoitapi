@@ -9,7 +9,6 @@ import { inject, injectable } from 'tsyringe';
 import { TravelNotFoundError, DriverNotFoundError, ForbiddenError } from '../../../lib/errors/domain.errors.js';
 import type { Logger } from '../../../lib/logging/logger.types.js';
 import type { TravelRepository } from '../../../domain/repositories/travel.repository.js';
-import type { UserRepository } from '../../../domain/repositories/user.repository.js';
 import type { DriverRepository } from '../../../domain/repositories/driver.repository.js';
 import type { RepositoryError } from '../../../lib/errors/repository.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
@@ -35,7 +34,7 @@ type DeleteTravelError = TravelNotFoundError | DriverNotFoundError | ForbiddenEr
  * 3. Verify the travel belongs to the requesting driver
  * 4. Delete the travel record
  *
- * @dependencies TravelRepository, UserRepository, DriverRepository
+ * @dependencies TravelRepository, DriverRepository
  */
 @injectable()
 export class DeleteTravelUseCase {
@@ -44,8 +43,6 @@ export class DeleteTravelUseCase {
 	constructor(
 		@inject(TOKENS.TravelRepository)
 		private readonly travelRepository: TravelRepository,
-		@inject(TOKENS.UserRepository)
-		private readonly userRepository: UserRepository,
 		@inject(TOKENS.DriverRepository)
 		private readonly driverRepository: DriverRepository,
 		@inject(TOKENS.Logger) logger: Logger,
@@ -70,16 +67,8 @@ export class DeleteTravelUseCase {
 			return err(new TravelNotFoundError(input.id));
 		}
 
-		// Ownership check: resolve user → driver, compare driverRefId
-		const userResult = await this.userRepository.findById(input.userId);
-		if (!userResult.success) {
-			return userResult;
-		}
-		if (!userResult.value) {
-			return err(new DriverNotFoundError(input.userId));
-		}
-
-		const driverResult = await this.driverRepository.findByUserRefId(userResult.value.refId);
+		// Ownership check: resolve user UUID → driver via relation filter (single query)
+		const driverResult = await this.driverRepository.findByUserId(input.userId);
 		if (!driverResult.success) {
 			return driverResult;
 		}

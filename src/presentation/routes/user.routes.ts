@@ -14,8 +14,7 @@
  * Note: `/me` routes are defined before `/:id` to prevent route shadowing.
  */
 import { Hono } from 'hono';
-import { authMiddleware } from '../middleware/auth.middleware.js';
-import { requireRole } from '../middleware/authorization.middleware.js';
+import { authMiddleware, requireRole } from '../middleware/index.js';
 import { listUsers, getUser, updateProfile, anonymizeMe, anonymizeUser } from '../controllers/user.controller.js';
 
 const userRoutes = new Hono();

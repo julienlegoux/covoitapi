@@ -10,8 +10,7 @@
  * - DELETE /:id      -- Delete brand (ADMIN)
  */
 import { Hono } from 'hono';
-import { authMiddleware } from '../middleware/auth.middleware.js';
-import { requireRole } from '../middleware/authorization.middleware.js';
+import { authMiddleware, requireRole } from '../middleware/index.js';
 import { createBrand, deleteBrand, listBrands } from '../controllers/brand.controller.js';
 
 const brandRoutes = new Hono();

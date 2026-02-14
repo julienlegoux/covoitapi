@@ -3,12 +3,12 @@
  *
  * Covers car creation with existing model, car creation with auto-created model,
  * duplicate license plate rejection, driver resolution, and repository error
- * propagation from each dependency (car, model, brand, user, driver repositories).
+ * propagation from each dependency (car, model, brand, driver repositories).
  */
 
 import { container } from 'tsyringe';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { createMockCarRepository, createMockModelRepository, createMockBrandRepository, createMockUserRepository, createMockDriverRepository, createMockLogger } from '../../../../tests/setup.js';
+import { createMockCarRepository, createMockModelRepository, createMockBrandRepository, createMockDriverRepository, createMockLogger } from '../../../../tests/setup.js';
 import { CarAlreadyExistsError, DriverNotFoundError } from '../../../lib/errors/domain.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import { ok, err } from '../../../lib/shared/types/result.js';
@@ -21,24 +21,20 @@ describe('CreateCarUseCase', () => {
 	let mockCarRepository: ReturnType<typeof createMockCarRepository>;
 	let mockModelRepository: ReturnType<typeof createMockModelRepository>;
 	let mockBrandRepository: ReturnType<typeof createMockBrandRepository>;
-	let mockUserRepository: ReturnType<typeof createMockUserRepository>;
 	let mockDriverRepository: ReturnType<typeof createMockDriverRepository>;
 
 	const validInput = { model: 'Corolla', brandId: 'brand-1', licensePlate: 'AB-123-CD', userId: 'user-1' };
 	const brand = { id: 'brand-1', refId: 5, name: 'Toyota' };
-	const user = { id: 'user-1', refId: 1, firstName: 'John', lastName: 'Doe', phone: '0600000000' };
 	const driver = { id: 'driver-1', refId: 1, userRefId: 1, licenseNumber: 'LIC-001' };
 
 	beforeEach(() => {
 		mockCarRepository = createMockCarRepository();
 		mockModelRepository = createMockModelRepository();
 		mockBrandRepository = createMockBrandRepository();
-		mockUserRepository = createMockUserRepository();
 		mockDriverRepository = createMockDriverRepository();
 		container.registerInstance(TOKENS.CarRepository, mockCarRepository);
 		container.registerInstance(TOKENS.ModelRepository, mockModelRepository);
 		container.registerInstance(TOKENS.BrandRepository, mockBrandRepository);
-		container.registerInstance(TOKENS.UserRepository, mockUserRepository);
 		container.registerInstance(TOKENS.DriverRepository, mockDriverRepository);
 		container.registerInstance(TOKENS.Logger, createMockLogger());
 		useCase = container.resolve(CreateCarUseCase);
@@ -46,8 +42,7 @@ describe('CreateCarUseCase', () => {
 
 	// Helper to set up successful driver resolution mocks
 	function mockDriverResolution() {
-		mockUserRepository.findById.mockResolvedValue(ok(user));
-		mockDriverRepository.findByUserRefId.mockResolvedValue(ok(driver));
+		mockDriverRepository.findByUserId.mockResolvedValue(ok(driver));
 	}
 
 	// Happy path: model already exists for the brand, car is created with its refId
@@ -98,8 +93,7 @@ describe('CreateCarUseCase', () => {
 
 	// No driver profile: returns DriverNotFoundError
 	it('should return DriverNotFoundError when user has no driver profile', async () => {
-		mockUserRepository.findById.mockResolvedValue(ok(user));
-		mockDriverRepository.findByUserRefId.mockResolvedValue(ok(null));
+		mockDriverRepository.findByUserId.mockResolvedValue(ok(null));
 
 		const result = await useCase.execute(validInput);
 
