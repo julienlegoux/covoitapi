@@ -6,29 +6,106 @@
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"variable": [
-		{ "key": "baseUrl", "value": "https://covoitapi-git-develop-julien-legouxs-projects.vercel.app/api" },
-		{ "key": "token", "value": "" },
-		{ "key": "adminToken", "value": "" },
-		{ "key": "userId", "value": "" },
-		{ "key": "driverId", "value": "" },
-		{ "key": "brandId", "value": "" },
-		{ "key": "colorId", "value": "" },
-		{ "key": "cityId", "value": "" },
-		{ "key": "cityId2", "value": "" },
-		{ "key": "carId", "value": "" },
-		{ "key": "tripId", "value": "" },
-		{ "key": "inscriptionId", "value": "" },
-		{ "key": "testEmail", "value": "" },
-		{ "key": "testPassword", "value": "TestPass123" },
-		{ "key": "adminEmail", "value": "admin@covoitapi.com" },
-		{ "key": "adminPassword", "value": "Admin123!" },
-		{ "key": "vpToken", "value": "" },
-		{ "key": "vpUserId", "value": "" },
-		{ "key": "vpBrandId", "value": "" },
-		{ "key": "vpCarId", "value": "" },
-		{ "key": "vpTripId", "value": "" },
-		{ "key": "vpInscriptionUserId", "value": "" },
-		{ "key": "vpInscriptionToken", "value": "" }
+		{
+			"key": "baseUrl",
+			"value": "https://covoitapi-git-develop-julien-legouxs-projects.vercel.app/api"
+		},
+		{
+			"key": "baseUrlVp",
+			"value": "https://covoitapi-git-develop-julien-legouxs-projects.vercel.app/api/vp"
+		},
+		{
+			"key": "token",
+			"value": ""
+		},
+		{
+			"key": "adminToken",
+			"value": ""
+		},
+		{
+			"key": "userId",
+			"value": ""
+		},
+		{
+			"key": "driverId",
+			"value": ""
+		},
+		{
+			"key": "brandId",
+			"value": ""
+		},
+		{
+			"key": "colorId",
+			"value": ""
+		},
+		{
+			"key": "cityId",
+			"value": ""
+		},
+		{
+			"key": "cityId2",
+			"value": ""
+		},
+		{
+			"key": "carId",
+			"value": ""
+		},
+		{
+			"key": "tripId",
+			"value": ""
+		},
+		{
+			"key": "inscriptionId",
+			"value": ""
+		},
+		{
+			"key": "testEmail",
+			"value": ""
+		},
+		{
+			"key": "testPassword",
+			"value": "TestPass123"
+		},
+		{
+			"key": "adminEmail",
+			"value": "admin@covoitapi.com"
+		},
+		{
+			"key": "adminPassword",
+			"value": "Admin123!"
+		},
+		{
+			"key": "vpToken",
+			"value": ""
+		},
+		{
+			"key": "vpUserId",
+			"value": ""
+		},
+		{
+			"key": "vpBrandId",
+			"value": ""
+		},
+		{
+			"key": "vpCarId",
+			"value": ""
+		},
+		{
+			"key": "vpTripId",
+			"value": ""
+		},
+		{
+			"key": "vpInscriptionUserId",
+			"value": ""
+		},
+		{
+			"key": "vpInscriptionToken",
+			"value": ""
+		},
+		{
+			"key": "bypassToken",
+			"value": "iTJZ9hSQOcbj55DWU5fgA67szmg1G4h5"
+		}
 	],
 	"event": [
 		{
@@ -56,8 +133,21 @@
 							"name": "Health Check",
 							"request": {
 								"method": "GET",
-								"header": [],
-								"url": { "raw": "{{baseUrl}}/health", "host": ["{{baseUrl}}"], "path": ["health"] }
+								"header": [
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/health",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"health"
+									]
+								}
 							},
 							"event": [
 								{
@@ -80,12 +170,31 @@
 							"name": "Register",
 							"request": {
 								"method": "POST",
-								"header": [{ "key": "Content-Type", "value": "application/json" }],
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
 								"body": {
 									"mode": "raw",
 									"raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"{{testPassword}}\",\n  \"confirmPassword\": \"{{testPassword}}\"\n}"
 								},
-								"url": { "raw": "{{baseUrl}}/v1/auth/register", "host": ["{{baseUrl}}"], "path": ["v1", "auth", "register"] }
+								"url": {
+									"raw": "{{baseUrl}}/v1/auth/register",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"auth",
+										"register"
+									]
+								}
 							},
 							"event": [
 								{
@@ -113,12 +222,31 @@
 							"name": "Register - Duplicate (expect 409)",
 							"request": {
 								"method": "POST",
-								"header": [{ "key": "Content-Type", "value": "application/json" }],
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
 								"body": {
 									"mode": "raw",
 									"raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"{{testPassword}}\",\n  \"confirmPassword\": \"{{testPassword}}\"\n}"
 								},
-								"url": { "raw": "{{baseUrl}}/v1/auth/register", "host": ["{{baseUrl}}"], "path": ["v1", "auth", "register"] }
+								"url": {
+									"raw": "{{baseUrl}}/v1/auth/register",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"auth",
+										"register"
+									]
+								}
 							},
 							"event": [
 								{
@@ -141,12 +269,31 @@
 							"name": "Register - Invalid body (expect 400)",
 							"request": {
 								"method": "POST",
-								"header": [{ "key": "Content-Type", "value": "application/json" }],
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
 								"body": {
 									"mode": "raw",
 									"raw": "{\n  \"email\": \"not-an-email\",\n  \"password\": \"short\",\n  \"confirmPassword\": \"nomatch\"\n}"
 								},
-								"url": { "raw": "{{baseUrl}}/v1/auth/register", "host": ["{{baseUrl}}"], "path": ["v1", "auth", "register"] }
+								"url": {
+									"raw": "{{baseUrl}}/v1/auth/register",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"auth",
+										"register"
+									]
+								}
 							},
 							"event": [
 								{
@@ -168,12 +315,31 @@
 							"name": "Login",
 							"request": {
 								"method": "POST",
-								"header": [{ "key": "Content-Type", "value": "application/json" }],
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
 								"body": {
 									"mode": "raw",
 									"raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"{{testPassword}}\"\n}"
 								},
-								"url": { "raw": "{{baseUrl}}/v1/auth/login", "host": ["{{baseUrl}}"], "path": ["v1", "auth", "login"] }
+								"url": {
+									"raw": "{{baseUrl}}/v1/auth/login",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"auth",
+										"login"
+									]
+								}
 							},
 							"event": [
 								{
@@ -201,12 +367,31 @@
 							"name": "Login - Invalid credentials (expect 401)",
 							"request": {
 								"method": "POST",
-								"header": [{ "key": "Content-Type", "value": "application/json" }],
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
 								"body": {
 									"mode": "raw",
 									"raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"WrongPassword123\"\n}"
 								},
-								"url": { "raw": "{{baseUrl}}/v1/auth/login", "host": ["{{baseUrl}}"], "path": ["v1", "auth", "login"] }
+								"url": {
+									"raw": "{{baseUrl}}/v1/auth/login",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"auth",
+										"login"
+									]
+								}
 							},
 							"event": [
 								{
@@ -229,8 +414,23 @@
 							"name": "Login - No auth header (expect 401)",
 							"request": {
 								"method": "GET",
-								"header": [],
-								"url": { "raw": "{{baseUrl}}/v1/users/me", "host": ["{{baseUrl}}"], "path": ["v1", "users", "me"] }
+								"header": [
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/v1/users/me",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"users",
+										"me"
+									]
+								}
 							},
 							"event": [
 								{
@@ -256,14 +456,34 @@
 							"request": {
 								"method": "PATCH",
 								"header": [
-									{ "key": "Content-Type", "value": "application/json" },
-									{ "key": "Authorization", "value": "Bearer {{token}}" }
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
 								],
 								"body": {
 									"mode": "raw",
 									"raw": "{\n  \"firstName\": \"Test\",\n  \"lastName\": \"User\",\n  \"phone\": \"0612345678\"\n}"
 								},
-								"url": { "raw": "{{baseUrl}}/v1/users/me", "host": ["{{baseUrl}}"], "path": ["v1", "users", "me"] }
+								"url": {
+									"raw": "{{baseUrl}}/v1/users/me",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"users",
+										"me"
+									]
+								}
 							},
 							"event": [
 								{
@@ -285,8 +505,27 @@
 							"name": "Get User by ID",
 							"request": {
 								"method": "GET",
-								"header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
-								"url": { "raw": "{{baseUrl}}/v1/users/{{userId}}", "host": ["{{baseUrl}}"], "path": ["v1", "users", "{{userId}}"] }
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/v1/users/{{userId}}",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"users",
+										"{{userId}}"
+									]
+								}
 							},
 							"event": [
 								{
@@ -312,8 +551,36 @@
 							"name": "List Users (expect 403 - ADMIN only)",
 							"request": {
 								"method": "GET",
-								"header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
-								"url": { "raw": "{{baseUrl}}/v1/users?page=1&limit=20", "host": ["{{baseUrl}}"], "path": ["v1", "users"], "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "20" }] }
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/v1/users?page=1&limit=20",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"users"
+									],
+									"query": [
+										{
+											"key": "page",
+											"value": "1"
+										},
+										{
+											"key": "limit",
+											"value": "20"
+										}
+									]
+								}
 							},
 							"event": [
 								{
@@ -341,14 +608,33 @@
 							"request": {
 								"method": "POST",
 								"header": [
-									{ "key": "Content-Type", "value": "application/json" },
-									{ "key": "Authorization", "value": "Bearer {{token}}" }
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
 								],
 								"body": {
 									"mode": "raw",
 									"raw": "{\n  \"licenseNumber\": \"DRV-TEST-12345\"\n}"
 								},
-								"url": { "raw": "{{baseUrl}}/v1/drivers", "host": ["{{baseUrl}}"], "path": ["v1", "drivers"] }
+								"url": {
+									"raw": "{{baseUrl}}/v1/drivers",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"drivers"
+									]
+								}
 							},
 							"event": [
 								{
@@ -372,12 +658,31 @@
 							"name": "Re-Login (get DRIVER token)",
 							"request": {
 								"method": "POST",
-								"header": [{ "key": "Content-Type", "value": "application/json" }],
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
 								"body": {
 									"mode": "raw",
 									"raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"{{testPassword}}\"\n}"
 								},
-								"url": { "raw": "{{baseUrl}}/v1/auth/login", "host": ["{{baseUrl}}"], "path": ["v1", "auth", "login"] }
+								"url": {
+									"raw": "{{baseUrl}}/v1/auth/login",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"auth",
+										"login"
+									]
+								}
 							},
 							"event": [
 								{
@@ -406,12 +711,31 @@
 							"name": "Admin Login",
 							"request": {
 								"method": "POST",
-								"header": [{ "key": "Content-Type", "value": "application/json" }],
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
 								"body": {
 									"mode": "raw",
 									"raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}"
 								},
-								"url": { "raw": "{{baseUrl}}/v1/auth/login", "host": ["{{baseUrl}}"], "path": ["v1", "auth", "login"] }
+								"url": {
+									"raw": "{{baseUrl}}/v1/auth/login",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"auth",
+										"login"
+									]
+								}
 							},
 							"event": [
 								{
@@ -435,8 +759,36 @@
 							"name": "Admin List Users",
 							"request": {
 								"method": "GET",
-								"header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
-								"url": { "raw": "{{baseUrl}}/v1/users?page=1&limit=20", "host": ["{{baseUrl}}"], "path": ["v1", "users"], "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "20" }] }
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{adminToken}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/v1/users?page=1&limit=20",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"users"
+									],
+									"query": [
+										{
+											"key": "page",
+											"value": "1"
+										},
+										{
+											"key": "limit",
+											"value": "20"
+										}
+									]
+								}
 							},
 							"event": [
 								{
@@ -460,14 +812,33 @@
 							"request": {
 								"method": "POST",
 								"header": [
-									{ "key": "Content-Type", "value": "application/json" },
-									{ "key": "Authorization", "value": "Bearer {{adminToken}}" }
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{adminToken}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
 								],
 								"body": {
 									"mode": "raw",
 									"raw": "{\n  \"name\": \"TestBrand\"\n}"
 								},
-								"url": { "raw": "{{baseUrl}}/v1/brands", "host": ["{{baseUrl}}"], "path": ["v1", "brands"] }
+								"url": {
+									"raw": "{{baseUrl}}/v1/brands",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"brands"
+									]
+								}
 							},
 							"event": [
 								{
@@ -492,14 +863,33 @@
 							"request": {
 								"method": "POST",
 								"header": [
-									{ "key": "Content-Type", "value": "application/json" },
-									{ "key": "Authorization", "value": "Bearer {{adminToken}}" }
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{adminToken}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
 								],
 								"body": {
 									"mode": "raw",
 									"raw": "{\n  \"name\": \"TestRed\",\n  \"hex\": \"#FF0000\"\n}"
 								},
-								"url": { "raw": "{{baseUrl}}/v1/colors", "host": ["{{baseUrl}}"], "path": ["v1", "colors"] }
+								"url": {
+									"raw": "{{baseUrl}}/v1/colors",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"colors"
+									]
+								}
 							},
 							"event": [
 								{
@@ -529,14 +919,33 @@
 							"request": {
 								"method": "POST",
 								"header": [
-									{ "key": "Content-Type", "value": "application/json" },
-									{ "key": "Authorization", "value": "Bearer {{token}}" }
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
 								],
 								"body": {
 									"mode": "raw",
 									"raw": "{\n  \"cityName\": \"Paris\",\n  \"zipcode\": \"75000\"\n}"
 								},
-								"url": { "raw": "{{baseUrl}}/v1/cities", "host": ["{{baseUrl}}"], "path": ["v1", "cities"] }
+								"url": {
+									"raw": "{{baseUrl}}/v1/cities",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"cities"
+									]
+								}
 							},
 							"event": [
 								{
@@ -561,14 +970,33 @@
 							"request": {
 								"method": "POST",
 								"header": [
-									{ "key": "Content-Type", "value": "application/json" },
-									{ "key": "Authorization", "value": "Bearer {{token}}" }
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
 								],
 								"body": {
 									"mode": "raw",
 									"raw": "{\n  \"cityName\": \"Lyon\",\n  \"zipcode\": \"69000\"\n}"
 								},
-								"url": { "raw": "{{baseUrl}}/v1/cities", "host": ["{{baseUrl}}"], "path": ["v1", "cities"] }
+								"url": {
+									"raw": "{{baseUrl}}/v1/cities",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"cities"
+									]
+								}
 							},
 							"event": [
 								{
@@ -591,8 +1019,36 @@
 							"name": "List Cities",
 							"request": {
 								"method": "GET",
-								"header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
-								"url": { "raw": "{{baseUrl}}/v1/cities?page=1&limit=20", "host": ["{{baseUrl}}"], "path": ["v1", "cities"], "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "20" }] }
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/v1/cities?page=1&limit=20",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"cities"
+									],
+									"query": [
+										{
+											"key": "page",
+											"value": "1"
+										},
+										{
+											"key": "limit",
+											"value": "20"
+										}
+									]
+								}
 							},
 							"event": [
 								{
@@ -616,8 +1072,27 @@
 							"name": "Delete City (expect 403 - ADMIN only)",
 							"request": {
 								"method": "DELETE",
-								"header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
-								"url": { "raw": "{{baseUrl}}/v1/cities/{{cityId}}", "host": ["{{baseUrl}}"], "path": ["v1", "cities", "{{cityId}}"] }
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/v1/cities/{{cityId}}",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"cities",
+										"{{cityId}}"
+									]
+								}
 							},
 							"event": [
 								{
@@ -644,8 +1119,36 @@
 							"name": "List Brands",
 							"request": {
 								"method": "GET",
-								"header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
-								"url": { "raw": "{{baseUrl}}/v1/brands?page=1&limit=20", "host": ["{{baseUrl}}"], "path": ["v1", "brands"], "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "20" }] }
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/v1/brands?page=1&limit=20",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"brands"
+									],
+									"query": [
+										{
+											"key": "page",
+											"value": "1"
+										},
+										{
+											"key": "limit",
+											"value": "20"
+										}
+									]
+								}
 							},
 							"event": [
 								{
@@ -669,14 +1172,33 @@
 							"request": {
 								"method": "POST",
 								"header": [
-									{ "key": "Content-Type", "value": "application/json" },
-									{ "key": "Authorization", "value": "Bearer {{token}}" }
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
 								],
 								"body": {
 									"mode": "raw",
 									"raw": "{\n  \"name\": \"ForbiddenBrand\"\n}"
 								},
-								"url": { "raw": "{{baseUrl}}/v1/brands", "host": ["{{baseUrl}}"], "path": ["v1", "brands"] }
+								"url": {
+									"raw": "{{baseUrl}}/v1/brands",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"brands"
+									]
+								}
 							},
 							"event": [
 								{
@@ -703,8 +1225,36 @@
 							"name": "List Colors",
 							"request": {
 								"method": "GET",
-								"header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
-								"url": { "raw": "{{baseUrl}}/v1/colors?page=1&limit=20", "host": ["{{baseUrl}}"], "path": ["v1", "colors"], "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "20" }] }
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/v1/colors?page=1&limit=20",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"colors"
+									],
+									"query": [
+										{
+											"key": "page",
+											"value": "1"
+										},
+										{
+											"key": "limit",
+											"value": "20"
+										}
+									]
+								}
 							},
 							"event": [
 								{
@@ -729,14 +1279,34 @@
 							"request": {
 								"method": "PATCH",
 								"header": [
-									{ "key": "Content-Type", "value": "application/json" },
-									{ "key": "Authorization", "value": "Bearer {{adminToken}}" }
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{adminToken}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
 								],
 								"body": {
 									"mode": "raw",
 									"raw": "{\n  \"name\": \"UpdatedRed\",\n  \"hex\": \"#EE0000\"\n}"
 								},
-								"url": { "raw": "{{baseUrl}}/v1/colors/{{colorId}}", "host": ["{{baseUrl}}"], "path": ["v1", "colors", "{{colorId}}"] }
+								"url": {
+									"raw": "{{baseUrl}}/v1/colors/{{colorId}}",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"colors",
+										"{{colorId}}"
+									]
+								}
 							},
 							"event": [
 								{
@@ -764,14 +1334,33 @@
 							"request": {
 								"method": "POST",
 								"header": [
-									{ "key": "Content-Type", "value": "application/json" },
-									{ "key": "Authorization", "value": "Bearer {{token}}" }
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
 								],
 								"body": {
 									"mode": "raw",
 									"raw": "{\n  \"model\": \"Corolla\",\n  \"brandId\": \"{{brandId}}\",\n  \"licensePlate\": \"AB-123-CD\"\n}"
 								},
-								"url": { "raw": "{{baseUrl}}/v1/cars", "host": ["{{baseUrl}}"], "path": ["v1", "cars"] }
+								"url": {
+									"raw": "{{baseUrl}}/v1/cars",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"cars"
+									]
+								}
 							},
 							"event": [
 								{
@@ -795,8 +1384,36 @@
 							"name": "List Cars",
 							"request": {
 								"method": "GET",
-								"header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
-								"url": { "raw": "{{baseUrl}}/v1/cars?page=1&limit=20", "host": ["{{baseUrl}}"], "path": ["v1", "cars"], "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "20" }] }
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/v1/cars?page=1&limit=20",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"cars"
+									],
+									"query": [
+										{
+											"key": "page",
+											"value": "1"
+										},
+										{
+											"key": "limit",
+											"value": "20"
+										}
+									]
+								}
 							},
 							"event": [
 								{
@@ -821,14 +1438,34 @@
 							"request": {
 								"method": "PUT",
 								"header": [
-									{ "key": "Content-Type", "value": "application/json" },
-									{ "key": "Authorization", "value": "Bearer {{token}}" }
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
 								],
 								"body": {
 									"mode": "raw",
 									"raw": "{\n  \"model\": \"Camry\",\n  \"brandId\": \"{{brandId}}\",\n  \"licensePlate\": \"EF-456-GH\"\n}"
 								},
-								"url": { "raw": "{{baseUrl}}/v1/cars/{{carId}}", "host": ["{{baseUrl}}"], "path": ["v1", "cars", "{{carId}}"] }
+								"url": {
+									"raw": "{{baseUrl}}/v1/cars/{{carId}}",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"cars",
+										"{{carId}}"
+									]
+								}
 							},
 							"event": [
 								{
@@ -851,14 +1488,34 @@
 							"request": {
 								"method": "PATCH",
 								"header": [
-									{ "key": "Content-Type", "value": "application/json" },
-									{ "key": "Authorization", "value": "Bearer {{token}}" }
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
 								],
 								"body": {
 									"mode": "raw",
 									"raw": "{\n  \"licensePlate\": \"IJ-789-KL\"\n}"
 								},
-								"url": { "raw": "{{baseUrl}}/v1/cars/{{carId}}", "host": ["{{baseUrl}}"], "path": ["v1", "cars", "{{carId}}"] }
+								"url": {
+									"raw": "{{baseUrl}}/v1/cars/{{carId}}",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"cars",
+										"{{carId}}"
+									]
+								}
 							},
 							"event": [
 								{
@@ -886,14 +1543,33 @@
 							"request": {
 								"method": "POST",
 								"header": [
-									{ "key": "Content-Type", "value": "application/json" },
-									{ "key": "Authorization", "value": "Bearer {{token}}" }
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
 								],
 								"body": {
 									"mode": "raw",
 									"raw": "{\n  \"kms\": 465,\n  \"date\": \"2026-06-15\",\n  \"departureCity\": \"Paris\",\n  \"arrivalCity\": \"Lyon\",\n  \"seats\": 3,\n  \"carId\": \"{{carId}}\"\n}"
 								},
-								"url": { "raw": "{{baseUrl}}/v1/trips", "host": ["{{baseUrl}}"], "path": ["v1", "trips"] }
+								"url": {
+									"raw": "{{baseUrl}}/v1/trips",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"trips"
+									]
+								}
 							},
 							"event": [
 								{
@@ -917,8 +1593,27 @@
 							"name": "Get Trip",
 							"request": {
 								"method": "GET",
-								"header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
-								"url": { "raw": "{{baseUrl}}/v1/trips/{{tripId}}", "host": ["{{baseUrl}}"], "path": ["v1", "trips", "{{tripId}}"] }
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/v1/trips/{{tripId}}",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"trips",
+										"{{tripId}}"
+									]
+								}
 							},
 							"event": [
 								{
@@ -943,8 +1638,26 @@
 							"name": "List Trips",
 							"request": {
 								"method": "GET",
-								"header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
-								"url": { "raw": "{{baseUrl}}/v1/trips", "host": ["{{baseUrl}}"], "path": ["v1", "trips"] }
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/v1/trips",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"trips"
+									]
+								}
 							},
 							"event": [
 								{
@@ -967,15 +1680,39 @@
 							"name": "Search Trips",
 							"request": {
 								"method": "GET",
-								"header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
 								"url": {
 									"raw": "{{baseUrl}}/v1/trips/search?departureCity=Paris&arrivalCity=Lyon&date=2026-06-15",
-									"host": ["{{baseUrl}}"],
-									"path": ["v1", "trips", "search"],
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"trips",
+										"search"
+									],
 									"query": [
-										{ "key": "departureCity", "value": "Paris" },
-										{ "key": "arrivalCity", "value": "Lyon" },
-										{ "key": "date", "value": "2026-06-15" }
+										{
+											"key": "departureCity",
+											"value": "Paris"
+										},
+										{
+											"key": "arrivalCity",
+											"value": "Lyon"
+										},
+										{
+											"key": "date",
+											"value": "2026-06-15"
+										}
 									]
 								}
 							},
@@ -1000,8 +1737,38 @@
 							"name": "List Trip Passengers",
 							"request": {
 								"method": "GET",
-								"header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
-								"url": { "raw": "{{baseUrl}}/v1/trips/{{tripId}}/passengers?page=1&limit=20", "host": ["{{baseUrl}}"], "path": ["v1", "trips", "{{tripId}}", "passengers"], "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "20" }] }
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/v1/trips/{{tripId}}/passengers?page=1&limit=20",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"trips",
+										"{{tripId}}",
+										"passengers"
+									],
+									"query": [
+										{
+											"key": "page",
+											"value": "1"
+										},
+										{
+											"key": "limit",
+											"value": "20"
+										}
+									]
+								}
 							},
 							"event": [
 								{
@@ -1032,14 +1799,33 @@
 							"request": {
 								"method": "POST",
 								"header": [
-									{ "key": "Content-Type", "value": "application/json" },
-									{ "key": "Authorization", "value": "Bearer {{token}}" }
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
 								],
 								"body": {
 									"mode": "raw",
 									"raw": "{\n  \"tripId\": \"{{tripId}}\"\n}"
 								},
-								"url": { "raw": "{{baseUrl}}/v1/inscriptions", "host": ["{{baseUrl}}"], "path": ["v1", "inscriptions"] }
+								"url": {
+									"raw": "{{baseUrl}}/v1/inscriptions",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"inscriptions"
+									]
+								}
 							},
 							"event": [
 								{
@@ -1066,14 +1852,33 @@
 							"request": {
 								"method": "POST",
 								"header": [
-									{ "key": "Content-Type", "value": "application/json" },
-									{ "key": "Authorization", "value": "Bearer {{token}}" }
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
 								],
 								"body": {
 									"mode": "raw",
 									"raw": "{\n  \"tripId\": \"{{tripId}}\"\n}"
 								},
-								"url": { "raw": "{{baseUrl}}/v1/inscriptions", "host": ["{{baseUrl}}"], "path": ["v1", "inscriptions"] }
+								"url": {
+									"raw": "{{baseUrl}}/v1/inscriptions",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"inscriptions"
+									]
+								}
 							},
 							"event": [
 								{
@@ -1097,8 +1902,36 @@
 							"name": "List Inscriptions",
 							"request": {
 								"method": "GET",
-								"header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
-								"url": { "raw": "{{baseUrl}}/v1/inscriptions?page=1&limit=20", "host": ["{{baseUrl}}"], "path": ["v1", "inscriptions"], "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "20" }] }
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/v1/inscriptions?page=1&limit=20",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"inscriptions"
+									],
+									"query": [
+										{
+											"key": "page",
+											"value": "1"
+										},
+										{
+											"key": "limit",
+											"value": "20"
+										}
+									]
+								}
 							},
 							"event": [
 								{
@@ -1122,8 +1955,38 @@
 							"name": "List User Inscriptions",
 							"request": {
 								"method": "GET",
-								"header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
-								"url": { "raw": "{{baseUrl}}/v1/users/{{userId}}/inscriptions?page=1&limit=20", "host": ["{{baseUrl}}"], "path": ["v1", "users", "{{userId}}", "inscriptions"], "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "20" }] }
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/v1/users/{{userId}}/inscriptions?page=1&limit=20",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"users",
+										"{{userId}}",
+										"inscriptions"
+									],
+									"query": [
+										{
+											"key": "page",
+											"value": "1"
+										},
+										{
+											"key": "limit",
+											"value": "20"
+										}
+									]
+								}
 							},
 							"event": [
 								{
@@ -1146,8 +2009,27 @@
 							"name": "Delete Inscription",
 							"request": {
 								"method": "DELETE",
-								"header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
-								"url": { "raw": "{{baseUrl}}/v1/inscriptions/{{inscriptionId}}", "host": ["{{baseUrl}}"], "path": ["v1", "inscriptions", "{{inscriptionId}}"] }
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/v1/inscriptions/{{inscriptionId}}",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"inscriptions",
+										"{{inscriptionId}}"
+									]
+								}
 							},
 							"event": [
 								{
@@ -1173,8 +2055,27 @@
 							"name": "Delete Trip",
 							"request": {
 								"method": "DELETE",
-								"header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
-								"url": { "raw": "{{baseUrl}}/v1/trips/{{tripId}}", "host": ["{{baseUrl}}"], "path": ["v1", "trips", "{{tripId}}"] }
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/v1/trips/{{tripId}}",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"trips",
+										"{{tripId}}"
+									]
+								}
 							},
 							"event": [
 								{
@@ -1195,8 +2096,27 @@
 							"name": "Delete Car",
 							"request": {
 								"method": "DELETE",
-								"header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
-								"url": { "raw": "{{baseUrl}}/v1/cars/{{carId}}", "host": ["{{baseUrl}}"], "path": ["v1", "cars", "{{carId}}"] }
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/v1/cars/{{carId}}",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"cars",
+										"{{carId}}"
+									]
+								}
 							},
 							"event": [
 								{
@@ -1217,8 +2137,27 @@
 							"name": "Admin Delete Color",
 							"request": {
 								"method": "DELETE",
-								"header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
-								"url": { "raw": "{{baseUrl}}/v1/colors/{{colorId}}", "host": ["{{baseUrl}}"], "path": ["v1", "colors", "{{colorId}}"] }
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{adminToken}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/v1/colors/{{colorId}}",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"colors",
+										"{{colorId}}"
+									]
+								}
 							},
 							"event": [
 								{
@@ -1239,8 +2178,27 @@
 							"name": "Admin Delete Brand",
 							"request": {
 								"method": "DELETE",
-								"header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
-								"url": { "raw": "{{baseUrl}}/v1/brands/{{brandId}}", "host": ["{{baseUrl}}"], "path": ["v1", "brands", "{{brandId}}"] }
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{adminToken}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/v1/brands/{{brandId}}",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"brands",
+										"{{brandId}}"
+									]
+								}
 							},
 							"event": [
 								{
@@ -1261,8 +2219,27 @@
 							"name": "Admin Delete City (departure)",
 							"request": {
 								"method": "DELETE",
-								"header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
-								"url": { "raw": "{{baseUrl}}/v1/cities/{{cityId}}", "host": ["{{baseUrl}}"], "path": ["v1", "cities", "{{cityId}}"] }
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{adminToken}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/v1/cities/{{cityId}}",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"cities",
+										"{{cityId}}"
+									]
+								}
 							},
 							"event": [
 								{
@@ -1283,8 +2260,27 @@
 							"name": "Admin Delete City (arrival)",
 							"request": {
 								"method": "DELETE",
-								"header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
-								"url": { "raw": "{{baseUrl}}/v1/cities/{{cityId2}}", "host": ["{{baseUrl}}"], "path": ["v1", "cities", "{{cityId2}}"] }
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{adminToken}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/v1/cities/{{cityId2}}",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"cities",
+										"{{cityId2}}"
+									]
+								}
 							},
 							"event": [
 								{
@@ -1305,8 +2301,27 @@
 							"name": "Anonymize User (GDPR)",
 							"request": {
 								"method": "DELETE",
-								"header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
-								"url": { "raw": "{{baseUrl}}/v1/users/me", "host": ["{{baseUrl}}"], "path": ["v1", "users", "me"] }
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/v1/users/me",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"users",
+										"me"
+									]
+								}
 							},
 							"event": [
 								{
@@ -1325,8 +2340,27 @@
 							"name": "Verify User anonymized (expect 404)",
 							"request": {
 								"method": "GET",
-								"header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
-								"url": { "raw": "{{baseUrl}}/v1/users/{{userId}}", "host": ["{{baseUrl}}"], "path": ["v1", "users", "{{userId}}"] }
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{adminToken}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/v1/users/{{userId}}",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"users",
+										"{{userId}}"
+									]
+								}
 							},
 							"event": [
 								{
@@ -1359,12 +2393,29 @@
 							"name": "VP Register",
 							"request": {
 								"method": "POST",
-								"header": [{ "key": "Content-Type", "value": "application/json" }],
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
 								"body": {
 									"mode": "raw",
 									"raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"{{testPassword}}\",\n  \"confirmPassword\": \"{{testPassword}}\"\n}"
 								},
-								"url": { "raw": "{{baseUrl}}/vp/register", "host": ["{{baseUrl}}"], "path": ["vp", "register"] }
+								"url": {
+									"raw": "{{baseUrlVp}}/register",
+									"host": [
+										"{{baseUrlVp}}"
+									],
+									"path": [
+										"register"
+									]
+								}
 							},
 							"event": [
 								{
@@ -1401,12 +2452,29 @@
 							"name": "VP Login",
 							"request": {
 								"method": "POST",
-								"header": [{ "key": "Content-Type", "value": "application/json" }],
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
 								"body": {
 									"mode": "raw",
 									"raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"{{testPassword}}\"\n}"
 								},
-								"url": { "raw": "{{baseUrl}}/vp/login", "host": ["{{baseUrl}}"], "path": ["vp", "login"] }
+								"url": {
+									"raw": "{{baseUrlVp}}/login",
+									"host": [
+										"{{baseUrlVp}}"
+									],
+									"path": [
+										"login"
+									]
+								}
 							},
 							"event": [
 								{
@@ -1435,12 +2503,29 @@
 							"name": "VP Create Person",
 							"request": {
 								"method": "POST",
-								"header": [{ "key": "Content-Type", "value": "application/json" }],
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
 								"body": {
 									"mode": "raw",
 									"raw": "{\n  \"firstname\": \"Jean\",\n  \"lastname\": \"Dupont\",\n  \"phone\": \"0698765432\",\n  \"email\": \"jean.dupont_{{$timestamp}}@test.com\",\n  \"password\": \"SecurePass1\"\n}"
 								},
-								"url": { "raw": "{{baseUrl}}/vp/persons", "host": ["{{baseUrl}}"], "path": ["vp", "persons"] }
+								"url": {
+									"raw": "{{baseUrlVp}}/persons",
+									"host": [
+										"{{baseUrlVp}}"
+									],
+									"path": [
+										"persons"
+									]
+								}
 							},
 							"event": [
 								{
@@ -1466,8 +2551,25 @@
 							"name": "VP List Persons",
 							"request": {
 								"method": "GET",
-								"header": [{ "key": "Authorization", "value": "Bearer {{vpToken}}" }],
-								"url": { "raw": "{{baseUrl}}/vp/persons", "host": ["{{baseUrl}}"], "path": ["vp", "persons"] }
+								"header": [
+									{
+										"key": "x-auth-token",
+										"value": "{{vpToken}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrlVp}}/persons",
+									"host": [
+										"{{baseUrlVp}}"
+									],
+									"path": [
+										"persons"
+									]
+								}
 							},
 							"event": [
 								{
@@ -1490,8 +2592,26 @@
 							"name": "VP Get Person",
 							"request": {
 								"method": "GET",
-								"header": [{ "key": "Authorization", "value": "Bearer {{vpToken}}" }],
-								"url": { "raw": "{{baseUrl}}/vp/persons/{{vpUserId}}", "host": ["{{baseUrl}}"], "path": ["vp", "persons", "{{vpUserId}}"] }
+								"header": [
+									{
+										"key": "x-auth-token",
+										"value": "{{vpToken}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrlVp}}/persons/{{vpUserId}}",
+									"host": [
+										"{{baseUrlVp}}"
+									],
+									"path": [
+										"persons",
+										"{{vpUserId}}"
+									]
+								}
 							},
 							"event": [
 								{
@@ -1515,14 +2635,33 @@
 							"request": {
 								"method": "PATCH",
 								"header": [
-									{ "key": "Content-Type", "value": "application/json" },
-									{ "key": "Authorization", "value": "Bearer {{vpToken}}" }
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "x-auth-token",
+										"value": "{{vpToken}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
 								],
 								"body": {
 									"mode": "raw",
 									"raw": "{\n  \"firstname\": \"UpdatedJean\",\n  \"phone\": \"0699999999\"\n}"
 								},
-								"url": { "raw": "{{baseUrl}}/vp/persons/{{vpUserId}}", "host": ["{{baseUrl}}"], "path": ["vp", "persons", "{{vpUserId}}"] }
+								"url": {
+									"raw": "{{baseUrlVp}}/persons/{{vpUserId}}",
+									"host": [
+										"{{baseUrlVp}}"
+									],
+									"path": [
+										"persons",
+										"{{vpUserId}}"
+									]
+								}
 							},
 							"event": [
 								{
@@ -1544,8 +2683,27 @@
 							"name": "VP Get Person Trips (driver)",
 							"request": {
 								"method": "GET",
-								"header": [{ "key": "Authorization", "value": "Bearer {{vpToken}}" }],
-								"url": { "raw": "{{baseUrl}}/vp/persons/{{vpUserId}}/trips-driver", "host": ["{{baseUrl}}"], "path": ["vp", "persons", "{{vpUserId}}", "trips-driver"] }
+								"header": [
+									{
+										"key": "x-auth-token",
+										"value": "{{vpToken}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrlVp}}/persons/{{vpUserId}}/trips-driver",
+									"host": [
+										"{{baseUrlVp}}"
+									],
+									"path": [
+										"persons",
+										"{{vpUserId}}",
+										"trips-driver"
+									]
+								}
 							},
 							"event": [
 								{
@@ -1567,8 +2725,37 @@
 							"name": "VP Get Person Trips (passenger)",
 							"request": {
 								"method": "GET",
-								"header": [{ "key": "Authorization", "value": "Bearer {{vpToken}}" }],
-								"url": { "raw": "{{baseUrl}}/vp/persons/{{vpUserId}}/trips-passenger?page=1&limit=20", "host": ["{{baseUrl}}"], "path": ["vp", "persons", "{{vpUserId}}", "trips-passenger"], "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "20" }] }
+								"header": [
+									{
+										"key": "x-auth-token",
+										"value": "{{vpToken}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrlVp}}/persons/{{vpUserId}}/trips-passenger?page=1&limit=20",
+									"host": [
+										"{{baseUrlVp}}"
+									],
+									"path": [
+										"persons",
+										"{{vpUserId}}",
+										"trips-passenger"
+									],
+									"query": [
+										{
+											"key": "page",
+											"value": "1"
+										},
+										{
+											"key": "limit",
+											"value": "20"
+										}
+									]
+								}
 							},
 							"event": [
 								{
@@ -1595,8 +2782,35 @@
 							"name": "VP List Brands",
 							"request": {
 								"method": "GET",
-								"header": [{ "key": "Authorization", "value": "Bearer {{vpToken}}" }],
-								"url": { "raw": "{{baseUrl}}/vp/brands?page=1&limit=20", "host": ["{{baseUrl}}"], "path": ["vp", "brands"], "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "20" }] }
+								"header": [
+									{
+										"key": "x-auth-token",
+										"value": "{{vpToken}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrlVp}}/brands?page=1&limit=20",
+									"host": [
+										"{{baseUrlVp}}"
+									],
+									"path": [
+										"brands"
+									],
+									"query": [
+										{
+											"key": "page",
+											"value": "1"
+										},
+										{
+											"key": "limit",
+											"value": "20"
+										}
+									]
+								}
 							},
 							"event": [
 								{
@@ -1619,14 +2833,32 @@
 							"request": {
 								"method": "POST",
 								"header": [
-									{ "key": "Content-Type", "value": "application/json" },
-									{ "key": "Authorization", "value": "Bearer {{adminToken}}" }
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{adminToken}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
 								],
 								"body": {
 									"mode": "raw",
 									"raw": "{\n  \"name\": \"VPTestBrand\"\n}"
 								},
-								"url": { "raw": "{{baseUrl}}/vp/brands", "host": ["{{baseUrl}}"], "path": ["vp", "brands"] }
+								"url": {
+									"raw": "{{baseUrlVp}}/brands",
+									"host": [
+										"{{baseUrlVp}}"
+									],
+									"path": [
+										"brands"
+									]
+								}
 							},
 							"event": [
 								{
@@ -1650,14 +2882,33 @@
 							"request": {
 								"method": "PUT",
 								"header": [
-									{ "key": "Content-Type", "value": "application/json" },
-									{ "key": "Authorization", "value": "Bearer {{adminToken}}" }
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{adminToken}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
 								],
 								"body": {
 									"mode": "raw",
 									"raw": "{\n  \"name\": \"VPUpdatedBrand\"\n}"
 								},
-								"url": { "raw": "{{baseUrl}}/vp/brands/{{vpBrandId}}", "host": ["{{baseUrl}}"], "path": ["vp", "brands", "{{vpBrandId}}"] }
+								"url": {
+									"raw": "{{baseUrlVp}}/brands/{{vpBrandId}}",
+									"host": [
+										"{{baseUrlVp}}"
+									],
+									"path": [
+										"brands",
+										"{{vpBrandId}}"
+									]
+								}
 							},
 							"event": [
 								{
@@ -1682,14 +2933,32 @@
 							"request": {
 								"method": "POST",
 								"header": [
-									{ "key": "Content-Type", "value": "application/json" },
-									{ "key": "Authorization", "value": "Bearer {{vpToken}}" }
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "x-auth-token",
+										"value": "{{vpToken}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
 								],
 								"body": {
 									"mode": "raw",
 									"raw": "{\n  \"name\": \"ForbiddenBrand\"\n}"
 								},
-								"url": { "raw": "{{baseUrl}}/vp/brands", "host": ["{{baseUrl}}"], "path": ["vp", "brands"] }
+								"url": {
+									"raw": "{{baseUrlVp}}/brands",
+									"host": [
+										"{{baseUrlVp}}"
+									],
+									"path": [
+										"brands"
+									]
+								}
 							},
 							"event": [
 								{
@@ -1715,14 +2984,32 @@
 							"request": {
 								"method": "POST",
 								"header": [
-									{ "key": "Content-Type", "value": "application/json" },
-									{ "key": "Authorization", "value": "Bearer {{vpToken}}" }
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "x-auth-token",
+										"value": "{{vpToken}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
 								],
 								"body": {
 									"mode": "raw",
 									"raw": "{\n  \"carregistration\": \"VP-123-AB\",\n  \"model\": \"Clio\",\n  \"brand\": \"VPUpdatedBrand\"\n}"
 								},
-								"url": { "raw": "{{baseUrl}}/vp/cars", "host": ["{{baseUrl}}"], "path": ["vp", "cars"] }
+								"url": {
+									"raw": "{{baseUrlVp}}/cars",
+									"host": [
+										"{{baseUrlVp}}"
+									],
+									"path": [
+										"cars"
+									]
+								}
 							},
 							"event": [
 								{
@@ -1752,8 +3039,35 @@
 							"name": "VP List Cars",
 							"request": {
 								"method": "GET",
-								"header": [{ "key": "Authorization", "value": "Bearer {{vpToken}}" }],
-								"url": { "raw": "{{baseUrl}}/vp/cars?page=1&limit=20", "host": ["{{baseUrl}}"], "path": ["vp", "cars"], "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "20" }] }
+								"header": [
+									{
+										"key": "x-auth-token",
+										"value": "{{vpToken}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrlVp}}/cars?page=1&limit=20",
+									"host": [
+										"{{baseUrlVp}}"
+									],
+									"path": [
+										"cars"
+									],
+									"query": [
+										{
+											"key": "page",
+											"value": "1"
+										},
+										{
+											"key": "limit",
+											"value": "20"
+										}
+									]
+								}
 							},
 							"event": [
 								{
@@ -1775,8 +3089,26 @@
 							"name": "VP Get Car",
 							"request": {
 								"method": "GET",
-								"header": [{ "key": "Authorization", "value": "Bearer {{vpToken}}" }],
-								"url": { "raw": "{{baseUrl}}/vp/cars/{{vpCarId}}", "host": ["{{baseUrl}}"], "path": ["vp", "cars", "{{vpCarId}}"] }
+								"header": [
+									{
+										"key": "x-auth-token",
+										"value": "{{vpToken}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrlVp}}/cars/{{vpCarId}}",
+									"host": [
+										"{{baseUrlVp}}"
+									],
+									"path": [
+										"cars",
+										"{{vpCarId}}"
+									]
+								}
 							},
 							"event": [
 								{
@@ -1801,14 +3133,33 @@
 							"request": {
 								"method": "PUT",
 								"header": [
-									{ "key": "Content-Type", "value": "application/json" },
-									{ "key": "Authorization", "value": "Bearer {{vpToken}}" }
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "x-auth-token",
+										"value": "{{vpToken}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
 								],
 								"body": {
 									"mode": "raw",
 									"raw": "{\n  \"carregistration\": \"VP-456-CD\",\n  \"model\": \"Megane\",\n  \"brand\": \"VPUpdatedBrand\"\n}"
 								},
-								"url": { "raw": "{{baseUrl}}/vp/cars/{{vpCarId}}", "host": ["{{baseUrl}}"], "path": ["vp", "cars", "{{vpCarId}}"] }
+								"url": {
+									"raw": "{{baseUrlVp}}/cars/{{vpCarId}}",
+									"host": [
+										"{{baseUrlVp}}"
+									],
+									"path": [
+										"cars",
+										"{{vpCarId}}"
+									]
+								}
 							},
 							"event": [
 								{
@@ -1838,14 +3189,32 @@
 							"request": {
 								"method": "POST",
 								"header": [
-									{ "key": "Content-Type", "value": "application/json" },
-									{ "key": "Authorization", "value": "Bearer {{vpToken}}" }
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "x-auth-token",
+										"value": "{{vpToken}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
 								],
 								"body": {
 									"mode": "raw",
 									"raw": "{\n  \"kms\": 300,\n  \"trip_datetime\": \"2026-07-01T08:00:00Z\",\n  \"seats\": 3,\n  \"car_id\": \"{{vpCarId}}\",\n  \"person_id\": \"{{vpUserId}}\",\n  \"starting_address\": {\n    \"street_number\": \"1\",\n    \"street_name\": \"Rue de la Paix\",\n    \"postal_code\": \"75001\",\n    \"city_name\": \"Paris\"\n  },\n  \"arrival_address\": {\n    \"street_number\": \"10\",\n    \"street_name\": \"Place Bellecour\",\n    \"postal_code\": \"69002\",\n    \"city_name\": \"Lyon\"\n  }\n}"
 								},
-								"url": { "raw": "{{baseUrl}}/vp/trips", "host": ["{{baseUrl}}"], "path": ["vp", "trips"] }
+								"url": {
+									"raw": "{{baseUrlVp}}/trips",
+									"host": [
+										"{{baseUrlVp}}"
+									],
+									"path": [
+										"trips"
+									]
+								}
 							},
 							"event": [
 								{
@@ -1874,8 +3243,25 @@
 							"name": "VP List Trips",
 							"request": {
 								"method": "GET",
-								"header": [{ "key": "Authorization", "value": "Bearer {{vpToken}}" }],
-								"url": { "raw": "{{baseUrl}}/vp/trips", "host": ["{{baseUrl}}"], "path": ["vp", "trips"] }
+								"header": [
+									{
+										"key": "x-auth-token",
+										"value": "{{vpToken}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrlVp}}/trips",
+									"host": [
+										"{{baseUrlVp}}"
+									],
+									"path": [
+										"trips"
+									]
+								}
 							},
 							"event": [
 								{
@@ -1897,15 +3283,37 @@
 							"name": "VP List Trips (with search filters)",
 							"request": {
 								"method": "GET",
-								"header": [{ "key": "Authorization", "value": "Bearer {{vpToken}}" }],
+								"header": [
+									{
+										"key": "x-auth-token",
+										"value": "{{vpToken}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
 								"url": {
-									"raw": "{{baseUrl}}/vp/trips?startingcity=Paris&arrivalcity=Lyon&tripdate=2026-07-01",
-									"host": ["{{baseUrl}}"],
-									"path": ["vp", "trips"],
+									"raw": "{{baseUrlVp}}/trips?startingcity=Paris&arrivalcity=Lyon&tripdate=2026-07-01",
+									"host": [
+										"{{baseUrlVp}}"
+									],
+									"path": [
+										"trips"
+									],
 									"query": [
-										{ "key": "startingcity", "value": "Paris" },
-										{ "key": "arrivalcity", "value": "Lyon" },
-										{ "key": "tripdate", "value": "2026-07-01" }
+										{
+											"key": "startingcity",
+											"value": "Paris"
+										},
+										{
+											"key": "arrivalcity",
+											"value": "Lyon"
+										},
+										{
+											"key": "tripdate",
+											"value": "2026-07-01"
+										}
 									]
 								}
 							},
@@ -1929,8 +3337,26 @@
 							"name": "VP Get Trip",
 							"request": {
 								"method": "GET",
-								"header": [{ "key": "Authorization", "value": "Bearer {{vpToken}}" }],
-								"url": { "raw": "{{baseUrl}}/vp/trips/{{vpTripId}}", "host": ["{{baseUrl}}"], "path": ["vp", "trips", "{{vpTripId}}"] }
+								"header": [
+									{
+										"key": "x-auth-token",
+										"value": "{{vpToken}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrlVp}}/trips/{{vpTripId}}",
+									"host": [
+										"{{baseUrlVp}}"
+									],
+									"path": [
+										"trips",
+										"{{vpTripId}}"
+									]
+								}
 							},
 							"event": [
 								{
@@ -1955,14 +3381,33 @@
 							"request": {
 								"method": "PATCH",
 								"header": [
-									{ "key": "Content-Type", "value": "application/json" },
-									{ "key": "Authorization", "value": "Bearer {{vpToken}}" }
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "x-auth-token",
+										"value": "{{vpToken}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
 								],
 								"body": {
 									"mode": "raw",
 									"raw": "{\n  \"seats\": 4\n}"
 								},
-								"url": { "raw": "{{baseUrl}}/vp/trips/{{vpTripId}}", "host": ["{{baseUrl}}"], "path": ["vp", "trips", "{{vpTripId}}"] }
+								"url": {
+									"raw": "{{baseUrlVp}}/trips/{{vpTripId}}",
+									"host": [
+										"{{baseUrlVp}}"
+									],
+									"path": [
+										"trips",
+										"{{vpTripId}}"
+									]
+								}
 							},
 							"event": [
 								{
@@ -1987,14 +3432,34 @@
 							"request": {
 								"method": "POST",
 								"header": [
-									{ "key": "Content-Type", "value": "application/json" },
-									{ "key": "Authorization", "value": "Bearer {{vpInscriptionToken}}" }
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "x-auth-token",
+										"value": "{{vpInscriptionToken}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
 								],
 								"body": {
 									"mode": "raw",
 									"raw": "{\n  \"person_id\": \"{{vpInscriptionUserId}}\"\n}"
 								},
-								"url": { "raw": "{{baseUrl}}/vp/trips/{{vpTripId}}/person", "host": ["{{baseUrl}}"], "path": ["vp", "trips", "{{vpTripId}}", "person"] }
+								"url": {
+									"raw": "{{baseUrlVp}}/trips/{{vpTripId}}/person",
+									"host": [
+										"{{baseUrlVp}}"
+									],
+									"path": [
+										"trips",
+										"{{vpTripId}}",
+										"person"
+									]
+								}
 							},
 							"event": [
 								{
@@ -2019,8 +3484,37 @@
 							"name": "VP Get Trip Passengers",
 							"request": {
 								"method": "GET",
-								"header": [{ "key": "Authorization", "value": "Bearer {{vpToken}}" }],
-								"url": { "raw": "{{baseUrl}}/vp/trips/{{vpTripId}}/person?page=1&limit=20", "host": ["{{baseUrl}}"], "path": ["vp", "trips", "{{vpTripId}}", "person"], "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "20" }] }
+								"header": [
+									{
+										"key": "x-auth-token",
+										"value": "{{vpToken}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrlVp}}/trips/{{vpTripId}}/person?page=1&limit=20",
+									"host": [
+										"{{baseUrlVp}}"
+									],
+									"path": [
+										"trips",
+										"{{vpTripId}}",
+										"person"
+									],
+									"query": [
+										{
+											"key": "page",
+											"value": "1"
+										},
+										{
+											"key": "limit",
+											"value": "20"
+										}
+									]
+								}
 							},
 							"event": [
 								{
@@ -2049,8 +3543,26 @@
 							"name": "VP Delete Trip",
 							"request": {
 								"method": "DELETE",
-								"header": [{ "key": "Authorization", "value": "Bearer {{vpToken}}" }],
-								"url": { "raw": "{{baseUrl}}/vp/trips/{{vpTripId}}", "host": ["{{baseUrl}}"], "path": ["vp", "trips", "{{vpTripId}}"] }
+								"header": [
+									{
+										"key": "x-auth-token",
+										"value": "{{vpToken}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrlVp}}/trips/{{vpTripId}}",
+									"host": [
+										"{{baseUrlVp}}"
+									],
+									"path": [
+										"trips",
+										"{{vpTripId}}"
+									]
+								}
 							},
 							"event": [
 								{
@@ -2071,8 +3583,26 @@
 							"name": "VP Delete Car",
 							"request": {
 								"method": "DELETE",
-								"header": [{ "key": "Authorization", "value": "Bearer {{vpToken}}" }],
-								"url": { "raw": "{{baseUrl}}/vp/cars/{{vpCarId}}", "host": ["{{baseUrl}}"], "path": ["vp", "cars", "{{vpCarId}}"] }
+								"header": [
+									{
+										"key": "x-auth-token",
+										"value": "{{vpToken}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrlVp}}/cars/{{vpCarId}}",
+									"host": [
+										"{{baseUrlVp}}"
+									],
+									"path": [
+										"cars",
+										"{{vpCarId}}"
+									]
+								}
 							},
 							"event": [
 								{
@@ -2093,8 +3623,26 @@
 							"name": "VP Admin Delete Brand",
 							"request": {
 								"method": "DELETE",
-								"header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
-								"url": { "raw": "{{baseUrl}}/vp/brands/{{vpBrandId}}", "host": ["{{baseUrl}}"], "path": ["vp", "brands", "{{vpBrandId}}"] }
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{adminToken}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrlVp}}/brands/{{vpBrandId}}",
+									"host": [
+										"{{baseUrlVp}}"
+									],
+									"path": [
+										"brands",
+										"{{vpBrandId}}"
+									]
+								}
 							},
 							"event": [
 								{
@@ -2115,8 +3663,26 @@
 							"name": "VP Delete Person",
 							"request": {
 								"method": "DELETE",
-								"header": [{ "key": "Authorization", "value": "Bearer {{vpToken}}" }],
-								"url": { "raw": "{{baseUrl}}/vp/persons/{{vpUserId}}", "host": ["{{baseUrl}}"], "path": ["vp", "persons", "{{vpUserId}}"] }
+								"header": [
+									{
+										"key": "x-auth-token",
+										"value": "{{vpToken}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrlVp}}/persons/{{vpUserId}}",
+									"host": [
+										"{{baseUrlVp}}"
+									],
+									"path": [
+										"persons",
+										"{{vpUserId}}"
+									]
+								}
 							},
 							"event": [
 								{
@@ -2135,8 +3701,26 @@
 							"name": "VP Delete Inscription Person",
 							"request": {
 								"method": "DELETE",
-								"header": [{ "key": "Authorization", "value": "Bearer {{vpInscriptionToken}}" }],
-								"url": { "raw": "{{baseUrl}}/vp/persons/{{vpInscriptionUserId}}", "host": ["{{baseUrl}}"], "path": ["vp", "persons", "{{vpInscriptionUserId}}"] }
+								"header": [
+									{
+										"key": "x-auth-token",
+										"value": "{{vpInscriptionToken}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrlVp}}/persons/{{vpInscriptionUserId}}",
+									"host": [
+										"{{baseUrlVp}}"
+									],
+									"path": [
+										"persons",
+										"{{vpInscriptionUserId}}"
+									]
+								}
 							},
 							"event": [
 								{

@@ -40,5 +40,4 @@ lerna-debug.log*
 .claude/
 .vercel
 .env*.local
-postman/covoitapi.postman_collection.json
 nul
