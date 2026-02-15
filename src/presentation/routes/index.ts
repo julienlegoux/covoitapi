@@ -34,6 +34,7 @@ import { cors } from 'hono/cors';
 import { secureHeaders } from 'hono/secure-headers';
 import { errorHandler, requestLogger } from '../middleware/index.js';
 import { v1Routes } from './v1/index.js';
+import { vpRoutes } from '../vp/routes.js';
 
 const app = new Hono().basePath('/api');
 
@@ -48,5 +49,6 @@ app.get("/health", (c) => {
 });
 
 app.route('/v1', v1Routes);
+app.route('/vp', vpRoutes);
 
 export { app };
