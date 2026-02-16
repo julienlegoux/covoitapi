@@ -91,6 +91,12 @@
 					}
 				}
 			}
+		},
+		{
+			"includes": ["**/prisma/export.ts", "**/prisma/seed.ts", "**/prisma/check-size.ts"],
+			"linter": {
+				"enabled": false
+			}
 		}
 	]
 }

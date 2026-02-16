@@ -41,8 +41,12 @@ export class ListInscriptionsUseCase {
 	 */
 	async execute(pagination?: PaginationParams): Promise<Result<PaginatedResult<InscriptionEntity>, RepositoryError>> {
 		const result = await this.inscriptionRepository.findAll(pagination ? toSkipTake(pagination) : undefined);
-		if (!result.success) return result;
+		if (!result.success) {
+			this.logger.error('Failed to list inscriptions', { error: result.error });
+			return result;
+		}
 		const { data, total } = result.value;
+		this.logger.info('Listed inscriptions', { count: data.length, total });
 		return ok({
 			data,
 			meta: buildPaginationMeta(pagination ?? { page: 1, limit: 20 }, total),

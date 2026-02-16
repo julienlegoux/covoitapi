@@ -40,8 +40,12 @@ export class ListTripsUseCase {
      */
     async execute(pagination?: PaginationParams): Promise<Result<PaginatedResult<TripEntity>, RepositoryError>> {
         const result = await this.tripRepository.findAll(pagination ? toSkipTake(pagination) : undefined);
-        if (!result.success) return result;
+        if (!result.success) {
+            this.logger.error('Failed to list trips', { error: result.error });
+            return result;
+        }
         const { data, total } = result.value;
+        this.logger.info('Listed trips', { count: data.length, total });
         return ok({
             data,
             meta: buildPaginationMeta(pagination ?? { page: 1, limit: 20 }, total),

@@ -34,12 +34,21 @@ describe('CachedAuthRepository', () => {
     });
 
     describe('findByEmail()', () => {
-        it('should always call inner directly (no caching)', async () => {
+        it('should check cache first and return cached value on hit', async () => {
+            cache.get.mockResolvedValue({ id: 'a1', email: 'a@b.com' });
+            const result = await repo.findByEmail('a@b.com');
+            expect(result.success).toBe(true);
+            expect(cache.get).toHaveBeenCalled();
+            expect(inner.findByEmail).not.toHaveBeenCalled();
+        });
+
+        it('should call inner on cache miss and cache the result', async () => {
+            cache.get.mockResolvedValue(null);
             inner.findByEmail.mockResolvedValue(ok({ id: 'a1', email: 'a@b.com' }));
             const result = await repo.findByEmail('a@b.com');
             expect(result.success).toBe(true);
             expect(inner.findByEmail).toHaveBeenCalledWith('a@b.com');
-            expect(cache.get).not.toHaveBeenCalled();
+            expect(cache.set).toHaveBeenCalled();
         });
     });
 

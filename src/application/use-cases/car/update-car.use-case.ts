@@ -77,13 +77,29 @@ export class UpdateCarUseCase {
 		if (!findResult.success) {
 			return findResult;
 		}
-
 		if (!findResult.value) {
 			this.logger.warn('Car not found for update', { carId: id });
 			return err(new CarNotFoundError(id));
 		}
 
-		// Ownership check: resolve user UUID → driver via relation filter (single query)
+		const ownershipResult = await this.verifyOwnership(findResult.value.driverRefId, userId, id);
+		if (ownershipResult) {
+			return ownershipResult;
+		}
+
+		const updateData = await this.buildUpdateData(input);
+		if (!updateData.success) {
+			return updateData;
+		}
+
+		const result = await this.carRepository.update(id, updateData.value);
+		if (result.success) {
+			this.logger.info('Car updated', { carId: id });
+		}
+		return result;
+	}
+
+	private async verifyOwnership(carDriverRefId: number, userId: string, carId: string): Promise<Result<never, UpdateCarError> | null> {
 		const driverResult = await this.driverRepository.findByUserId(userId);
 		if (!driverResult.success) {
 			return driverResult;
@@ -91,18 +107,18 @@ export class UpdateCarUseCase {
 		if (!driverResult.value) {
 			return err(new DriverNotFoundError(userId));
 		}
-
-		if (findResult.value.driverRefId !== driverResult.value.refId) {
-			this.logger.warn('Ownership check failed for car update', { carId: id, userId });
-			return err(new ForbiddenError('Car', id));
+		if (carDriverRefId !== driverResult.value.refId) {
+			this.logger.warn('Ownership check failed for car update', { carId, userId });
+			return err(new ForbiddenError('Car', carId));
 		}
+		return null;
+	}
 
+	private async buildUpdateData(input: PatchCarSchemaType): Promise<Result<UpdateCarData, BrandNotFoundError | RepositoryError>> {
 		const updateData: UpdateCarData = {};
-
 		if (input.licensePlate) {
 			updateData.licensePlate = input.licensePlate;
 		}
-
 		if (input.model && input.brandId) {
 			const modelRefIdResult = await this.resolveModelRefId(input.model, input.brandId);
 			if (!modelRefIdResult.success) {
@@ -110,12 +126,7 @@ export class UpdateCarUseCase {
 			}
 			updateData.modelRefId = modelRefIdResult.value;
 		}
-
-		const result = await this.carRepository.update(id, updateData);
-		if (result.success) {
-			this.logger.info('Car updated', { carId: id });
-		}
-		return result;
+		return { success: true, value: updateData };
 	}
 
 	private async resolveModelRefId(name: string, brandId: string): Promise<Result<number, BrandNotFoundError | RepositoryError>> {

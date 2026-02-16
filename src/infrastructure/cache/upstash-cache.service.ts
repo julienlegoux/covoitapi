@@ -25,23 +25,28 @@ export class UpstashCacheService implements CacheService {
 
 	constructor(@inject(TOKENS.Logger) logger: Logger) {
 		this.logger = logger.child({ service: 'CacheService' });
-		this.redis = new Redis({
-			url: process.env.UPSTASH_REDIS_REST_URL!,
-			token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-		});
+		const url = process.env.UPSTASH_REDIS_REST_URL;
+		const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+		if (!url || !token) {
+			throw new Error('UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN must be set');
+		}
+		this.redis = new Redis({ url, token });
 	}
 
 	async get<T>(key: string): Promise<T | null> {
 		const value = await this.redis.get<T>(key);
+		this.logger.debug('Cache get', { key, hit: value != null });
 		return value ?? null;
 	}
 
 	async set<T>(key: string, value: T, ttlSeconds: number): Promise<void> {
 		await this.redis.set(key, value, { ex: ttlSeconds });
+		this.logger.debug('Cache set', { key, ttlSeconds });
 	}
 
 	async delete(key: string): Promise<void> {
 		await this.redis.del(key);
+		this.logger.debug('Cache delete', { key });
 	}
 
 	async deleteByPattern(pattern: string): Promise<void> {
@@ -61,6 +66,7 @@ export class UpstashCacheService implements CacheService {
 				await pipeline.exec();
 			}
 		} while (cursor !== '0');
+		this.logger.debug('Cache deleteByPattern', { pattern });
 	}
 
 	async isHealthy(): Promise<boolean> {
@@ -68,6 +74,7 @@ export class UpstashCacheService implements CacheService {
 			const result = await this.redis.ping();
 			return result === 'PONG';
 		} catch {
+			this.logger.warn('Cache health check failed');
 			return false;
 		}
 	}

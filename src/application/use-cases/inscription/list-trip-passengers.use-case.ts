@@ -47,8 +47,12 @@ export class ListTripPassengersUseCase {
      */
     async execute(tripId: string, pagination?: PaginationParams): Promise<Result<PaginatedResult<InscriptionEntity>, RepositoryError>> {
         const result = await this.inscriptionRepository.findByTripId(tripId);
-        if (!result.success) return result;
+        if (!result.success) {
+            this.logger.error('Failed to list trip passengers', { tripId, error: result.error });
+            return result;
+        }
         const all = result.value;
+        this.logger.info('Listed trip passengers', { tripId, count: all.length });
         const params = pagination ?? { page: 1, limit: 20 };
         const start = (params.page - 1) * params.limit;
         const data = all.slice(start, start + params.limit);

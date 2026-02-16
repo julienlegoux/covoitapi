@@ -83,50 +83,51 @@ export class CreateCarUseCase {
 		if (!existsResult.success) {
 			return existsResult;
 		}
-
 		if (existsResult.value) {
 			this.logger.warn('Car already exists', { licensePlate: input.licensePlate });
 			return err(new CarAlreadyExistsError(input.licensePlate));
 		}
 
-		// Resolve brand UUID to refId
-		const brandResult = await this.brandRepository.findById(input.brandId);
-		if (!brandResult.success) {
-			return brandResult;
-		}
-		if (!brandResult.value) {
-			this.logger.warn('Brand not found', { brandId: input.brandId });
-			return err(new BrandNotFoundError(input.brandId));
-		}
-
-		// Find or create model using brand refId
-		const modelResult = await this.modelRepository.findByNameAndBrand(input.model, brandResult.value.refId);
-		if (!modelResult.success) {
-			return modelResult;
-		}
-
-		let modelRefId: number;
-		if (modelResult.value) {
-			modelRefId = modelResult.value.refId;
-		} else {
-			const createModelResult = await this.modelRepository.create({
-				name: input.model,
-				brandRefId: brandResult.value.refId,
-			});
-			if (!createModelResult.success) {
-				return createModelResult;
-			}
-			modelRefId = createModelResult.value.refId;
+		const modelRefIdResult = await this.resolveModelRefId(input.model, input.brandId);
+		if (!modelRefIdResult.success) {
+			return modelRefIdResult;
 		}
 
 		const result = await this.carRepository.create({
 			licensePlate: input.licensePlate,
-			modelRefId,
+			modelRefId: modelRefIdResult.value,
 			driverRefId: driverResult.value.refId,
 		});
 		if (result.success) {
 			this.logger.info('Car created', { carId: result.value.id });
 		}
 		return result;
+	}
+
+	private async resolveModelRefId(name: string, brandId: string): Promise<Result<number, BrandNotFoundError | RepositoryError>> {
+		const brandResult = await this.brandRepository.findById(brandId);
+		if (!brandResult.success) {
+			return brandResult;
+		}
+		if (!brandResult.value) {
+			this.logger.warn('Brand not found', { brandId });
+			return err(new BrandNotFoundError(brandId));
+		}
+
+		const modelResult = await this.modelRepository.findByNameAndBrand(name, brandResult.value.refId);
+		if (!modelResult.success) {
+			return modelResult;
+		}
+
+		if (modelResult.value) {
+			return { success: true, value: modelResult.value.refId };
+		}
+
+		const createResult = await this.modelRepository.create({ name, brandRefId: brandResult.value.refId });
+		if (!createResult.success) {
+			return createResult;
+		}
+
+		return { success: true, value: createResult.value.refId };
 	}
 }

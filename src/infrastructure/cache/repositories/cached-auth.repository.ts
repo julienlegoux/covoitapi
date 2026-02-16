@@ -36,7 +36,19 @@ export class CachedAuthRepository implements AuthRepository {
 	}
 
 	async findByEmail(email: string): Promise<Result<AuthEntity | null, RepositoryError>> {
-		return this.inner.findByEmail(email);
+		const cacheKey = this.key('findByEmail', email);
+		if (this.config.enabled) {
+			const cached = await this.cache.get<AuthEntity>(cacheKey);
+			if (cached) {
+				this.logger.debug('Cache hit', { key: cacheKey });
+				return { success: true, value: cached };
+			}
+		}
+		const result = await this.inner.findByEmail(email);
+		if (this.config.enabled && result.success && result.value) {
+			await this.cache.set(cacheKey, result.value, this.config.ttlSeconds);
+		}
+		return result;
 	}
 
 	async existsByEmail(email: string): Promise<Result<boolean, RepositoryError>> {

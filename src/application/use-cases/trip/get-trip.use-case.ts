@@ -55,10 +55,12 @@ export class GetTripUseCase {
     async execute(id: string): Promise<Result<TripEntity, GetTripError>> {
         const result = await this.tripRepository.findById(id);
         if (!result.success) {
+            this.logger.error('Failed to get trip', { tripId: id, error: result.error });
             return result;
         }
 
         if (!result.value) {
+            this.logger.warn('Trip not found', { tripId: id });
             return err(new TripNotFoundError(id));
         }
 

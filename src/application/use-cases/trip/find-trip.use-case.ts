@@ -44,10 +44,15 @@ export class FindTripUseCase {
      *          or a RepositoryError on database failure
      */
     async execute(input: FindTripQueryType): Promise<Result<TripEntity[], RepositoryError>> {
-        return this.tripRepository.findByFilters({
+        this.logger.info('Searching trips', { filters: input });
+        const result = await this.tripRepository.findByFilters({
             departureCity: input.departureCity,
             arrivalCity: input.arrivalCity,
             date: input.date ? new Date(input.date) : undefined,
         });
+        if (!result.success) {
+            this.logger.error('Failed to search trips', { error: result.error });
+        }
+        return result;
     }
 }

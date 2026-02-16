@@ -17,20 +17,23 @@ import { vpCreateCarSchema } from '../schemas.js';
 async function resolveBrandByName(brandName: string, c: Context) {
 	const brandRepo = container.resolve<BrandRepository>(TOKENS.BrandRepository);
 	const brandsResult = await brandRepo.findAll();
-	if (!brandsResult.success) return { error: resultToResponse(c, brandsResult) };
+	if (!brandsResult.success) {
+		return { success: false as const, error: resultToResponse(c, brandsResult) };
+	}
 
 	const brand = brandsResult.value.data.find(
 		(b) => b.name.toLowerCase() === brandName.toLowerCase(),
 	);
 	if (!brand) {
 		return {
+			success: false as const,
 			error: c.json(
 				{ success: false, error: { code: 'BRAND_NOT_FOUND', message: `Brand not found: ${brandName}` } },
 				404,
 			),
 		};
 	}
-	return { brand };
+	return { success: true as const, brand };
 }
 
 export async function vpListCars(c: Context): Promise<Response> {
@@ -62,11 +65,11 @@ export async function vpCreateCar(c: Context): Promise<Response> {
 	const validated = vpCreateCarSchema.parse(body);
 
 	const resolved = await resolveBrandByName(validated.brand, c);
-	if (resolved.error) return resolved.error;
+	if (!resolved.success) return resolved.error;
 
 	const input: WithAuthContext<CreateCarSchemaType> = {
 		model: validated.model,
-		brandId: resolved.brand!.id,
+		brandId: resolved.brand.id,
 		licensePlate: validated.carregistration,
 		userId: c.get('userId'),
 	};
@@ -82,12 +85,12 @@ export async function vpUpdateCar(c: Context): Promise<Response> {
 	const validated = vpCreateCarSchema.parse(body);
 
 	const resolved = await resolveBrandByName(validated.brand, c);
-	if (resolved.error) return resolved.error;
+	if (!resolved.success) return resolved.error;
 
 	const useCase = container.resolve(UpdateCarUseCase);
 	const result = await useCase.execute(
 		id,
-		{ model: validated.model, brandId: resolved.brand!.id, licensePlate: validated.carregistration },
+		{ model: validated.model, brandId: resolved.brand.id, licensePlate: validated.carregistration },
 		c.get('userId'),
 	);
 	return resultToResponse(c, result);
