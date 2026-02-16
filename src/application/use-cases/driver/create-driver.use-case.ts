@@ -80,7 +80,7 @@ export class CreateDriverUseCase {
 
 		const user = userResult.value;
 
-		const existingResult = await this.driverRepository.findByUserRefId(user.refId);
+		const existingResult = await this.driverRepository.findByUserId(input.userId);
 		if (!existingResult.success) {
 			return existingResult;
 		}

@@ -4,8 +4,11 @@
  * and applies global middleware.
  *
  * **Global middleware (applied to all routes):**
- * 1. bodyLimit -- restricts request body to 1 MB
- * 2. errorHandler -- catches ZodError, DomainError, and unknown errors
+ * 1. secureHeaders -- sets security headers (HSTS, X-Content-Type-Options, etc.)
+ * 2. cors -- handles CORS preflight and response headers
+ * 3. requestLogger -- logs requests and responses
+ * 4. bodyLimit -- restricts request body to 1 MB
+ * 5. errorHandler -- catches ZodError, DomainError, and unknown errors
  *
  * **Endpoint groups:**
  * - /api/auth          -- Authentication (public)
@@ -27,12 +30,16 @@
  */
 import { Hono } from 'hono';
 import { bodyLimit } from 'hono/body-limit';
-import { errorHandler } from '../middleware/error-handler.middleware.js';
-import { requestLogger } from '../middleware/request-logger.middleware.js';
+import { cors } from 'hono/cors';
+import { secureHeaders } from 'hono/secure-headers';
+import { errorHandler, requestLogger } from '../middleware/index.js';
 import { v1Routes } from './v1/index.js';
+import { vpRoutes } from '../vp/routes.js';
 
 const app = new Hono().basePath('/api');
 
+app.use('*', secureHeaders());
+app.use('*', cors({ origin: '*' }));
 app.use('*', requestLogger);
 app.use('*', bodyLimit({ maxSize: 1024 * 1024 }));
 app.use('*', errorHandler);
@@ -42,5 +49,6 @@ app.get("/health", (c) => {
 });
 
 app.route('/v1', v1Routes);
+app.route('/vp', vpRoutes);
 
 export { app };

@@ -1,5 +1,5 @@
 /**
- * @file Unit tests for the request-logger middleware.
+ * @file Unit tests for the createRequestLogger middleware factory.
  *
  * Verifies that the middleware sets the X-Request-Id header, logs
  * incoming requests and outgoing responses with timing info, and
@@ -7,10 +7,8 @@
  */
 
 import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { container } from 'tsyringe';
-import { TOKENS } from '../../lib/shared/di/tokens.js';
+import { createRequestLogger } from './request-logger.middleware.js';
 import { createMockLogger } from '../../../tests/setup.js';
-import { requestLogger } from './request-logger.middleware.js';
 import type { Context, Next } from 'hono';
 
 function createMockContext(overrides?: Partial<{ method: string; path: string; query: Record<string, string>; userAgent: string }>): Context {
@@ -19,7 +17,6 @@ function createMockContext(overrides?: Partial<{ method: string; path: string; q
     const query = overrides?.query ?? {};
     const userAgent = overrides?.userAgent ?? 'vitest';
 
-    const headers: Record<string, string> = {};
     const resHeaders: Record<string, string> = {};
 
     return {
@@ -42,10 +39,11 @@ function createMockContext(overrides?: Partial<{ method: string; path: string; q
 
 describe('requestLogger middleware', () => {
     let mockLogger: ReturnType<typeof createMockLogger>;
+    let requestLogger: ReturnType<typeof createRequestLogger>;
 
     beforeEach(() => {
         mockLogger = createMockLogger();
-        container.registerInstance(TOKENS.Logger, mockLogger);
+        requestLogger = createRequestLogger(mockLogger);
     });
 
     it('should set X-Request-Id header with a UUID', async () => {

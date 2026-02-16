@@ -12,7 +12,7 @@ import type { Logger } from '../../../lib/logging/logger.types.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import type { Result } from '../../../lib/shared/types/result.js';
 import { ok, err } from '../../../lib/shared/types/result.js';
-import { DatabaseError } from '../../../lib/errors/repository.errors.js';
+import { DatabaseError, RelationConstraintError } from '../../../lib/errors/repository.errors.js';
 import type { PrismaClient } from '../generated/prisma/client.js';
 
 /**
@@ -100,13 +100,17 @@ export class PrismaBrandRepository implements BrandRepository {
 	 * @param id - The UUID of the brand to delete.
 	 * @returns `ok(undefined)` on success, or `err(DatabaseError)` on failure.
 	 */
-	async delete(id: string): Promise<Result<void, DatabaseError>> {
+	async delete(id: string): Promise<Result<void, DatabaseError | RelationConstraintError>> {
 		try {
 			await this.prisma.brand.delete({
 				where: { id },
 			});
 			return ok(undefined);
 		} catch (e) {
+			if (e instanceof Error && 'code' in e && (e as { code: string }).code === 'P2003') {
+				this.logger.warn('Cannot delete brand: still referenced by models', { operation: 'delete', brandId: id });
+				return err(new RelationConstraintError('brand', e));
+			}
 			this.logger.error('Failed to delete brand', e instanceof Error ? e : null, { operation: 'delete', brandId: id });
 			return err(new DatabaseError('Failed to delete brand', e));
 		}

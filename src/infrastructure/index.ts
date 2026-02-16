@@ -8,7 +8,7 @@
 
 // Repositories - Prisma implementations of domain repository interfaces
 export { PrismaUserRepository } from './database/repositories/prisma-user.repository.js';
-export { PrismaTravelRepository } from './database/repositories/prisma-travel.repository.js';
+export { PrismaTripRepository } from './database/repositories/prisma-trip.repository.js';
 
 // Services - Concrete implementations of domain service interfaces
 export { ArgonPasswordService } from './services/argon-password.service.js';

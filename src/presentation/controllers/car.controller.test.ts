@@ -14,10 +14,17 @@ import { DeleteCarUseCase } from '../../application/use-cases/car/delete-car.use
 import { ok, err } from '../../lib/shared/types/result.js';
 import { CarNotFoundError } from '../../lib/errors/domain.errors.js';
 
-function createMockContext(overrides?: { jsonBody?: unknown; params?: Record<string, string>; queryParams?: Record<string, string> }) {
+const TEST_UUID = '550e8400-e29b-41d4-a716-446655440000';
+const TEST_USER_ID = '660e8400-e29b-41d4-a716-446655440001';
+
+function createMockContext(overrides?: { jsonBody?: unknown; params?: Record<string, string>; queryParams?: Record<string, string>; userId?: string }) {
 	const jsonMock = vi.fn((body, status) => ({ body, status }));
 	const bodyMock = vi.fn((body, status) => new Response(body, { status }));
 	const queryParams = overrides?.queryParams ?? {};
+	const contextValues: Record<string, unknown> = {};
+	if (overrides?.userId) {
+		contextValues['userId'] = overrides.userId;
+	}
 	return {
 		req: {
 			json: vi.fn().mockResolvedValue(overrides?.jsonBody ?? {}),
@@ -26,6 +33,7 @@ function createMockContext(overrides?: { jsonBody?: unknown; params?: Record<str
 		},
 		json: jsonMock,
 		body: bodyMock,
+		get: vi.fn((key: string) => contextValues[key]),
 		_getJsonCall: () => jsonMock.mock.calls[0],
 	} as unknown as Context & { _getJsonCall: () => [unknown, number] };
 }
@@ -66,22 +74,22 @@ describe('Car Controller', () => {
 		it('should return 201 with car on success', async () => {
 			const car = { id: '1', licensePlate: 'AB-123-CD', modelId: 'm1' };
 			mockUseCase.execute.mockResolvedValue(ok(car));
-			const ctx = createMockContext({ jsonBody: { model: 'Corolla', brandId: 'b1', licensePlate: 'AB-123-CD' } });
+			const ctx = createMockContext({ jsonBody: { model: 'Corolla', brandId: 'b1', licensePlate: 'AB-123-CD' }, userId: TEST_USER_ID });
 			await createCar(ctx);
 			const [response, status] = ctx._getJsonCall();
 			expect(status).toBe(201);
 			expect(response).toEqual({ success: true, data: car });
 		});
 
-		it('should pass correct input mapping', async () => {
+		it('should pass correct input mapping with userId', async () => {
 			mockUseCase.execute.mockResolvedValue(ok({ id: '1', licensePlate: 'AB', modelId: 'm1' }));
-			const ctx = createMockContext({ jsonBody: { model: 'Corolla', brandId: 'b1', licensePlate: 'AB-123-CD' } });
+			const ctx = createMockContext({ jsonBody: { model: 'Corolla', brandId: 'b1', licensePlate: 'AB-123-CD' }, userId: TEST_USER_ID });
 			await createCar(ctx);
-			expect(mockUseCase.execute).toHaveBeenCalledWith({ model: 'Corolla', brandId: 'b1', licensePlate: 'AB-123-CD' });
+			expect(mockUseCase.execute).toHaveBeenCalledWith({ model: 'Corolla', brandId: 'b1', licensePlate: 'AB-123-CD', userId: TEST_USER_ID });
 		});
 
 		it('should throw ZodError for invalid input', async () => {
-			const ctx = createMockContext({ jsonBody: {} });
+			const ctx = createMockContext({ jsonBody: {}, userId: TEST_USER_ID });
 			await expect(createCar(ctx)).rejects.toThrow();
 		});
 	});
@@ -96,20 +104,20 @@ describe('Car Controller', () => {
 		});
 
 		it('should return 200 with updated car', async () => {
-			const car = { id: '1', licensePlate: 'XY-999-ZZ', modelId: 'm1' };
+			const car = { id: TEST_UUID, licensePlate: 'XY-999-ZZ', modelId: 'm1' };
 			mockUseCase.execute.mockResolvedValue(ok(car));
-			const ctx = createMockContext({ jsonBody: { model: 'Yaris', brandId: 'b1', licensePlate: 'XY-999-ZZ' }, params: { id: '1' } });
+			const ctx = createMockContext({ jsonBody: { model: 'Yaris', brandId: 'b1', licensePlate: 'XY-999-ZZ' }, params: { id: TEST_UUID }, userId: TEST_USER_ID });
 			await updateCar(ctx);
 			const [response, status] = ctx._getJsonCall();
 			expect(status).toBe(200);
 			expect(response).toEqual({ success: true, data: car });
 		});
 
-		it('should extract id from request params', async () => {
-			mockUseCase.execute.mockResolvedValue(ok({ id: '1', licensePlate: 'AB', modelId: 'm1' }));
-			const ctx = createMockContext({ jsonBody: { model: 'Yaris', brandId: 'b1', licensePlate: 'AB' }, params: { id: 'car-42' } });
+		it('should extract id from request params and pass userId', async () => {
+			mockUseCase.execute.mockResolvedValue(ok({ id: TEST_UUID, licensePlate: 'AB', modelId: 'm1' }));
+			const ctx = createMockContext({ jsonBody: { model: 'Yaris', brandId: 'b1', licensePlate: 'AB' }, params: { id: TEST_UUID }, userId: TEST_USER_ID });
 			await updateCar(ctx);
-			expect(mockUseCase.execute).toHaveBeenCalledWith('car-42', expect.any(Object));
+			expect(mockUseCase.execute).toHaveBeenCalledWith(TEST_UUID, expect.any(Object), TEST_USER_ID);
 		});
 	});
 
@@ -123,9 +131,9 @@ describe('Car Controller', () => {
 		});
 
 		it('should return 200 with patched car', async () => {
-			const car = { id: '1', licensePlate: 'AB-123-CD', modelId: 'm1' };
+			const car = { id: TEST_UUID, licensePlate: 'AB-123-CD', modelId: 'm1' };
 			mockUseCase.execute.mockResolvedValue(ok(car));
-			const ctx = createMockContext({ jsonBody: { licensePlate: 'XY-999-ZZ' }, params: { id: '1' } });
+			const ctx = createMockContext({ jsonBody: { licensePlate: 'XY-999-ZZ' }, params: { id: TEST_UUID }, userId: TEST_USER_ID });
 			await patchCar(ctx);
 			const [response, status] = ctx._getJsonCall();
 			expect(status).toBe(200);
@@ -143,14 +151,14 @@ describe('Car Controller', () => {
 
 		it('should return 204 on successful delete', async () => {
 			mockUseCase.execute.mockResolvedValue(ok(undefined));
-			const ctx = createMockContext({ params: { id: '1' } });
+			const ctx = createMockContext({ params: { id: TEST_UUID }, userId: TEST_USER_ID });
 			const response = await deleteCar(ctx);
 			expect(response.status).toBe(204);
 		});
 
 		it('should return error when car not found', async () => {
-			mockUseCase.execute.mockResolvedValue(err(new CarNotFoundError('1')));
-			const ctx = createMockContext({ params: { id: '1' } });
+			mockUseCase.execute.mockResolvedValue(err(new CarNotFoundError(TEST_UUID)));
+			const ctx = createMockContext({ params: { id: TEST_UUID }, userId: TEST_USER_ID });
 			await deleteCar(ctx);
 			const [response] = ctx._getJsonCall();
 			expect(response).toHaveProperty('success', false);

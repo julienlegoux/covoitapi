@@ -59,7 +59,12 @@ export class HonoJwtService implements JwtService {
 		try {
 			// Calculate Unix timestamp expiration and merge into payload
 			const exp = this.calculateExpiration();
-			const token = await honoSign({ ...payload, exp }, this.secret, 'HS256');
+			const iat = Math.floor(Date.now() / 1000);
+			const token = await honoSign(
+				{ ...payload, exp, iat, iss: 'covoitapi', aud: 'covoitapi' },
+				this.secret,
+				'HS256',
+			);
 			return ok(token);
 		} catch (e) {
 			this.logger.error('Token signing failed', e instanceof Error ? e : null, { userId: payload.userId });
@@ -80,6 +85,11 @@ export class HonoJwtService implements JwtService {
 	async verify(token: string): Promise<Result<JwtPayload, TokenExpiredError | TokenInvalidError | TokenMalformedError>> {
 		try {
 			const decoded = await honoVerify(token, this.secret, 'HS256');
+
+			// Validate standard claims
+			if (decoded.iss !== 'covoitapi' || decoded.aud !== 'covoitapi') {
+				return err(new TokenInvalidError('Invalid token issuer or audience'));
+			}
 
 			// Validate that userId exists and is a string
 			if (!decoded.userId || typeof decoded.userId !== 'string') {

@@ -14,6 +14,8 @@ import { DeleteBrandUseCase } from '../../application/use-cases/brand/delete-bra
 import { ok, err } from '../../lib/shared/types/result.js';
 import { BrandNotFoundError } from '../../lib/errors/domain.errors.js';
 
+const TEST_UUID = '550e8400-e29b-41d4-a716-446655440000';
+
 function createMockContext(overrides?: { jsonBody?: unknown; params?: Record<string, string>; queryParams?: Record<string, string> }) {
 	const jsonMock = vi.fn((body, status) => ({ body, status }));
 	const bodyMock = vi.fn((body, status) => new Response(body, { status }));
@@ -108,14 +110,14 @@ describe('Brand Controller', () => {
 
 		it('should return 204 on successful delete', async () => {
 			mockUseCase.execute.mockResolvedValue(ok(undefined));
-			const ctx = createMockContext({ params: { id: '1' } });
+			const ctx = createMockContext({ params: { id: TEST_UUID } });
 			const response = await deleteBrand(ctx);
 			expect(response.status).toBe(204);
 		});
 
 		it('should return error response when brand not found', async () => {
-			mockUseCase.execute.mockResolvedValue(err(new BrandNotFoundError('1')));
-			const ctx = createMockContext({ params: { id: '1' } });
+			mockUseCase.execute.mockResolvedValue(err(new BrandNotFoundError(TEST_UUID)));
+			const ctx = createMockContext({ params: { id: TEST_UUID } });
 			await deleteBrand(ctx);
 			const [response] = ctx._getJsonCall();
 			expect(response).toHaveProperty('success', false);

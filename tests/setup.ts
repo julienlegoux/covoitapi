@@ -74,11 +74,12 @@ export function createMockModelRepository() {
 export function createMockDriverRepository() {
 	return {
 		findByUserRefId: vi.fn(),
+		findByUserId: vi.fn(),
 		create: vi.fn(),
 	};
 }
 
-export function createMockTravelRepository() {
+export function createMockTripRepository() {
 	return {
 		findAll: vi.fn(),
 		findById: vi.fn(),
@@ -93,11 +94,14 @@ export function createMockInscriptionRepository() {
 		findAll: vi.fn(),
 		findById: vi.fn(),
 		findByUserRefId: vi.fn(),
-		findByRouteRefId: vi.fn(),
+		findByTripRefId: vi.fn(),
+		findByUserId: vi.fn(),
+		findByTripId: vi.fn(),
+		findByIdAndUserId: vi.fn(),
 		create: vi.fn(),
 		delete: vi.fn(),
-		existsByUserAndRoute: vi.fn(),
-		countByRouteRefId: vi.fn(),
+		existsByUserAndTrip: vi.fn(),
+		countByTripRefId: vi.fn(),
 	};
 }
 
@@ -109,6 +113,42 @@ export function createMockColorRepository() {
 		create: vi.fn(),
 		update: vi.fn(),
 		delete: vi.fn(),
+	};
+}
+
+// ─── Cache Mocks ───
+
+export function createMockCacheService() {
+	return {
+		get: vi.fn().mockResolvedValue(null),
+		set: vi.fn().mockResolvedValue(undefined),
+		delete: vi.fn().mockResolvedValue(undefined),
+		deleteByPattern: vi.fn().mockResolvedValue(undefined),
+		isHealthy: vi.fn().mockResolvedValue(true),
+	};
+}
+
+export function createMockCacheConfig(overrides?: Partial<{
+	enabled: boolean;
+	keyPrefix: string;
+	ttl: Partial<Record<string, number>>;
+}>) {
+	return {
+		enabled: overrides?.enabled ?? true,
+		keyPrefix: overrides?.keyPrefix ?? 'test:',
+		ttl: {
+			brand: 3600,
+			color: 3600,
+			model: 1800,
+			city: 1800,
+			car: 600,
+			driver: 600,
+			user: 300,
+			auth: 300,
+			trip: 300,
+			inscription: 120,
+			...overrides?.ttl,
+		},
 	};
 }
 
@@ -218,17 +258,19 @@ export function createMockPrismaClient() {
 		},
 		driver: {
 			findUnique: vi.fn(),
+			findFirst: vi.fn(),
 			create: vi.fn(),
 			count: vi.fn(),
 		},
 		inscription: {
 			findUnique: vi.fn(),
+			findFirst: vi.fn(),
 			findMany: vi.fn(),
 			create: vi.fn(),
 			delete: vi.fn(),
 			count: vi.fn(),
 		},
-		travel: {
+		trip: {
 			findUnique: vi.fn(),
 			findMany: vi.fn(),
 			create: vi.fn(),
@@ -306,7 +348,7 @@ export function createMockListUserInscriptionsUseCase() {
 	return { execute: vi.fn() };
 }
 
-export function createMockListRoutePassengersUseCase() {
+export function createMockListTripPassengersUseCase() {
 	return { execute: vi.fn() };
 }
 
@@ -318,36 +360,25 @@ export function createMockDeleteInscriptionUseCase() {
 	return { execute: vi.fn() };
 }
 
-export function createMockListTravelsUseCase() {
+export function createMockListTripsUseCase() {
 	return { execute: vi.fn() };
 }
 
-export function createMockGetTravelUseCase() {
+export function createMockGetTripUseCase() {
 	return { execute: vi.fn() };
 }
 
-export function createMockFindTravelUseCase() {
+export function createMockFindTripUseCase() {
 	return { execute: vi.fn() };
 }
 
-export function createMockCreateTravelUseCase() {
+export function createMockCreateTripUseCase() {
 	return { execute: vi.fn() };
 }
 
-export function createMockDeleteTravelUseCase() {
+export function createMockDeleteTripUseCase() {
 	return { execute: vi.fn() };
 }
-
-/** @deprecated Use createMockListTravelsUseCase instead. */
-export const createMockListRoutesUseCase = createMockListTravelsUseCase;
-/** @deprecated Use createMockGetTravelUseCase instead. */
-export const createMockGetRouteUseCase = createMockGetTravelUseCase;
-/** @deprecated Use createMockFindTravelUseCase instead. */
-export const createMockFindRouteUseCase = createMockFindTravelUseCase;
-/** @deprecated Use createMockCreateTravelUseCase instead. */
-export const createMockCreateRouteUseCase = createMockCreateTravelUseCase;
-/** @deprecated Use createMockDeleteTravelUseCase instead. */
-export const createMockDeleteRouteUseCase = createMockDeleteTravelUseCase;
 
 export function createMockListColorsUseCase() {
 	return { execute: vi.fn() };
@@ -428,7 +459,7 @@ export function createMockInscriptionData(overrides?: Partial<{
 	refId: number;
 	createdAt: Date;
 	userRefId: number;
-	routeRefId: number;
+	tripRefId: number;
 	status: string;
 }>) {
 	return {
@@ -436,30 +467,27 @@ export function createMockInscriptionData(overrides?: Partial<{
 		refId: overrides?.refId ?? 1,
 		createdAt: overrides?.createdAt ?? new Date('2025-01-01'),
 		userRefId: overrides?.userRefId ?? 1,
-		routeRefId: overrides?.routeRefId ?? 1,
+		tripRefId: overrides?.tripRefId ?? 1,
 		status: overrides?.status ?? 'ACTIVE',
 	};
 }
 
-export function createMockTravelData(overrides?: Partial<{
+export function createMockTripData(overrides?: Partial<{
 	id: string;
 	refId: number;
-	dateRoute: Date;
+	dateTrip: Date;
 	kms: number;
 	seats: number;
 	driverRefId: number;
 	carRefId: number;
 }>) {
 	return {
-		id: overrides?.id ?? 'travel-id-1',
+		id: overrides?.id ?? 'trip-id-1',
 		refId: overrides?.refId ?? 1,
-		dateRoute: overrides?.dateRoute ?? new Date('2025-06-01'),
+		dateTrip: overrides?.dateTrip ?? new Date('2025-06-01'),
 		kms: overrides?.kms ?? 100,
 		seats: overrides?.seats ?? 3,
 		driverRefId: overrides?.driverRefId ?? 1,
 		carRefId: overrides?.carRefId ?? 1,
 	};
 }
-
-/** @deprecated Use createMockTravelData instead. Kept for backward compatibility. */
-export const createMockRouteData = createMockTravelData;

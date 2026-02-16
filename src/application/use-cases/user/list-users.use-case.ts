@@ -40,6 +40,10 @@ export class ListUsersUseCase {
 	 *          or a RepositoryError on database failure
 	 */
 	async execute(): Promise<Result<PublicUserEntity[], RepositoryError>> {
-		return this.userRepository.findAll();
+		const result = await this.userRepository.findAll();
+		if (!result.success) {
+			this.logger.error('Failed to list users', result.error);
+		}
+		return result;
 	}
 }

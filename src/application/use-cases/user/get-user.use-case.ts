@@ -55,10 +55,12 @@ export class GetUserUseCase {
 	async execute(id: string): Promise<Result<PublicUserEntity, GetUserError>> {
 		const result = await this.userRepository.findById(id);
 		if (!result.success) {
+			this.logger.error('Failed to get user', result.error, { userId: id });
 			return result;
 		}
 
 		if (!result.value || result.value.anonymizedAt !== null) {
+			this.logger.warn('User not found', { userId: id });
 			return err(new UserNotFoundError(id));
 		}
 

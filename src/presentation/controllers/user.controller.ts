@@ -13,6 +13,7 @@ import { UpdateUserUseCase } from '../../application/use-cases/user/update-user.
 import { container } from '../../lib/shared/di/container.js';
 import { resultToResponse } from '../../lib/shared/utils/result-response.util.js';
 import { profileSchema } from '../../application/schemas/user.schema.js';
+import { uuidSchema } from '../../application/schemas/common.schema.js';
 
 /**
  * Lists all users.
@@ -29,16 +30,28 @@ export async function listUsers(c: Context): Promise<Response> {
 }
 
 /**
- * Gets a single user by their UUID.
+ * Gets a single user by their UUID. Users can only view their own profile
+ * unless they have ADMIN role.
  *
- * **GET /api/users/:id** -- Auth required, USER+
+ * **GET /api/users/:id** -- Auth required, USER+ (own profile or ADMIN)
  *
  * @param c - Hono request context with `id` route parameter (UUID)
  * @returns 200 with `{ success: true, data: PublicUserEntity }` on success,
+ *          403 if requesting another user's profile without ADMIN role,
  *          or an error response (e.g. 404 USER_NOT_FOUND).
  */
 export async function getUser(c: Context): Promise<Response> {
-	const id = c.req.param('id');
+	const id = uuidSchema.parse(c.req.param('id'));
+	const requestingUserId = c.get('userId');
+	const role = c.get('role');
+
+	if (id !== requestingUserId && role !== 'ADMIN') {
+		return c.json(
+			{ success: false, error: { code: 'FORBIDDEN', message: 'Insufficient permissions' } },
+			403,
+		);
+	}
+
 	const useCase = container.resolve(GetUserUseCase);
 	const result = await useCase.execute(id);
 	return resultToResponse(c, result);
@@ -105,7 +118,7 @@ export async function anonymizeMe(c: Context): Promise<Response> {
  *          or an error response (e.g. 404 USER_NOT_FOUND).
  */
 export async function anonymizeUser(c: Context): Promise<Response> {
-	const id = c.req.param('id');
+	const id = uuidSchema.parse(c.req.param('id'));
 	const useCase = container.resolve(AnonymizeUserUseCase);
 	const result = await useCase.execute(id);
 	if (!result.success) {

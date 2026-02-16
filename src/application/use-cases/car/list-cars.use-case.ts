@@ -43,8 +43,12 @@ export class ListCarsUseCase {
 	 */
 	async execute(pagination?: PaginationParams): Promise<Result<PaginatedResult<CarEntity>, RepositoryError>> {
 		const result = await this.carRepository.findAll(pagination ? toSkipTake(pagination) : undefined);
-		if (!result.success) return result;
+		if (!result.success) {
+			this.logger.error('Failed to list cars', result.error);
+			return result;
+		}
 		const { data, total } = result.value;
+		this.logger.info('Listed cars', { count: data.length, total });
 		return ok({
 			data,
 			meta: buildPaginationMeta(pagination ?? { page: 1, limit: 20 }, total),

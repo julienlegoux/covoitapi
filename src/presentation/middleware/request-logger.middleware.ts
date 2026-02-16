@@ -25,47 +25,46 @@
 import { randomUUID } from 'node:crypto';
 import type { Context, Next } from 'hono';
 import type { Logger } from '../../lib/logging/logger.types.js';
-import { container } from '../../lib/shared/di/container.js';
-import { TOKENS } from '../../lib/shared/di/tokens.js';
 import { getContext, runWithContext } from '../../lib/context/request-context.js';
 
 /**
- * Hono middleware that logs incoming requests and outgoing responses
+ * Creates a Hono middleware that logs incoming requests and outgoing responses
  * with a unique correlation ID and request duration.
  *
- * @param c - Hono request context
- * @param next - Next middleware/handler in the chain
+ * @param logger - Logger instance for structured request/response logging
+ * @returns Hono middleware function
  */
-export async function requestLogger(c: Context, next: Next): Promise<void> {
-	const logger = container.resolve<Logger>(TOKENS.Logger);
-	const requestId = randomUUID();
-	const startTime = performance.now();
+export function createRequestLogger(logger: Logger) {
+	return async (c: Context, next: Next): Promise<void> => {
+		const requestId = randomUUID();
+		const startTime = performance.now();
 
-	// Set response header for client correlation
-	c.header('X-Request-Id', requestId);
+		// Set response header for client correlation
+		c.header('X-Request-Id', requestId);
 
-	await runWithContext({ requestId, startTime }, async () => {
-		// Log incoming request
-		logger.info('Request received', {
-			method: c.req.method,
-			path: c.req.path,
-			query: c.req.query(),
-			userAgent: c.req.header('user-agent'),
+		await runWithContext({ requestId, startTime }, async () => {
+			// Log incoming request
+			logger.info('Request received', {
+				method: c.req.method,
+				path: c.req.path,
+				query: c.req.query(),
+				userAgent: c.req.header('user-agent'),
+			});
+
+			// Execute the handler
+			await next();
+
+			// Calculate duration
+			const ctx = getContext();
+			const duration = ctx ? performance.now() - ctx.startTime : 0;
+
+			// Log response
+			logger.info('Response sent', {
+				method: c.req.method,
+				path: c.req.path,
+				status: c.res.status,
+				durationMs: Math.round(duration),
+			});
 		});
-
-		// Execute the handler
-		await next();
-
-		// Calculate duration
-		const ctx = getContext();
-		const duration = ctx ? performance.now() - ctx.startTime : 0;
-
-		// Log response
-		logger.info('Response sent', {
-			method: c.req.method,
-			path: c.req.path,
-			status: c.res.status,
-			durationMs: Math.round(duration),
-		});
-	});
+	};
 }

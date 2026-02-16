@@ -14,6 +14,7 @@ import { TOKENS } from '../../lib/shared/di/tokens.js';
 import type { Result } from '../../lib/shared/types/result.js';
 import { ok, err } from '../../lib/shared/types/result.js';
 import { EmailDeliveryError } from '../../lib/errors/email.errors.js';
+import { escapeHtml } from '../../lib/shared/utils/html-escape.util.js';
 
 /**
  * Resend implementation of {@link EmailService}.
@@ -46,11 +47,12 @@ export class ResendEmailService implements EmailService {
 	 *          or `err(EmailDeliveryError)` on failure.
 	 */
 	async sendWelcomeEmail(to: string, firstName: string): Promise<Result<void, EmailDeliveryError>> {
+		const safeFirstName = escapeHtml(firstName);
 		return this.send({
 			to,
 			subject: 'Welcome to Carpooling!',
 			html: `
-        <h1>Welcome, ${firstName}!</h1>
+        <h1>Welcome, ${safeFirstName}!</h1>
         <p>Thank you for joining our carpooling platform.</p>
         <p>Start exploring rides and save money while reducing your carbon footprint!</p>
       `,

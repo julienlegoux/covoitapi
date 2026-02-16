@@ -22,16 +22,13 @@ export const createColorSchema = z.object({
 /**
  * Schema for validating a partial color update input.
  * All fields are optional, but if provided they must satisfy the same
- * constraints as {@link createColorSchema}.
+ * constraints as {@link ColorSchema}.
  *
  * Validation rules:
  * - `name` -- optional; if present, must be a non-empty string.
  * - `hex` -- optional; if present, must match `#RRGGBB` hex format.
  */
-export const updateColorSchema = z.object({
-	name: z.string().min(1).optional(),
-	hex: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Must be a valid hex color').optional(),
-});
+export const updateColorSchema = createColorSchema.partial();
 
 /** Inferred TypeScript type for a valid color creation request body. */
 export type CreateColorSchemaType = z.infer<typeof createColorSchema>;

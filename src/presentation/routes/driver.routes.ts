@@ -8,8 +8,7 @@
  * - POST / -- Register the authenticated user as a driver (USER+)
  */
 import { Hono } from 'hono';
-import { authMiddleware } from '../middleware/auth.middleware.js';
-import { requireRole } from '../middleware/authorization.middleware.js';
+import { authMiddleware, requireRole } from '../middleware/index.js';
 import { createDriver } from '../controllers/driver.controller.js';
 
 const driverRoutes = new Hono();

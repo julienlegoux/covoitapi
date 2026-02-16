@@ -121,13 +121,13 @@ export class DriverAlreadyExistsError extends DomainError {
 }
 
 /**
- * Thrown when a travel route cannot be found by the given identifier.
+ * Thrown when a trip cannot be found by the given identifier.
  * @param identifier - The UUID or other identifier used in the lookup.
  */
-export class TravelNotFoundError extends DomainError {
+export class TripNotFoundError extends DomainError {
 	constructor(identifier: string) {
-		super(`Travel not found: ${identifier}`, 'TRAVEL_NOT_FOUND');
-		this.name = 'TravelNotFoundError';
+		super(`Trip not found: ${identifier}`, 'TRIP_NOT_FOUND');
+		this.name = 'TripNotFoundError';
 	}
 }
 
@@ -143,24 +143,24 @@ export class InscriptionNotFoundError extends DomainError {
 }
 
 /**
- * Thrown when a user attempts to inscribe on a route they are already registered for.
+ * Thrown when a user attempts to inscribe on a trip they are already registered for.
  * @param userId - The UUID of the user.
- * @param routeId - The UUID of the travel route.
+ * @param tripId - The UUID of the trip.
  */
 export class AlreadyInscribedError extends DomainError {
-	constructor(userId: string, routeId: string) {
-		super(`User ${userId} is already inscribed to route ${routeId}`, 'ALREADY_INSCRIBED');
+	constructor(userId: string, tripId: string) {
+		super(`User ${userId} is already inscribed to trip ${tripId}`, 'ALREADY_INSCRIBED');
 		this.name = 'AlreadyInscribedError';
 	}
 }
 
 /**
- * Thrown when a route has no more available seats for new inscriptions.
- * @param routeId - The UUID of the full travel route.
+ * Thrown when a trip has no more available seats for new inscriptions.
+ * @param tripId - The UUID of the full trip.
  */
 export class NoSeatsAvailableError extends DomainError {
-	constructor(routeId: string) {
-		super(`No seats available on route ${routeId}`, 'NO_SEATS_AVAILABLE');
+	constructor(tripId: string) {
+		super(`No seats available on trip ${tripId}`, 'NO_SEATS_AVAILABLE');
 		this.name = 'NoSeatsAvailableError';
 	}
 }
@@ -184,5 +184,17 @@ export class ColorAlreadyExistsError extends DomainError {
 	constructor(name: string) {
 		super(`Color already exists: ${name}`, 'COLOR_ALREADY_EXISTS');
 		this.name = 'ColorAlreadyExistsError';
+	}
+}
+
+/**
+ * Thrown when a user attempts to access or modify a resource they do not own.
+ * @param resource - The type of resource (e.g. "Car", "Trip").
+ * @param id - The UUID of the resource.
+ */
+export class ForbiddenError extends DomainError {
+	constructor(resource: string, id: string) {
+		super(`You do not have permission to access ${resource}: ${id}`, 'FORBIDDEN');
+		this.name = 'ForbiddenError';
 	}
 }

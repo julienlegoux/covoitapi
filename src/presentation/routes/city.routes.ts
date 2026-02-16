@@ -10,8 +10,7 @@
  * - DELETE /:id      -- Delete city (ADMIN)
  */
 import { Hono } from 'hono';
-import { authMiddleware } from '../middleware/auth.middleware.js';
-import { requireRole } from '../middleware/authorization.middleware.js';
+import { authMiddleware, requireRole } from '../middleware/index.js';
 import { createCity, deleteCity, listCities } from '../controllers/city.controller.js';
 
 const cityRoutes = new Hono();

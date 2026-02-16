@@ -54,7 +54,7 @@ export const loginSchema = z.object({
  * - `token` -- must be a non-empty string (JWT).
  */
 export const authResponseSchema = z.object({
-	userId: z.string().uuid(),
+	userId: z.uuid(),
 	token: z.string(),
 });
 

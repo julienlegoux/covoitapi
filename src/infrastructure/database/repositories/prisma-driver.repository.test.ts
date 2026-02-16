@@ -20,6 +20,7 @@ function createMockPrisma() {
     return {
         driver: {
             findUnique: vi.fn(),
+            findFirst: vi.fn(),
             create: vi.fn(),
         },
     };
@@ -92,6 +93,47 @@ describe('PrismaDriverRepository', () => {
             if (!result.success) {
                 expect(result.error).toBeInstanceOf(DatabaseError);
                 expect(result.error.message).toBe('Failed to find driver by user ref id');
+            }
+        });
+    });
+
+    // ── findByUserId ──────────────────────────────────────────────────────
+
+    describe('findByUserId()', () => {
+        it('should return ok(driver) when driver found via user UUID relation filter', async () => {
+            mockPrisma.driver.findFirst.mockResolvedValue(mockDriver);
+
+            const result = await repository.findByUserId('user-uuid-123');
+
+            expect(result.success).toBe(true);
+            if (result.success) {
+                expect(result.value).toEqual(mockDriver);
+            }
+            expect(mockPrisma.driver.findFirst).toHaveBeenCalledWith({
+                where: { user: { id: 'user-uuid-123' } },
+            });
+        });
+
+        it('should return ok(null) when user has no driver record', async () => {
+            mockPrisma.driver.findFirst.mockResolvedValue(null);
+
+            const result = await repository.findByUserId('user-uuid-999');
+
+            expect(result.success).toBe(true);
+            if (result.success) {
+                expect(result.value).toBeNull();
+            }
+        });
+
+        it('should return err(DatabaseError) on Prisma error', async () => {
+            mockPrisma.driver.findFirst.mockRejectedValue(new Error('Connection lost'));
+
+            const result = await repository.findByUserId('user-uuid-123');
+
+            expect(result.success).toBe(false);
+            if (!result.success) {
+                expect(result.error).toBeInstanceOf(DatabaseError);
+                expect(result.error.message).toBe('Failed to find driver by user id');
             }
         });
     });

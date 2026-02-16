@@ -1,18 +1,16 @@
 /**
- * Unit tests for the errorHandler middleware.
+ * Unit tests for the createErrorHandler middleware factory.
  * Verifies correct handling of three error categories:
  * - ZodError: 400 with per-field details, nested paths, multiple errors
  * - DomainError: mapped HTTP status codes (409, 401, 404, 400)
  * - Unknown errors: 500 INTERNAL_ERROR with logging
  * Also verifies transparent pass-through when no error occurs.
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { Context, Next } from 'hono';
 import { type ZodError, z } from 'zod';
-import { container } from 'tsyringe';
-import { errorHandler } from './error-handler.middleware.js';
+import { createErrorHandler } from './error-handler.middleware.js';
 import { DomainError, UserAlreadyExistsError, InvalidCredentialsError, UserNotFoundError } from '../../lib/errors/domain.errors.js';
-import { TOKENS } from '../../lib/shared/di/tokens.js';
 import { createMockLogger } from '../../../tests/setup.js';
 
 function createMockContext() {
@@ -33,11 +31,11 @@ function createPassingNext(): Next {
 
 describe('errorHandler middleware', () => {
 	let mockLogger: ReturnType<typeof createMockLogger>;
+	let errorHandler: ReturnType<typeof createErrorHandler>;
 
 	beforeEach(() => {
-		container.clearInstances();
 		mockLogger = createMockLogger();
-		container.registerInstance(TOKENS.Logger, mockLogger);
+		errorHandler = createErrorHandler(mockLogger);
 	});
 
 	// Zod validation errors: 400 status with field-level details

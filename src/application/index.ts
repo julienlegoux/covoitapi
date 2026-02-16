@@ -11,12 +11,12 @@
  * orchestration (use cases).
  */
 
-// Travel use cases
-export { CreateTravelUseCase } from './use-cases/travel/create-travel.use-case.js';
-export { DeleteTravelUseCase } from './use-cases/travel/delete-travel.use-case.js';
-export { FindTravelUseCase } from './use-cases/travel/find-travel.use-case.js';
-export { GetTravelUseCase } from './use-cases/travel/get-travel.use-case.js';
-export { ListTravelsUseCase } from './use-cases/travel/list-travels.use-case.js';
+// Trip use cases
+export { CreateTripUseCase } from './use-cases/trip/create-trip.use-case.js';
+export { DeleteTripUseCase } from './use-cases/trip/delete-trip.use-case.js';
+export { FindTripUseCase } from './use-cases/trip/find-trip.use-case.js';
+export { GetTripUseCase } from './use-cases/trip/get-trip.use-case.js';
+export { ListTripsUseCase } from './use-cases/trip/list-trips.use-case.js';
 
 // Auth use cases
 export { LoginUseCase } from './use-cases/auth/login.use-case.js';

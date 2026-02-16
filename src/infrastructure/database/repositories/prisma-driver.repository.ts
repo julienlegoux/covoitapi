@@ -54,6 +54,25 @@ export class PrismaDriverRepository implements DriverRepository {
 	}
 
 	/**
+	 * Finds a driver record by the associated user's UUID via a relation filter.
+	 * Eliminates the need to first resolve the user UUID to a refId.
+	 * @param userId - The UUID of the linked User record.
+	 * @returns `ok(DriverEntity)` if found, `ok(null)` if the user is not a driver,
+	 *          or `err(DatabaseError)` on failure.
+	 */
+	async findByUserId(userId: string): Promise<Result<DriverEntity | null, DatabaseError>> {
+		try {
+			const driver = await this.prisma.driver.findFirst({
+				where: { user: { id: userId } },
+			});
+			return ok(driver);
+		} catch (e) {
+			this.logger.error('Failed to find driver by user id', e instanceof Error ? e : null, { operation: 'findByUserId', userId });
+			return err(new DatabaseError('Failed to find driver by user id', e));
+		}
+	}
+
+	/**
 	 * Creates a new driver record linked to an existing user.
 	 * @param data - Driver creation data containing driverLicense and userRefId.
 	 * @returns `ok(DriverEntity)` with the created driver,

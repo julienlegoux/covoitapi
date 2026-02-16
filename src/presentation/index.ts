@@ -8,10 +8,9 @@
 
 // Controllers
 export * from './controllers/auth.controller.js';
-export { authMiddleware } from './middleware/auth.middleware.js';
 
 // Middleware
-export { errorHandler } from './middleware/error-handler.middleware.js';
+export { authMiddleware, errorHandler } from './middleware/index.js';
 export { app } from './routes/index.js';
 
 // Types

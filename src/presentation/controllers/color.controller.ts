@@ -12,6 +12,7 @@ import { container } from '../../lib/shared/di/container.js';
 import { paginationSchema } from '../../lib/shared/utils/pagination.util.js';
 import { resultToResponse } from '../../lib/shared/utils/result-response.util.js';
 import { createColorSchema, updateColorSchema } from '../../application/schemas/color.schema.js';
+import { uuidSchema } from '../../application/schemas/common.schema.js';
 
 /**
  * Lists all available car colors with pagination.
@@ -64,7 +65,7 @@ export async function createColor(c: Context): Promise<Response> {
  * Request body: `{ name?: string, hex?: string }`
  */
 export async function updateColor(c: Context): Promise<Response> {
-	const id = c.req.param('id');
+	const id = uuidSchema.parse(c.req.param('id'));
 	const body = await c.req.json();
 	const validated = updateColorSchema.parse(body);
 
@@ -83,7 +84,7 @@ export async function updateColor(c: Context): Promise<Response> {
  *          or an error response (e.g. 404 COLOR_NOT_FOUND).
  */
 export async function deleteColor(c: Context): Promise<Response> {
-	const id = c.req.param('id');
+	const id = uuidSchema.parse(c.req.param('id'));
 	const useCase = container.resolve(DeleteColorUseCase);
 	const result = await useCase.execute(id);
 	if (!result.success) {

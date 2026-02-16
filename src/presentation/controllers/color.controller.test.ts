@@ -14,6 +14,8 @@ import { DeleteColorUseCase } from '../../application/use-cases/color/delete-col
 import { ok, err } from '../../lib/shared/types/result.js';
 import { ColorNotFoundError, ColorAlreadyExistsError } from '../../lib/errors/domain.errors.js';
 
+const TEST_UUID = '550e8400-e29b-41d4-a716-446655440000';
+
 function createMockContext(overrides?: { jsonBody?: unknown; params?: Record<string, string>; queryParams?: Record<string, string> }) {
 	const jsonMock = vi.fn((body, status) => ({ body, status }));
 	const bodyMock = vi.fn((body, status) => new Response(body, { status }));
@@ -120,9 +122,9 @@ describe('Color Controller', () => {
 		});
 
 		it('should return 200 with updated color on success', async () => {
-			const color = { id: '1', name: 'Dark Red', hex: '#CC0000' };
+			const color = { id: TEST_UUID, name: 'Dark Red', hex: '#CC0000' };
 			mockUseCase.execute.mockResolvedValue(ok(color));
-			const ctx = createMockContext({ jsonBody: { name: 'Dark Red', hex: '#CC0000' }, params: { id: '1' } });
+			const ctx = createMockContext({ jsonBody: { name: 'Dark Red', hex: '#CC0000' }, params: { id: TEST_UUID } });
 			await updateColor(ctx);
 			const [response, status] = ctx._getJsonCall();
 			expect(status).toBe(200);
@@ -130,15 +132,15 @@ describe('Color Controller', () => {
 		});
 
 		it('should pass id from params and validated body to use case', async () => {
-			mockUseCase.execute.mockResolvedValue(ok({ id: '1', name: 'Dark Red', hex: '#CC0000' }));
-			const ctx = createMockContext({ jsonBody: { name: 'Dark Red' }, params: { id: '1' } });
+			mockUseCase.execute.mockResolvedValue(ok({ id: TEST_UUID, name: 'Dark Red', hex: '#CC0000' }));
+			const ctx = createMockContext({ jsonBody: { name: 'Dark Red' }, params: { id: TEST_UUID } });
 			await updateColor(ctx);
-			expect(mockUseCase.execute).toHaveBeenCalledWith({ id: '1', name: 'Dark Red', hex: undefined });
+			expect(mockUseCase.execute).toHaveBeenCalledWith({ id: TEST_UUID, name: 'Dark Red', hex: undefined });
 		});
 
 		it('should return error response when color not found', async () => {
-			mockUseCase.execute.mockResolvedValue(err(new ColorNotFoundError('1')));
-			const ctx = createMockContext({ jsonBody: { name: 'Dark Red' }, params: { id: '1' } });
+			mockUseCase.execute.mockResolvedValue(err(new ColorNotFoundError(TEST_UUID)));
+			const ctx = createMockContext({ jsonBody: { name: 'Dark Red' }, params: { id: TEST_UUID } });
 			await updateColor(ctx);
 			const [response] = ctx._getJsonCall();
 			expect(response).toHaveProperty('success', false);
@@ -157,14 +159,14 @@ describe('Color Controller', () => {
 
 		it('should return 204 on successful delete', async () => {
 			mockUseCase.execute.mockResolvedValue(ok(undefined));
-			const ctx = createMockContext({ params: { id: '1' } });
+			const ctx = createMockContext({ params: { id: TEST_UUID } });
 			const response = await deleteColor(ctx);
 			expect(response.status).toBe(204);
 		});
 
 		it('should return error response when color not found', async () => {
-			mockUseCase.execute.mockResolvedValue(err(new ColorNotFoundError('1')));
-			const ctx = createMockContext({ params: { id: '1' } });
+			mockUseCase.execute.mockResolvedValue(err(new ColorNotFoundError(TEST_UUID)));
+			const ctx = createMockContext({ params: { id: TEST_UUID } });
 			await deleteColor(ctx);
 			const [response] = ctx._getJsonCall();
 			expect(response).toHaveProperty('success', false);

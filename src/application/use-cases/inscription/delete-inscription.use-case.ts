@@ -2,7 +2,8 @@
  * @module DeleteInscriptionUseCase
  *
  * Cancels (deletes) a passenger inscription from a carpooling travel.
- * Verifies the inscription exists before attempting deletion.
+ * Verifies the inscription exists and belongs to the requesting user
+ * in a single optimized query before attempting deletion.
  */
 
 import { inject, injectable } from 'tsyringe';
@@ -17,18 +18,17 @@ import { err } from '../../../lib/shared/types/result.js';
 /**
  * Union of all possible error types returned by the delete inscription use case.
  *
- * - {@link InscriptionNotFoundError} - No inscription exists with the given UUID
+ * - {@link InscriptionNotFoundError} - No inscription exists with the given UUID, or it does not belong to the requesting user
  * - {@link RepositoryError} - Database-level failure during lookup or deletion
  */
 type DeleteInscriptionError = InscriptionNotFoundError | RepositoryError;
 
 /**
- * Deletes an inscription after verifying it exists.
+ * Deletes an inscription after verifying it exists and belongs to the requesting user.
  *
  * Business flow:
- * 1. Look up the inscription by UUID
- * 2. If not found, return InscriptionNotFoundError
- * 3. Delete the inscription record, freeing a seat on the travel
+ * 1. Look up the inscription by UUID and user UUID in a single query
+ * 2. Delete the inscription record, freeing a seat on the travel
  *
  * @dependencies InscriptionRepository
  */
@@ -45,25 +45,26 @@ export class DeleteInscriptionUseCase {
 	}
 
 	/**
-	 * Deletes the inscription identified by the given UUID.
+	 * Deletes the inscription identified by the given UUID, after verifying ownership.
 	 *
-	 * @param id - The UUID of the inscription to delete
+	 * @param input - Object containing the inscription UUID and the authenticated userId
 	 * @returns A Result containing void on success, or a DeleteInscriptionError on failure
 	 */
-	async execute(id: string): Promise<Result<void, DeleteInscriptionError>> {
-		const findResult = await this.inscriptionRepository.findById(id);
+	async execute(input: { id: string; userId: string }): Promise<Result<void, DeleteInscriptionError>> {
+		// Combined existence + ownership check in a single query
+		const findResult = await this.inscriptionRepository.findByIdAndUserId(input.id, input.userId);
 		if (!findResult.success) {
 			return findResult;
 		}
 
 		if (!findResult.value) {
-			this.logger.warn('Inscription not found for deletion', { inscriptionId: id });
-			return err(new InscriptionNotFoundError(id));
+			this.logger.warn('Inscription not found for deletion', { inscriptionId: input.id, userId: input.userId });
+			return err(new InscriptionNotFoundError(input.id));
 		}
 
-		const deleteResult = await this.inscriptionRepository.delete(id);
+		const deleteResult = await this.inscriptionRepository.delete(input.id);
 		if (deleteResult.success) {
-			this.logger.info('Inscription deleted', { inscriptionId: id });
+			this.logger.info('Inscription deleted', { inscriptionId: input.id });
 		}
 		return deleteResult;
 	}

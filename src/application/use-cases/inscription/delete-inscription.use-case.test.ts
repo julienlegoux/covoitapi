@@ -1,7 +1,8 @@
 /**
  * @file Unit tests for the DeleteInscriptionUseCase.
  *
- * Covers successful deletion, not-found guard, and repository error propagation.
+ * Covers successful deletion, not-found/ownership guard (combined into a
+ * single query), and repository error propagation.
  */
 
 import { container } from 'tsyringe';
@@ -13,10 +14,12 @@ import { ok, err } from '../../../lib/shared/types/result.js';
 import { DatabaseError } from '../../../lib/errors/repository.errors.js';
 import { DeleteInscriptionUseCase } from './delete-inscription.use-case.js';
 
-// Test suite for cancelling (deleting) inscriptions
+// Test suite for cancelling (deleting) inscriptions with ownership check
 describe('DeleteInscriptionUseCase', () => {
 	let useCase: DeleteInscriptionUseCase;
 	let mockRepo: ReturnType<typeof createMockInscriptionRepository>;
+
+	const inscription = { id: 'ins-1', refId: 1, createdAt: new Date(), userRefId: 1, tripRefId: 1 };
 
 	beforeEach(() => {
 		mockRepo = createMockInscriptionRepository();
@@ -25,19 +28,21 @@ describe('DeleteInscriptionUseCase', () => {
 		useCase = container.resolve(DeleteInscriptionUseCase);
 	});
 
-	// Happy path: inscription exists and is deleted
+	// Happy path: inscription exists and belongs to user, inscription is deleted
 	it('should delete inscription successfully', async () => {
-		mockRepo.findById.mockResolvedValue(ok({ id: '1', createdAt: new Date(), userId: 'u1', routeId: 'r1' }));
+		mockRepo.findByIdAndUserId.mockResolvedValue(ok(inscription));
 		mockRepo.delete.mockResolvedValue(ok(undefined));
-		const result = await useCase.execute('1');
+
+		const result = await useCase.execute({ id: 'ins-1', userId: 'user-1' });
 		expect(result.success).toBe(true);
-		expect(mockRepo.delete).toHaveBeenCalledWith('1');
+		expect(mockRepo.findByIdAndUserId).toHaveBeenCalledWith('ins-1', 'user-1');
+		expect(mockRepo.delete).toHaveBeenCalledWith('ins-1');
 	});
 
-	// Not-found guard: null lookup returns InscriptionNotFoundError
-	it('should return InscriptionNotFoundError when not found', async () => {
-		mockRepo.findById.mockResolvedValue(ok(null));
-		const result = await useCase.execute('999');
+	// Not found or wrong owner: returns InscriptionNotFoundError
+	it('should return InscriptionNotFoundError when not found or not owned', async () => {
+		mockRepo.findByIdAndUserId.mockResolvedValue(ok(null));
+		const result = await useCase.execute({ id: '999', userId: 'user-1' });
 		expect(result.success).toBe(false);
 		if (!result.success) expect(result.error).toBeInstanceOf(InscriptionNotFoundError);
 		expect(mockRepo.delete).not.toHaveBeenCalled();
@@ -45,8 +50,8 @@ describe('DeleteInscriptionUseCase', () => {
 
 	// DB error during lookup bubbles up
 	it('should propagate repository error', async () => {
-		mockRepo.findById.mockResolvedValue(err(new DatabaseError('db error')));
-		const result = await useCase.execute('1');
+		mockRepo.findByIdAndUserId.mockResolvedValue(err(new DatabaseError('db error')));
+		const result = await useCase.execute({ id: 'ins-1', userId: 'user-1' });
 		expect(result.success).toBe(false);
 	});
 });

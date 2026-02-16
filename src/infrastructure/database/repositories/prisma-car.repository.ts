@@ -40,8 +40,8 @@ export class PrismaCarRepository implements CarRepository {
 	 * @param car - The raw Prisma car record with `immat` field.
 	 * @returns A domain-conformant CarEntity.
 	 */
-	private toEntity(car: { id: string; refId: number; immat: string; modelRefId: number }): CarEntity {
-		return { id: car.id, refId: car.refId, licensePlate: car.immat, modelRefId: car.modelRefId };
+	private toEntity(car: { id: string; refId: number; immat: string; modelRefId: number; driverRefId: number }): CarEntity {
+		return { id: car.id, refId: car.refId, licensePlate: car.immat, modelRefId: car.modelRefId, driverRefId: car.driverRefId };
 	}
 
 	/**
@@ -98,6 +98,7 @@ export class PrismaCarRepository implements CarRepository {
 					// Map domain field licensePlate to Prisma column immat
 					immat: data.licensePlate,
 					modelRefId: data.modelRefId,
+					driverRefId: data.driverRefId,
 				},
 			});
 			return ok(this.toEntity(car));

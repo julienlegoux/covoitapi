@@ -2,6 +2,7 @@ import { vi } from 'vitest';
 import { container } from 'tsyringe';
 import { TOKENS } from '../../src/lib/shared/di/tokens.js';
 import { ok } from '../../src/lib/shared/types/result.js';
+import { resetMiddleware } from '../../src/presentation/middleware/index.js';
 import { createMockLogger } from '../setup.js';
 
 // Set DATABASE_URL before container module loads
@@ -32,6 +33,7 @@ export function registerMockJwtService(role = 'ADMIN') {
 		}),
 	};
 	container.registerInstance(TOKENS.JwtService, mockJwtService);
+	resetMiddleware();
 	return mockJwtService;
 }
 

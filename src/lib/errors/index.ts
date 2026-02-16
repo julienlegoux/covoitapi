@@ -5,6 +5,9 @@
  * and the error code registry that maps codes to HTTP statuses.
  */
 
+// Cache errors
+export { CacheConnectionError, CacheError, CacheOperationError } from './cache.errors.js';
+
 // Context errors
 export { ContextError, ContextNotFoundError } from './context.errors.js';
 
@@ -23,7 +26,7 @@ export {
 	InscriptionNotFoundError,
 	InvalidCredentialsError,
 	NoSeatsAvailableError,
-	TravelNotFoundError,
+	TripNotFoundError,
 	UserAlreadyExistsError,
 	UserNotFoundError,
 } from './domain.errors.js';
