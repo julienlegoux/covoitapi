@@ -44,7 +44,7 @@ export class ListCarsUseCase {
 	async execute(pagination?: PaginationParams): Promise<Result<PaginatedResult<CarEntity>, RepositoryError>> {
 		const result = await this.carRepository.findAll(pagination ? toSkipTake(pagination) : undefined);
 		if (!result.success) {
-			this.logger.error('Failed to list cars', { error: result.error });
+			this.logger.error('Failed to list cars', result.error);
 			return result;
 		}
 		const { data, total } = result.value;

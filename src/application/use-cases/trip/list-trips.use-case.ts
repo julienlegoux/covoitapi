@@ -41,7 +41,7 @@ export class ListTripsUseCase {
     async execute(pagination?: PaginationParams): Promise<Result<PaginatedResult<TripEntity>, RepositoryError>> {
         const result = await this.tripRepository.findAll(pagination ? toSkipTake(pagination) : undefined);
         if (!result.success) {
-            this.logger.error('Failed to list trips', { error: result.error });
+            this.logger.error('Failed to list trips', result.error);
             return result;
         }
         const { data, total } = result.value;

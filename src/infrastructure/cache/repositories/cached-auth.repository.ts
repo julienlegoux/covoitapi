@@ -46,7 +46,7 @@ export class CachedAuthRepository implements AuthRepository {
 		}
 		const result = await this.inner.findByEmail(email);
 		if (this.config.enabled && result.success && result.value) {
-			await this.cache.set(cacheKey, result.value, this.config.ttlSeconds);
+			await this.cache.set(cacheKey, result.value, this.config.ttl.auth);
 		}
 		return result;
 	}

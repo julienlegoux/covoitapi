@@ -44,7 +44,7 @@ export class ListColorsUseCase {
 	async execute(pagination?: PaginationParams): Promise<Result<PaginatedResult<ColorEntity>, RepositoryError>> {
 		const result = await this.colorRepository.findAll(pagination ? toSkipTake(pagination) : undefined);
 		if (!result.success) {
-			this.logger.error('Failed to list colors', { error: result.error });
+			this.logger.error('Failed to list colors', result.error);
 			return result;
 		}
 		const { data, total } = result.value;

@@ -48,7 +48,7 @@ export class ListUserInscriptionsUseCase {
 	async execute(userId: string, pagination?: PaginationParams): Promise<Result<PaginatedResult<InscriptionEntity>, RepositoryError>> {
 		const result = await this.inscriptionRepository.findByUserId(userId);
 		if (!result.success) {
-			this.logger.error('Failed to list user inscriptions', { userId, error: result.error });
+			this.logger.error('Failed to list user inscriptions', result.error, { userId });
 			return result;
 		}
 		const all = result.value;

@@ -51,7 +51,7 @@ export class FindTripUseCase {
             date: input.date ? new Date(input.date) : undefined,
         });
         if (!result.success) {
-            this.logger.error('Failed to search trips', { error: result.error });
+            this.logger.error('Failed to search trips', result.error);
         }
         return result;
     }

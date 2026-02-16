@@ -48,7 +48,7 @@ export class ListTripPassengersUseCase {
     async execute(tripId: string, pagination?: PaginationParams): Promise<Result<PaginatedResult<InscriptionEntity>, RepositoryError>> {
         const result = await this.inscriptionRepository.findByTripId(tripId);
         if (!result.success) {
-            this.logger.error('Failed to list trip passengers', { tripId, error: result.error });
+            this.logger.error('Failed to list trip passengers', result.error, { tripId });
             return result;
         }
         const all = result.value;

@@ -42,7 +42,7 @@ export class ListInscriptionsUseCase {
 	async execute(pagination?: PaginationParams): Promise<Result<PaginatedResult<InscriptionEntity>, RepositoryError>> {
 		const result = await this.inscriptionRepository.findAll(pagination ? toSkipTake(pagination) : undefined);
 		if (!result.success) {
-			this.logger.error('Failed to list inscriptions', { error: result.error });
+			this.logger.error('Failed to list inscriptions', result.error);
 			return result;
 		}
 		const { data, total } = result.value;

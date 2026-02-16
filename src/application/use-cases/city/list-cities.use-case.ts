@@ -45,7 +45,7 @@ export class ListCitiesUseCase {
 	async execute(pagination?: PaginationParams): Promise<Result<PaginatedResult<CityEntity>, RepositoryError>> {
 		const result = await this.cityRepository.findAll(pagination ? toSkipTake(pagination) : undefined);
 		if (!result.success) {
-			this.logger.error('Failed to list cities', { error: result.error });
+			this.logger.error('Failed to list cities', result.error);
 			return result;
 		}
 		const { data, total } = result.value;

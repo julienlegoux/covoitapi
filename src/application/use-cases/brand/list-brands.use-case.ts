@@ -46,7 +46,7 @@ export class ListBrandsUseCase {
 	async execute(pagination?: PaginationParams): Promise<Result<PaginatedResult<BrandEntity>, RepositoryError>> {
 		const result = await this.brandRepository.findAll(pagination ? toSkipTake(pagination) : undefined);
 		if (!result.success) {
-			this.logger.error('Failed to list brands', { error: result.error });
+			this.logger.error('Failed to list brands', result.error);
 			return result;
 		}
 		const { data, total } = result.value;
