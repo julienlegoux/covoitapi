@@ -31,6 +31,7 @@ process.env.RESEND_FROM_EMAIL =
 
 // Step 2: Import the app — triggers DI container initialization
 // PrismaNeon adapter is created but connection is lazy (never actually connects)
+import 'reflect-metadata';
 import { serve } from '@hono/node-server';
 import { container } from 'tsyringe';
 import { TOKENS } from '../src/lib/shared/di/tokens.js';
