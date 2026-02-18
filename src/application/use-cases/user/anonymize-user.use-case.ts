@@ -14,7 +14,7 @@ import type { UserRepository } from '../../../domain/repositories/user.repositor
 import type { RepositoryError } from '../../../lib/errors/repository.errors.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import type { Result } from '../../../lib/shared/types/result.js';
-import { err } from '../../../lib/shared/types/result.js';
+import { ok, err } from '../../../lib/shared/types/result.js';
 
 /**
  * Union of all possible error types returned by the anonymize user use case.
@@ -61,6 +61,11 @@ export class AnonymizeUserUseCase {
 		if (!findResult.value) {
 			this.logger.warn('User not found for anonymization', { userId: id });
 			return err(new UserNotFoundError(id));
+		}
+
+		if (findResult.value.anonymizedAt !== null) {
+			this.logger.info('User already anonymized, skipping', { userId: id });
+			return ok(undefined);
 		}
 
 		const result = await this.userRepository.anonymize(id);

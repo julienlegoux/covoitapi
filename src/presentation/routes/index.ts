@@ -1,9 +1,12 @@
 /**
  * @module AppRouter
- * Main Hono application router. Assembles all endpoint groups under the `/api` base path
- * and applies global middleware.
+ * Main Hono application router. Serves the landing page at `/` and assembles
+ * all API endpoint groups under the `/api` base path with global middleware.
  *
- * **Global middleware (applied to all routes):**
+ * **Landing page:**
+ * - GET / -- UML analysis documentation page (public, no auth)
+ *
+ * **Global API middleware (applied to /api/* routes):**
  * 1. secureHeaders -- sets security headers (HSTS, X-Content-Type-Options, etc.)
  * 2. cors -- handles CORS preflight and response headers
  * 3. requestLogger -- logs requests and responses
@@ -35,20 +38,29 @@ import { secureHeaders } from 'hono/secure-headers';
 import { errorHandler, requestLogger } from '../middleware/index.js';
 import { v1Routes } from './v1/index.js';
 import { vpRoutes } from '../vp/routes.js';
+import { landingHandler } from '../pages/landing.js';
 
-const app = new Hono().basePath('/api');
+const app = new Hono();
 
-app.use('*', secureHeaders());
-app.use('*', cors({ origin: '*' }));
-app.use('*', requestLogger);
-app.use('*', bodyLimit({ maxSize: 1024 * 1024 }));
-app.use('*', errorHandler);
+// Landing page — public, no middleware
+app.get('/', landingHandler);
 
-app.get("/health", (c) => {
+// API sub-router with middleware
+const api = new Hono();
+
+api.use('*', secureHeaders());
+api.use('*', cors({ origin: '*' }));
+api.use('*', requestLogger);
+api.use('*', bodyLimit({ maxSize: 1024 * 1024 }));
+api.use('*', errorHandler);
+
+api.get("/health", (c) => {
 	return c.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
-app.route('/v1', v1Routes);
-app.route('/vp', vpRoutes);
+api.route('/v1', v1Routes);
+api.route('/vp', vpRoutes);
+
+app.route('/api', api);
 
 export { app };
