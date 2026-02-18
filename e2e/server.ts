@@ -42,7 +42,7 @@ const { default: app } = await import('../src/index.js');
 
 // Step 3: Override the PrismaClient in the DI container
 // Replace the PrismaNeon-backed client with a standard PrismaClient
-const prismaClient = new PrismaClient();
+const prismaClient = new PrismaClient({ datasourceUrl: dbUrl });
 container.registerInstance(TOKENS.PrismaClient, prismaClient);
 
 // Step 4: Start the HTTP server

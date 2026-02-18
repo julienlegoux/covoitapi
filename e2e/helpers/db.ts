@@ -15,9 +15,7 @@ let prisma: PrismaClient | null = null;
 
 function getClient(): PrismaClient {
 	if (!prisma) {
-		prisma = new PrismaClient({
-			datasources: { db: { url: dbUrl } },
-		});
+		prisma = new PrismaClient({ datasourceUrl: dbUrl });
 	}
 	return prisma;
 }
