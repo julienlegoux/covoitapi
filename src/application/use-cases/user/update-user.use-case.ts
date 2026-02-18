@@ -67,7 +67,7 @@ export class UpdateUserUseCase {
 			return findResult;
 		}
 
-		if (!findResult.value) {
+		if (!findResult.value || findResult.value.anonymizedAt !== null) {
 			this.logger.warn('User not found for update', { userId: id });
 			return err(new UserNotFoundError(id));
 		}

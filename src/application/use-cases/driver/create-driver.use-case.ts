@@ -73,7 +73,7 @@ export class CreateDriverUseCase {
 		if (!userResult.success) {
 			return userResult;
 		}
-		if (!userResult.value) {
+		if (!userResult.value || userResult.value.anonymizedAt !== null) {
 			this.logger.warn('User not found for driver creation', { userId: input.userId });
 			return err(new UserNotFoundError(input.userId));
 		}

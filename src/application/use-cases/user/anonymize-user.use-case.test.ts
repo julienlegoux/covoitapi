@@ -28,7 +28,7 @@ describe('AnonymizeUserUseCase', () => {
 
 	// Happy path: user exists and personal data is scrubbed
 	it('should anonymize user successfully', async () => {
-		mockUserRepository.findById.mockResolvedValue(ok({ id: '1', email: 'a@b.com', password: 'h', firstName: 'A', lastName: 'B', phone: '06', createdAt: new Date(), updatedAt: new Date() }));
+		mockUserRepository.findById.mockResolvedValue(ok({ id: '1', email: 'a@b.com', password: 'h', firstName: 'A', lastName: 'B', phone: '06', anonymizedAt: null, createdAt: new Date(), updatedAt: new Date() }));
 		mockUserRepository.anonymize.mockResolvedValue(ok(undefined));
 		const result = await useCase.execute('1');
 		expect(result.success).toBe(true);
