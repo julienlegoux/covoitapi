@@ -20,7 +20,7 @@ export default defineConfig({
 		},
 	},
 	webServer: {
-		command: `tsx e2e/server.ts`,
+		command: `tsx server.ts`,
 		port,
 		reuseExistingServer: !process.env.CI,
 		timeout: 30_000,
