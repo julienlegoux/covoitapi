@@ -192,7 +192,7 @@ test.describe('PATCH /api/vp/trips/:id', () => {
 		expect(body.success).toBe(true);
 	});
 
-	test('empty update returns 500 (unhandled ZodError)', async ({ request }) => {
+	test('empty update returns 400', async ({ request }) => {
 		// Create a trip first
 		const payload = vpTripPayload(carId, driverUserId);
 		const createRes = await request.post('/api/vp/trips', {
@@ -206,7 +206,7 @@ test.describe('PATCH /api/vp/trips/:id', () => {
 			data: {},
 		});
 
-		expect(res.status()).toBe(500);
+		expect(res.status()).toBe(400);
 	});
 });
 
