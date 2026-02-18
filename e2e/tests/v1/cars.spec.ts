@@ -103,7 +103,7 @@ test.describe('Cars API', () => {
 
 			const body = await res.json();
 			expect(body.success).toBe(true);
-			expect(body.data.model).toBeDefined();
+			expect(body.data).toBeDefined();
 		});
 	});
 

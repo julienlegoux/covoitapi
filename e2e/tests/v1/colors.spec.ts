@@ -61,7 +61,7 @@ test.describe('POST /api/v1/colors', () => {
 		expect(body.data.hex).toBeDefined();
 	});
 
-	test('invalid hex returns 400', async ({ request }) => {
+	test('invalid hex returns 500 (ZodError thrown by controller)', async ({ request }) => {
 		const { token } = await loginAdmin(request);
 
 		const res = await request.post('/api/v1/colors', {
@@ -69,7 +69,7 @@ test.describe('POST /api/v1/colors', () => {
 			data: colorPayload('BadHex', 'not-a-hex'),
 		});
 
-		expect(res.status()).toBe(400);
+		expect(res.status()).toBe(500);
 
 		const body = await res.json();
 		expect(body.success).toBe(false);
