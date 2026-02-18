@@ -60,7 +60,7 @@ export async function vpGetCar(c: Context): Promise<Response> {
 	return c.json({ success: true, data: result.value });
 }
 
-export async function vpCreateCar(c: Context): Promise<Response> {
+export async function vpCreateCar(c: Context): Promise<Response> { //TODO: missing seats
 	const body = await c.req.json();
 	const validated = vpCreateCarSchema.parse(body);
 
@@ -79,7 +79,7 @@ export async function vpCreateCar(c: Context): Promise<Response> {
 	return resultToResponse(c, result, 201);
 }
 
-export async function vpUpdateCar(c: Context): Promise<Response> {
+export async function vpUpdateCar(c: Context): Promise<Response> { //TODO: missing seats
 	const id = uuidSchema.parse(c.req.param('id'));
 	const body = await c.req.json();
 	const validated = vpCreateCarSchema.parse(body);

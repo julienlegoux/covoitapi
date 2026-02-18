@@ -43,6 +43,7 @@ export class PrismaUserRepository implements UserRepository {
 		try {
 			// Include auth relation but select only email to form PublicUserEntity
 			const users = await this.prisma.user.findMany({
+				where: { anonymizedAt: null },
 				include: { auth: { select: { email: true } } },
 			});
 			return ok(users.map((u) => ({ ...u, email: u.auth.email })));

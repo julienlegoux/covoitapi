@@ -57,7 +57,7 @@ export class DeleteUserUseCase {
 			return findResult;
 		}
 
-		if (!findResult.value) {
+		if (!findResult.value || findResult.value.anonymizedAt !== null) {
 			this.logger.warn('User not found for deletion', { userId: id });
 			return err(new UserNotFoundError(id));
 		}
