@@ -20,4 +20,5 @@ export type VpCarResponse = {
 	carregistration: string;
 	model_ref_id: number;
 	driver_ref_id: number;
+	seats: number | null;
 };

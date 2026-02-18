@@ -130,6 +130,7 @@ model Car {
   id          String @id @default(uuid())
   refId       Int    @unique @default(autoincrement()) @map("ref_id")
   immat       String @unique
+  seats       Int?
   modelRefId  Int    @map("model_ref_id")
   driverRefId Int    @map("driver_ref_id")
 
