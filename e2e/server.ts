@@ -36,13 +36,17 @@ import { serve } from '@hono/node-server';
 import { container } from 'tsyringe';
 import { TOKENS } from '../src/lib/shared/di/tokens.js';
 import { PrismaClient } from '../src/infrastructure/database/generated/prisma/client.js';
+import { Pool } from 'pg';
+import { PrismaPg } from '@prisma/adapter-pg';
 
 // The app import MUST come after env vars are set and after we import container/tokens
 const { default: app } = await import('../src/index.js');
 
 // Step 3: Override the PrismaClient in the DI container
-// Replace the PrismaNeon-backed client with a standard PrismaClient
-const prismaClient = new PrismaClient({ datasourceUrl: dbUrl });
+// Replace the PrismaNeon-backed client with a PrismaPg adapter (standard PostgreSQL)
+const pool = new Pool({ connectionString: dbUrl });
+const adapter = new PrismaPg(pool);
+const prismaClient = new PrismaClient({ adapter });
 container.registerInstance(TOKENS.PrismaClient, prismaClient);
 
 // Step 4: Start the HTTP server

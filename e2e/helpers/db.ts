@@ -4,6 +4,8 @@
  */
 
 import { PrismaClient } from '../../src/infrastructure/database/generated/prisma/client.js';
+import { Pool } from 'pg';
+import { PrismaPg } from '@prisma/adapter-pg';
 import argon2 from 'argon2';
 
 const dbUrl =
@@ -12,10 +14,13 @@ const dbUrl =
 	'postgresql://test:test@localhost:5433/covoitapi_test';
 
 let prisma: PrismaClient | null = null;
+let pool: Pool | null = null;
 
 function getClient(): PrismaClient {
 	if (!prisma) {
-		prisma = new PrismaClient({ datasourceUrl: dbUrl });
+		pool = new Pool({ connectionString: dbUrl });
+		const adapter = new PrismaPg(pool);
+		prisma = new PrismaClient({ adapter });
 	}
 	return prisma;
 }
@@ -59,5 +64,7 @@ export async function cleanDatabase(): Promise<void> {
 
 export async function disconnect(): Promise<void> {
 	await prisma?.$disconnect();
+	await pool?.end();
 	prisma = null;
+	pool = null;
 }
