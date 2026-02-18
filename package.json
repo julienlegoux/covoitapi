@@ -15,7 +15,9 @@
     "db:reset": "prisma migrate reset",
     "db:seed": "tsx src/infrastructure/database/prisma/seed.ts",
     "db:size": "tsx src/infrastructure/database/prisma/check-size.ts",
-    "db:export": "tsx src/infrastructure/database/prisma/export.ts"
+    "db:export": "tsx src/infrastructure/database/prisma/export.ts",
+    "test:e2e": "playwright test --config e2e/playwright.config.ts",
+    "test:e2e:report": "playwright show-report e2e/playwright-report"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.2",
@@ -35,6 +37,8 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.3.13",
+    "@hono/node-server": "^1.19.9",
+    "@playwright/test": "^1.58.2",
     "@types/node": "^20.11.17",
     "@types/ws": "^8.18.1",
     "@vitest/coverage-v8": "^4.0.18",
