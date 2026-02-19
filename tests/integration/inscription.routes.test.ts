@@ -100,7 +100,7 @@ describe('Inscription Routes', () => {
 
 		it('should return 404 when trip not found', async () => {
 			createMock.execute.mockResolvedValue(err(new TripNotFoundError('r1')));
-			const res = await app.request('/api/inscriptions', {
+			const res = await app.request('/api/v1/inscriptions', {
 				method: 'POST',
 				body: JSON.stringify(validBody),
 				headers: authHeaders(),

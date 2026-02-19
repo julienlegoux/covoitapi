@@ -105,6 +105,22 @@
 		{
 			"key": "bypassToken",
 			"value": "iTJZ9hSQOcbj55DWU5fgA67szmg1G4h5"
+		},
+		{
+			"key": "secondaryUserId",
+			"value": ""
+		},
+		{
+			"key": "secondaryToken",
+			"value": ""
+		},
+		{
+			"key": "secondaryEmail",
+			"value": ""
+		},
+		{
+			"key": "vpInscriptionEmail",
+			"value": ""
 		}
 	],
 	"event": [
@@ -491,11 +507,14 @@
 									"script": {
 										"type": "text/javascript",
 										"exec": [
-											"pm.test('Status 200 - Profile updated', () => pm.response.to.have.status(200));",
+											"pm.test('Status 200', () => pm.response.to.have.status(200));",
 											"pm.test('Response is JSON', () => pm.response.to.be.json);",
 											"pm.test('Response time < 5s', () => pm.expect(pm.response.responseTime).to.be.below(5000));",
 											"const body = pm.response.json();",
-											"pm.test('Response has success:true', () => pm.expect(body.success).to.eql(true));"
+											"pm.test('Response has success:true', () => pm.expect(body.success).to.eql(true));",
+											"pm.test('firstName matches input', () => pm.expect(body.data.firstName).to.eql('Test'));",
+											"pm.test('lastName matches input', () => pm.expect(body.data.lastName).to.eql('User'));",
+											"pm.test('phone matches input', () => pm.expect(body.data.phone).to.eql('0612345678'));"
 										]
 									}
 								}
@@ -538,10 +557,13 @@
 											"pm.test('Response time < 5s', () => pm.expect(pm.response.responseTime).to.be.below(5000));",
 											"const body = pm.response.json();",
 											"pm.test('Response has success:true', () => pm.expect(body.success).to.eql(true));",
-											"pm.test('Data contains user fields', () => {",
-											"    pm.expect(body.data).to.have.property('id');",
-											"    pm.expect(body.data).to.have.property('email');",
-											"});"
+											"pm.test('Has id (UUID)', () => pm.expect(body.data.id).to.be.a('string'));",
+											"pm.test('Has email', () => pm.expect(body.data.email).to.be.a('string'));",
+											"pm.test('Has firstName', () => pm.expect(body.data.firstName).to.eql('Test'));",
+											"pm.test('Has lastName', () => pm.expect(body.data.lastName).to.eql('User'));",
+											"pm.test('Has phone', () => pm.expect(body.data.phone).to.eql('0612345678'));",
+											"pm.test('Has createdAt', () => pm.expect(body.data.createdAt).to.be.a('string'));",
+											"pm.test('Has updatedAt', () => pm.expect(body.data.updatedAt).to.be.a('string'));"
 										]
 									}
 								}
@@ -647,8 +669,11 @@
 											"pm.test('Response time < 5s', () => pm.expect(pm.response.responseTime).to.be.below(5000));",
 											"const body = pm.response.json();",
 											"pm.test('Response has success:true', () => pm.expect(body.success).to.eql(true));",
-											"pm.test('Data contains driver id', () => pm.expect(body.data.id).to.be.a('string'));",
-											"if (body.data) { pm.collectionVariables.set('driverId', body.data.id); }"
+											"pm.test('Has id (UUID)', () => pm.expect(body.data.id).to.be.a('string'));",
+											"pm.test('licenseNumber matches input', () => pm.expect(body.data.licenseNumber).to.eql('DRV-TEST-12345'));",
+											"if (body.data) {",
+											"    pm.collectionVariables.set('driverId', body.data.id);",
+											"}"
 										]
 									}
 								}
@@ -904,6 +929,64 @@
 											"pm.test('Response has success:true', () => pm.expect(body.success).to.eql(true));",
 											"pm.test('Data contains color id', () => pm.expect(body.data.id).to.be.a('string'));",
 											"if (body.data) { pm.collectionVariables.set('colorId', body.data.id); }"
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "Register Secondary User (for admin-delete test)",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/v1/auth/register",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"auth",
+										"register"
+									]
+								},
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"email\": \"{{secondaryEmail}}\",\n  \"password\": \"{{testPassword}}\",\n  \"confirmPassword\": \"{{testPassword}}\"\n}"
+								}
+							},
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"pm.test('Status 201 - Secondary user created', () => pm.response.to.have.status(201));",
+											"pm.test('Response is JSON', () => pm.response.to.be.json);",
+											"const body = pm.response.json();",
+											"if (body.data) {",
+											"    pm.collectionVariables.set('secondaryUserId', body.data.userId);",
+											"    pm.collectionVariables.set('secondaryToken', body.data.token);",
+											"}"
+										]
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"const unique = Date.now();",
+											"pm.collectionVariables.set('secondaryEmail', `secondary_${unique}@test.com`);"
 										]
 									}
 								}
@@ -1373,8 +1456,12 @@
 											"pm.test('Response time < 5s', () => pm.expect(pm.response.responseTime).to.be.below(5000));",
 											"const body = pm.response.json();",
 											"pm.test('Response has success:true', () => pm.expect(body.success).to.eql(true));",
-											"pm.test('Data contains car id', () => pm.expect(body.data.id).to.be.a('string'));",
-											"if (body.data) { pm.collectionVariables.set('carId', body.data.id); }"
+											"pm.test('Has id (UUID)', () => pm.expect(body.data.id).to.be.a('string'));",
+											"pm.test('model matches input', () => pm.expect(body.data.model).to.eql('Corolla'));",
+											"pm.test('licensePlate matches input', () => pm.expect(body.data.licensePlate).to.eql('AB-123-CD'));",
+											"if (body.data) {",
+											"    pm.collectionVariables.set('carId', body.data.id);",
+											"}"
 										]
 									}
 								}
@@ -1473,11 +1560,13 @@
 									"script": {
 										"type": "text/javascript",
 										"exec": [
-											"pm.test('Status 200 - Car updated', () => pm.response.to.have.status(200));",
+											"pm.test('Status 200', () => pm.response.to.have.status(200));",
 											"pm.test('Response is JSON', () => pm.response.to.be.json);",
 											"pm.test('Response time < 5s', () => pm.expect(pm.response.responseTime).to.be.below(5000));",
 											"const body = pm.response.json();",
-											"pm.test('Response has success:true', () => pm.expect(body.success).to.eql(true));"
+											"pm.test('Response has success:true', () => pm.expect(body.success).to.eql(true));",
+											"pm.test('model updated to Camry', () => pm.expect(body.data.model).to.eql('Camry'));",
+											"pm.test('licensePlate updated', () => pm.expect(body.data.licensePlate).to.eql('EF-456-GH'));"
 										]
 									}
 								}
@@ -1523,11 +1612,13 @@
 									"script": {
 										"type": "text/javascript",
 										"exec": [
-											"pm.test('Status 200 - Car patched', () => pm.response.to.have.status(200));",
+											"pm.test('Status 200', () => pm.response.to.have.status(200));",
 											"pm.test('Response is JSON', () => pm.response.to.be.json);",
 											"pm.test('Response time < 5s', () => pm.expect(pm.response.responseTime).to.be.below(5000));",
 											"const body = pm.response.json();",
-											"pm.test('Response has success:true', () => pm.expect(body.success).to.eql(true));"
+											"pm.test('Response has success:true', () => pm.expect(body.success).to.eql(true));",
+											"pm.test('licensePlate updated', () => pm.expect(body.data.licensePlate).to.eql('IJ-789-KL'));",
+											"pm.test('model preserved from PUT', () => pm.expect(body.data.model).to.eql('Camry'));"
 										]
 									}
 								}
@@ -1582,8 +1673,12 @@
 											"pm.test('Response time < 5s', () => pm.expect(pm.response.responseTime).to.be.below(5000));",
 											"const body = pm.response.json();",
 											"pm.test('Response has success:true', () => pm.expect(body.success).to.eql(true));",
-											"pm.test('Data contains trip id', () => pm.expect(body.data.id).to.be.a('string'));",
-											"if (body.data) { pm.collectionVariables.set('tripId', body.data.id); }"
+											"pm.test('Has id (UUID)', () => pm.expect(body.data.id).to.be.a('string'));",
+											"pm.test('kms matches input', () => pm.expect(body.data.kms).to.eql(465));",
+											"pm.test('seats matches input', () => pm.expect(body.data.seats).to.eql(3));",
+											"if (body.data) {",
+											"    pm.collectionVariables.set('tripId', body.data.id);",
+											"}"
 										]
 									}
 								}
@@ -1628,7 +1723,10 @@
 											"pm.test('Response time < 5s', () => pm.expect(pm.response.responseTime).to.be.below(5000));",
 											"const body = pm.response.json();",
 											"pm.test('Response has success:true', () => pm.expect(body.success).to.eql(true));",
-											"pm.test('Data contains trip fields', () => pm.expect(body.data.id).to.be.a('string'));"
+											"pm.test('Has id', () => pm.expect(body.data.id).to.be.a('string'));",
+											"pm.test('Has kms', () => pm.expect(body.data.kms).to.be.a('number'));",
+											"pm.test('Has seats', () => pm.expect(body.data.seats).to.be.a('number'));",
+											"pm.test('Has dateTrip', () => pm.expect(body.data.dateTrip).to.be.a('string'));"
 										]
 									}
 								}
@@ -1670,7 +1768,13 @@
 											"pm.test('Response time < 5s', () => pm.expect(pm.response.responseTime).to.be.below(5000));",
 											"const body = pm.response.json();",
 											"pm.test('Response has success:true', () => pm.expect(body.success).to.eql(true));",
-											"pm.test('Data is an array', () => pm.expect(body.data).to.be.an('array'));"
+											"pm.test('Data is an array', () => pm.expect(body.data).to.be.an('array'));",
+											"if (body.data.length > 0) {",
+											"    const trip = body.data[0];",
+											"    pm.test('Trip has id', () => pm.expect(trip.id).to.be.a('string'));",
+											"    pm.test('Trip has kms', () => pm.expect(trip.kms).to.be.a('number'));",
+											"    pm.test('Trip has seats', () => pm.expect(trip.seats).to.be.a('number'));",
+											"}"
 										]
 									}
 								}
@@ -1727,7 +1831,10 @@
 											"pm.test('Response time < 5s', () => pm.expect(pm.response.responseTime).to.be.below(5000));",
 											"const body = pm.response.json();",
 											"pm.test('Response has success:true', () => pm.expect(body.success).to.eql(true));",
-											"pm.test('Data is an array', () => pm.expect(body.data).to.be.an('array'));"
+											"pm.test('Data is an array', () => pm.expect(body.data).to.be.an('array'));",
+											"if (body.data.length > 0) {",
+											"    pm.test('Results contain trips (search returned data)', () => pm.expect(body.data.length).to.be.above(0));",
+											"}"
 										]
 									}
 								}
@@ -1840,8 +1947,11 @@
 											"pm.test('Response time < 5s', () => pm.expect(pm.response.responseTime).to.be.below(5000));",
 											"const body = pm.response.json();",
 											"pm.test('Response has success:true', () => pm.expect(body.success).to.eql(true));",
-											"pm.test('Data contains inscription id', () => pm.expect(body.data.id).to.be.a('string'));",
-											"if (body.data) { pm.collectionVariables.set('inscriptionId', body.data.id); }"
+											"pm.test('Has id (UUID)', () => pm.expect(body.data.id).to.be.a('string'));",
+											"pm.test('Has status', () => pm.expect(body.data.status).to.be.a('string'));",
+											"if (body.data) {",
+											"    pm.collectionVariables.set('inscriptionId', body.data.id);",
+											"}"
 										]
 									}
 								}
@@ -2049,6 +2159,732 @@
 					]
 				},
 				{
+					"name": "09b - Not Found Tests (404)",
+					"item": [
+						{
+							"name": "Get non-existent User (404)",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{adminToken}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/v1/users/00000000-0000-0000-0000-000000000000",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"users",
+										"00000000-0000-0000-0000-000000000000"
+									]
+								}
+							},
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"pm.test('Status 404 - Not found', () => pm.response.to.have.status(404));",
+											"pm.test('Response is JSON', () => pm.response.to.be.json);",
+											"pm.test('Response time < 5s', () => pm.expect(pm.response.responseTime).to.be.below(5000));",
+											"const body = pm.response.json();",
+											"pm.test('success is false', () => pm.expect(body.success).to.eql(false));"
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "Get non-existent Trip (404)",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/v1/trips/00000000-0000-0000-0000-000000000000",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"trips",
+										"00000000-0000-0000-0000-000000000000"
+									]
+								}
+							},
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"pm.test('Status 404 - Not found', () => pm.response.to.have.status(404));",
+											"pm.test('Response is JSON', () => pm.response.to.be.json);",
+											"pm.test('Response time < 5s', () => pm.expect(pm.response.responseTime).to.be.below(5000));",
+											"const body = pm.response.json();",
+											"pm.test('success is false', () => pm.expect(body.success).to.eql(false));"
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "Get non-existent Trip Passengers (404)",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/v1/trips/00000000-0000-0000-0000-000000000000/passengers",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"trips",
+										"00000000-0000-0000-0000-000000000000",
+										"passengers"
+									]
+								}
+							},
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"pm.test('Status 404 - Not found', () => pm.response.to.have.status(404));",
+											"pm.test('Response is JSON', () => pm.response.to.be.json);",
+											"pm.test('Response time < 5s', () => pm.expect(pm.response.responseTime).to.be.below(5000));",
+											"const body = pm.response.json();",
+											"pm.test('success is false', () => pm.expect(body.success).to.eql(false));"
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "Delete non-existent Trip (404)",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/v1/trips/00000000-0000-0000-0000-000000000000",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"trips",
+										"00000000-0000-0000-0000-000000000000"
+									]
+								}
+							},
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"pm.test('Status 404 - Not found', () => pm.response.to.have.status(404));",
+											"pm.test('Response is JSON', () => pm.response.to.be.json);",
+											"pm.test('Response time < 5s', () => pm.expect(pm.response.responseTime).to.be.below(5000));",
+											"const body = pm.response.json();",
+											"pm.test('success is false', () => pm.expect(body.success).to.eql(false));"
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "Delete non-existent Inscription (404)",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/v1/inscriptions/00000000-0000-0000-0000-000000000000",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"inscriptions",
+										"00000000-0000-0000-0000-000000000000"
+									]
+								}
+							},
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"pm.test('Status 404 - Not found', () => pm.response.to.have.status(404));",
+											"pm.test('Response is JSON', () => pm.response.to.be.json);",
+											"pm.test('Response time < 5s', () => pm.expect(pm.response.responseTime).to.be.below(5000));",
+											"const body = pm.response.json();",
+											"pm.test('success is false', () => pm.expect(body.success).to.eql(false));"
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "PUT non-existent Car (404)",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/v1/cars/00000000-0000-0000-0000-000000000000",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"cars",
+										"00000000-0000-0000-0000-000000000000"
+									]
+								},
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"model\": \"Test\",\n  \"brandId\": \"{{brandId}}\",\n  \"licensePlate\": \"XX-000-XX\"\n}"
+								}
+							},
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"pm.test('Status 404 - Not found', () => pm.response.to.have.status(404));",
+											"pm.test('Response is JSON', () => pm.response.to.be.json);",
+											"pm.test('Response time < 5s', () => pm.expect(pm.response.responseTime).to.be.below(5000));",
+											"const body = pm.response.json();",
+											"pm.test('success is false', () => pm.expect(body.success).to.eql(false));"
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "PATCH non-existent Car (404)",
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/v1/cars/00000000-0000-0000-0000-000000000000",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"cars",
+										"00000000-0000-0000-0000-000000000000"
+									]
+								},
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"licensePlate\": \"XX-000-XX\"\n}"
+								}
+							},
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"pm.test('Status 404 - Not found', () => pm.response.to.have.status(404));",
+											"pm.test('Response is JSON', () => pm.response.to.be.json);",
+											"pm.test('Response time < 5s', () => pm.expect(pm.response.responseTime).to.be.below(5000));",
+											"const body = pm.response.json();",
+											"pm.test('success is false', () => pm.expect(body.success).to.eql(false));"
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "Delete non-existent Car (404)",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/v1/cars/00000000-0000-0000-0000-000000000000",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"cars",
+										"00000000-0000-0000-0000-000000000000"
+									]
+								}
+							},
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"pm.test('Status 404 - Not found', () => pm.response.to.have.status(404));",
+											"pm.test('Response is JSON', () => pm.response.to.be.json);",
+											"pm.test('Response time < 5s', () => pm.expect(pm.response.responseTime).to.be.below(5000));",
+											"const body = pm.response.json();",
+											"pm.test('success is false', () => pm.expect(body.success).to.eql(false));"
+										]
+									}
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "09c - Authorization Tests (403)",
+					"item": [
+						{
+							"name": "Create Color (expect 403 - non-admin)",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/v1/colors",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"colors"
+									]
+								},
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"name\": \"ForbiddenColor\",\n  \"hex\": \"#000000\"\n}"
+								}
+							},
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"pm.test('Status 403 - Forbidden', () => pm.response.to.have.status(403));",
+											"pm.test('Response is JSON', () => pm.response.to.be.json);",
+											"const body = pm.response.json();",
+											"pm.test('success is false', () => pm.expect(body.success).to.eql(false));"
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "Patch Color (expect 403 - non-admin)",
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/v1/colors/{{colorId}}",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"colors",
+										"{{colorId}}"
+									]
+								},
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"name\": \"ForbiddenUpdate\"\n}"
+								}
+							},
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"const id = pm.collectionVariables.get('colorId');",
+											"if (!id) { pm.test('SKIP - No colorId', () => true); return; }",
+											"pm.test('Status 403 - Forbidden', () => pm.response.to.have.status(403));",
+											"pm.test('Response is JSON', () => pm.response.to.be.json);",
+											"const body = pm.response.json();",
+											"pm.test('success is false', () => pm.expect(body.success).to.eql(false));"
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "Delete Color (expect 403 - non-admin)",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/v1/colors/{{colorId}}",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"colors",
+										"{{colorId}}"
+									]
+								}
+							},
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"const id = pm.collectionVariables.get('colorId');",
+											"if (!id) { pm.test('SKIP - No colorId', () => true); return; }",
+											"pm.test('Status 403 - Forbidden', () => pm.response.to.have.status(403));",
+											"pm.test('Response is JSON', () => pm.response.to.be.json);",
+											"const body = pm.response.json();",
+											"pm.test('success is false', () => pm.expect(body.success).to.eql(false));"
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "Delete Brand (expect 403 - non-admin)",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/v1/brands/{{brandId}}",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"brands",
+										"{{brandId}}"
+									]
+								}
+							},
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"const id = pm.collectionVariables.get('brandId');",
+											"if (!id) { pm.test('SKIP - No brandId', () => true); return; }",
+											"pm.test('Status 403 - Forbidden', () => pm.response.to.have.status(403));",
+											"pm.test('Response is JSON', () => pm.response.to.be.json);",
+											"const body = pm.response.json();",
+											"pm.test('success is false', () => pm.expect(body.success).to.eql(false));"
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "Delete User (expect 403 - non-admin)",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/v1/users/00000000-0000-0000-0000-000000000000",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"users",
+										"00000000-0000-0000-0000-000000000000"
+									]
+								}
+							},
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"pm.test('Status 403 - Forbidden', () => pm.response.to.have.status(403));",
+											"pm.test('Response is JSON', () => pm.response.to.be.json);",
+											"const body = pm.response.json();",
+											"pm.test('success is false', () => pm.expect(body.success).to.eql(false));"
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "Update another user car (expect 403 - ownership)",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{adminToken}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/v1/cars/{{carId}}",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"cars",
+										"{{carId}}"
+									]
+								},
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"model\": \"Stolen\",\n  \"brandId\": \"{{brandId}}\",\n  \"licensePlate\": \"HACK-01\"\n}"
+								}
+							},
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"const id = pm.collectionVariables.get('carId');",
+											"if (!id) { pm.test('SKIP - No carId', () => true); return; }",
+											"pm.test('Status 403 - Forbidden (not owner)', () => pm.response.to.have.status(403));",
+											"pm.test('Response is JSON', () => pm.response.to.be.json);",
+											"const body = pm.response.json();",
+											"pm.test('success is false', () => pm.expect(body.success).to.eql(false));"
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "Delete another user car (expect 403 - ownership)",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{adminToken}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/v1/cars/{{carId}}",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"cars",
+										"{{carId}}"
+									]
+								}
+							},
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"const id = pm.collectionVariables.get('carId');",
+											"if (!id) { pm.test('SKIP - No carId', () => true); return; }",
+											"pm.test('Status 403 - Forbidden (not owner)', () => pm.response.to.have.status(403));",
+											"pm.test('Response is JSON', () => pm.response.to.be.json);",
+											"const body = pm.response.json();",
+											"pm.test('success is false', () => pm.expect(body.success).to.eql(false));"
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "Delete another user trip (expect 403 - ownership)",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{adminToken}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/v1/trips/{{tripId}}",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"trips",
+										"{{tripId}}"
+									]
+								}
+							},
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"const id = pm.collectionVariables.get('tripId');",
+											"if (!id) { pm.test('SKIP - No tripId', () => true); return; }",
+											"pm.test('Status 403 - Forbidden (not owner)', () => pm.response.to.have.status(403));",
+											"pm.test('Response is JSON', () => pm.response.to.be.json);",
+											"const body = pm.response.json();",
+											"pm.test('success is false', () => pm.expect(body.success).to.eql(false));"
+										]
+									}
+								}
+							]
+						}
+					]
+				},
+				{
 					"name": "10 - Cleanup (V1)",
 					"item": [
 						{
@@ -2087,6 +2923,49 @@
 											"if (!id) { pm.test('SKIP - No tripId', () => true); return; }",
 											"pm.test('Status 204 - Trip deleted', () => pm.response.to.have.status(204));",
 											"pm.test('Response time < 5s', () => pm.expect(pm.response.responseTime).to.be.below(5000));"
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "Verify Trip Deleted (404)",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/v1/trips/{{tripId}}",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"trips",
+										"{{tripId}}"
+									]
+								}
+							},
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"const id = pm.collectionVariables.get('tripId');",
+											"if (!id) { pm.test('SKIP - No tripId', () => true); return; }",
+											"pm.test('Status 404 - Confirmed deleted', () => pm.response.to.have.status(404));",
+											"pm.test('Response is JSON', () => pm.response.to.be.json);",
+											"const body = pm.response.json();",
+											"pm.test('success is false', () => pm.expect(body.success).to.eql(false));"
 										]
 									}
 								}
@@ -2134,6 +3013,49 @@
 							]
 						},
 						{
+							"name": "Verify Car Deleted (404)",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/v1/cars/{{carId}}",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"cars",
+										"{{carId}}"
+									]
+								}
+							},
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"const id = pm.collectionVariables.get('carId');",
+											"if (!id) { pm.test('SKIP - No carId', () => true); return; }",
+											"pm.test('Status 404 - Confirmed deleted', () => pm.response.to.have.status(404));",
+											"pm.test('Response is JSON', () => pm.response.to.be.json);",
+											"const body = pm.response.json();",
+											"pm.test('success is false', () => pm.expect(body.success).to.eql(false));"
+										]
+									}
+								}
+							]
+						},
+						{
 							"name": "Admin Delete Color",
 							"request": {
 								"method": "DELETE",
@@ -2175,6 +3097,49 @@
 							]
 						},
 						{
+							"name": "Verify Color Deleted (404)",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/v1/colors/{{colorId}}",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"colors",
+										"{{colorId}}"
+									]
+								}
+							},
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"const id = pm.collectionVariables.get('colorId');",
+											"if (!id) { pm.test('SKIP - No colorId', () => true); return; }",
+											"pm.test('Status 404 - Confirmed deleted', () => pm.response.to.have.status(404));",
+											"pm.test('Response is JSON', () => pm.response.to.be.json);",
+											"const body = pm.response.json();",
+											"pm.test('success is false', () => pm.expect(body.success).to.eql(false));"
+										]
+									}
+								}
+							]
+						},
+						{
 							"name": "Admin Delete Brand",
 							"request": {
 								"method": "DELETE",
@@ -2210,6 +3175,49 @@
 											"if (!id) { pm.test('SKIP - No brandId', () => true); return; }",
 											"pm.test('Status 204 - Brand deleted', () => pm.response.to.have.status(204));",
 											"pm.test('Response time < 5s', () => pm.expect(pm.response.responseTime).to.be.below(5000));"
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "Verify Brand Deleted (404)",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/v1/brands/{{brandId}}",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"brands",
+										"{{brandId}}"
+									]
+								}
+							},
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"const id = pm.collectionVariables.get('brandId');",
+											"if (!id) { pm.test('SKIP - No brandId', () => true); return; }",
+											"pm.test('Status 404 - Confirmed deleted', () => pm.response.to.have.status(404));",
+											"pm.test('Response is JSON', () => pm.response.to.be.json);",
+											"const body = pm.response.json();",
+											"pm.test('success is false', () => pm.expect(body.success).to.eql(false));"
 										]
 									}
 								}
@@ -2292,6 +3300,90 @@
 											"if (!id) { pm.test('SKIP - No cityId2', () => true); return; }",
 											"pm.test('Status 204 - City deleted', () => pm.response.to.have.status(204));",
 											"pm.test('Response time < 5s', () => pm.expect(pm.response.responseTime).to.be.below(5000));"
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "Admin Anonymize User by ID",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{adminToken}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/v1/users/{{secondaryUserId}}",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"users",
+										"{{secondaryUserId}}"
+									]
+								}
+							},
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"const id = pm.collectionVariables.get('secondaryUserId');",
+											"if (!id) { pm.test('SKIP - No secondaryUserId', () => true); return; }",
+											"pm.test('Status 204 - User anonymized by admin', () => pm.response.to.have.status(204));",
+											"pm.test('Response time < 5s', () => pm.expect(pm.response.responseTime).to.be.below(5000));"
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "Verify Admin-Anonymized User (expect 404)",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{adminToken}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/v1/users/{{secondaryUserId}}",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"users",
+										"{{secondaryUserId}}"
+									]
+								}
+							},
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"const id = pm.collectionVariables.get('secondaryUserId');",
+											"if (!id) { pm.test('SKIP - No secondaryUserId', () => true); return; }",
+											"pm.test('Status 404 - User not found after admin anonymize', () => pm.response.to.have.status(404));",
+											"pm.test('Response is JSON', () => pm.response.to.be.json);",
+											"const body = pm.response.json();",
+											"pm.test('success is false', () => pm.expect(body.success).to.eql(false));"
 										]
 									}
 								}
@@ -2493,14 +3585,9 @@
 									}
 								}
 							]
-						}
-					]
-				},
-				{
-					"name": "01 - VP Persons",
-					"item": [
+						},
 						{
-							"name": "VP Create Person",
+							"name": "VP Register - Duplicate (expect 409)",
 							"request": {
 								"method": "POST",
 								"header": [
@@ -2513,9 +3600,251 @@
 										"value": "{{bypassToken}}"
 									}
 								],
+								"url": {
+									"raw": "{{baseUrlVp}}/register",
+									"host": [
+										"{{baseUrlVp}}"
+									],
+									"path": [
+										"register"
+									]
+								},
 								"body": {
 									"mode": "raw",
-									"raw": "{\n  \"firstname\": \"Jean\",\n  \"lastname\": \"Dupont\",\n  \"phone\": \"0698765432\",\n  \"email\": \"jean.dupont_{{$timestamp}}@test.com\",\n  \"password\": \"SecurePass1\"\n}"
+									"raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"{{testPassword}}\",\n  \"confirmPassword\": \"{{testPassword}}\"\n}"
+								}
+							},
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"pm.test('Status 409 - Duplicate', () => pm.response.to.have.status(409));",
+											"pm.test('Response is JSON', () => pm.response.to.be.json);",
+											"pm.test('Response time < 5s', () => pm.expect(pm.response.responseTime).to.be.below(5000));",
+											"const body = pm.response.json();",
+											"pm.test('success is false', () => pm.expect(body.success).to.eql(false));"
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "VP Register - Invalid body (expect 400)",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrlVp}}/register",
+									"host": [
+										"{{baseUrlVp}}"
+									],
+									"path": [
+										"register"
+									]
+								},
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"email\": \"not-an-email\",\n  \"password\": \"short\"\n}"
+								}
+							},
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"pm.test('Status 400 - Validation error', () => pm.response.to.have.status(400));",
+											"pm.test('Response is JSON', () => pm.response.to.be.json);",
+											"pm.test('Response time < 5s', () => pm.expect(pm.response.responseTime).to.be.below(5000));",
+											"const body = pm.response.json();",
+											"pm.test('success is false', () => pm.expect(body.success).to.eql(false));"
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "VP Login - Wrong password (expect 401)",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrlVp}}/login",
+									"host": [
+										"{{baseUrlVp}}"
+									],
+									"path": [
+										"login"
+									]
+								},
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"WrongPassword999\"\n}"
+								}
+							},
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"pm.test('Status 401 - Invalid credentials', () => pm.response.to.have.status(401));",
+											"pm.test('Response is JSON', () => pm.response.to.be.json);",
+											"pm.test('Response time < 5s', () => pm.expect(pm.response.responseTime).to.be.below(5000));",
+											"const body = pm.response.json();",
+											"pm.test('success is false', () => pm.expect(body.success).to.eql(false));"
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "VP Login - Non-existent email (expect 401)",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrlVp}}/login",
+									"host": [
+										"{{baseUrlVp}}"
+									],
+									"path": [
+										"login"
+									]
+								},
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"email\": \"nonexistent_999@test.com\",\n  \"password\": \"AnyPassword1\"\n}"
+								}
+							},
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"pm.test('Status 401 - User not found', () => pm.response.to.have.status(401));",
+											"pm.test('Response is JSON', () => pm.response.to.be.json);",
+											"pm.test('Response time < 5s', () => pm.expect(pm.response.responseTime).to.be.below(5000));",
+											"const body = pm.response.json();",
+											"pm.test('success is false', () => pm.expect(body.success).to.eql(false));"
+										]
+									}
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "01 - VP Persons",
+					"item": [
+						{
+							"name": "VP Register Inscription User",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrlVp}}/register",
+									"host": [
+										"{{baseUrlVp}}"
+									],
+									"path": [
+										"register"
+									]
+								},
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"email\": \"{{vpInscriptionEmail}}\",\n  \"password\": \"{{testPassword}}\"\n}"
+								}
+							},
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"pm.test('Status 201', () => pm.response.to.have.status(201));",
+											"pm.test('Response is JSON', () => pm.response.to.be.json);",
+											"const body = pm.response.json();",
+											"pm.test('Response has success:true', () => pm.expect(body.success).to.eql(true));",
+											"if (body.data) {",
+											"    pm.collectionVariables.set('vpInscriptionUserId', body.data.userId);",
+											"    pm.collectionVariables.set('vpInscriptionToken', body.data.token);",
+											"}"
+										]
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"const unique = Date.now();",
+											"pm.collectionVariables.set('vpInscriptionEmail', `vpinscription_${unique}@test.com`);"
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "VP Create Person",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "x-auth-token",
+										"value": "{{vpToken}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"firstname\": \"Jean\",\n  \"lastname\": \"Dupont\",\n  \"phone\": \"0698765432\"\n}"
 								},
 								"url": {
 									"raw": "{{baseUrlVp}}/persons",
@@ -2533,15 +3862,61 @@
 									"script": {
 										"type": "text/javascript",
 										"exec": [
-											"pm.test('Status 201 - Person created', () => pm.response.to.have.status(201));",
+											"pm.test('Status 201 - Person profile updated', () => pm.response.to.have.status(201));",
 											"pm.test('Response is JSON', () => pm.response.to.be.json);",
 											"pm.test('Response time < 5s', () => pm.expect(pm.response.responseTime).to.be.below(5000));",
 											"const body = pm.response.json();",
 											"pm.test('Response has success:true', () => pm.expect(body.success).to.eql(true));",
-											"if (body.data) {",
-											"    pm.collectionVariables.set('vpInscriptionUserId', body.data.id);",
-											"    if (body.data.token) pm.collectionVariables.set('vpInscriptionToken', body.data.token);",
-											"}"
+											"pm.test('firstname matches', () => pm.expect(body.data.firstname).to.eql('Jean'));",
+											"pm.test('lastname matches', () => pm.expect(body.data.lastname).to.eql('Dupont'));",
+											"pm.test('phone matches', () => pm.expect(body.data.phone).to.eql('0698765432'));"
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "VP Update Inscription Person Profile",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "x-auth-token",
+										"value": "{{vpInscriptionToken}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrlVp}}/persons",
+									"host": [
+										"{{baseUrlVp}}"
+									],
+									"path": [
+										"persons"
+									]
+								},
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"firstname\": \"Inscription\",\n  \"lastname\": \"User\",\n  \"phone\": \"0611111111\"\n}"
+								}
+							},
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"pm.test('Status 201', () => pm.response.to.have.status(201));",
+											"pm.test('Response is JSON', () => pm.response.to.be.json);",
+											"const body = pm.response.json();",
+											"pm.test('Response has success:true', () => pm.expect(body.success).to.eql(true));"
 										]
 									}
 								}
@@ -2624,7 +3999,10 @@
 											"pm.test('Response time < 5s', () => pm.expect(pm.response.responseTime).to.be.below(5000));",
 											"const body = pm.response.json();",
 											"pm.test('Response has success:true', () => pm.expect(body.success).to.eql(true));",
-											"pm.test('Data contains person', () => pm.expect(body.data).to.have.property('id'));"
+											"pm.test('Has id', () => pm.expect(body.data.id).to.be.a('string'));",
+											"pm.test('Has firstname', () => pm.expect(body.data.firstname).to.be.a('string'));",
+											"pm.test('Has lastname', () => pm.expect(body.data.lastname).to.be.a('string'));",
+											"pm.test('Has email', () => pm.expect(body.data.email).to.be.a('string'));"
 										]
 									}
 								}
@@ -2669,11 +4047,13 @@
 									"script": {
 										"type": "text/javascript",
 										"exec": [
-											"pm.test('Status 200 - Person updated', () => pm.response.to.have.status(200));",
+											"pm.test('Status 200', () => pm.response.to.have.status(200));",
 											"pm.test('Response is JSON', () => pm.response.to.be.json);",
 											"pm.test('Response time < 5s', () => pm.expect(pm.response.responseTime).to.be.below(5000));",
 											"const body = pm.response.json();",
-											"pm.test('Response has success:true', () => pm.expect(body.success).to.eql(true));"
+											"pm.test('Response has success:true', () => pm.expect(body.success).to.eql(true));",
+											"pm.test('firstname updated', () => pm.expect(body.data.firstname).to.eql('UpdatedJean'));",
+											"pm.test('phone updated', () => pm.expect(body.data.phone).to.eql('0699999999'));"
 										]
 									}
 								}
@@ -2977,10 +4357,110 @@
 					]
 				},
 				{
+					"name": "02b - VP Driver Setup",
+					"item": [
+						{
+							"name": "VP Create Driver (via V1)",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{vpToken}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/v1/drivers",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"v1",
+										"drivers"
+									]
+								},
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"licenseNumber\": \"VP-DRV-12345\"\n}"
+								}
+							},
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"pm.test('Status 201 - VP Driver created', () => pm.response.to.have.status(201));",
+											"pm.test('Response is JSON', () => pm.response.to.be.json);",
+											"const body = pm.response.json();",
+											"pm.test('Response has success:true', () => pm.expect(body.success).to.eql(true));"
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "VP Re-Login (get DRIVER token)",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrlVp}}/login",
+									"host": [
+										"{{baseUrlVp}}"
+									],
+									"path": [
+										"login"
+									]
+								},
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"{{testPassword}}\"\n}"
+								}
+							},
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"pm.test('Status 200', () => pm.response.to.have.status(200));",
+											"pm.test('Response is JSON', () => pm.response.to.be.json);",
+											"const body = pm.response.json();",
+											"pm.test('Response has success:true', () => pm.expect(body.success).to.eql(true));",
+											"pm.test('Token received', () => pm.expect(body.data.token).to.be.a('string'));",
+											"if (body.data) {",
+											"    pm.collectionVariables.set('vpToken', body.data.token);",
+											"}"
+										]
+									}
+								}
+							]
+						}
+					]
+				},
+				{
 					"name": "03 - VP Cars",
 					"item": [
 						{
-							"name": "VP Create Car (needs DRIVER role - setup first)",
+							"name": "VP Create Car",
 							"request": {
 								"method": "POST",
 								"header": [
@@ -3017,19 +4497,15 @@
 									"script": {
 										"type": "text/javascript",
 										"exec": [
-											"// May need DRIVER role - test what we get",
-											"const status = pm.response.code;",
-											"if (status === 201) {",
-											"    pm.test('Status 201 - VP Car created', () => true);",
-											"    const body = pm.response.json();",
-											"    pm.test('Response has success:true', () => pm.expect(body.success).to.eql(true));",
-											"    if (body.data) { pm.collectionVariables.set('vpCarId', body.data.id); }",
-											"} else if (status === 403) {",
-											"    pm.test('Status 403 - Requires DRIVER role (expected for USER)', () => true);",
-											"} else {",
-											"    pm.test(`Unexpected status ${status}`, () => pm.response.to.have.status(201));",
-											"}",
-											"pm.test('Response time < 5s', () => pm.expect(pm.response.responseTime).to.be.below(5000));"
+											"pm.test('Status 201 - VP Car created', () => pm.response.to.have.status(201));",
+											"pm.test('Response is JSON', () => pm.response.to.be.json);",
+											"pm.test('Response time < 5s', () => pm.expect(pm.response.responseTime).to.be.below(5000));",
+											"const body = pm.response.json();",
+											"pm.test('Response has success:true', () => pm.expect(body.success).to.eql(true));",
+											"pm.test('Has car id', () => pm.expect(body.data.id).to.be.a('string'));",
+											"pm.test('model matches', () => pm.expect(body.data.model).to.eql('Clio'));",
+											"pm.test('licensePlate matches', () => pm.expect(body.data.licensePlate).to.eql('VP-123-AB'));",
+											"if (body.data) { pm.collectionVariables.set('vpCarId', body.data.id); }"
 										]
 									}
 								}
@@ -3116,13 +4592,16 @@
 									"script": {
 										"type": "text/javascript",
 										"exec": [
-											"const id = pm.collectionVariables.get('vpCarId');",
-											"if (!id) { pm.test('SKIP - No vpCarId', () => true); return; }",
+											"const carId = pm.collectionVariables.get('vpCarId');",
+											"if (!carId) { pm.test('SKIP - No vpCarId', () => true); return; }",
 											"pm.test('Status 200', () => pm.response.to.have.status(200));",
 											"pm.test('Response is JSON', () => pm.response.to.be.json);",
 											"pm.test('Response time < 5s', () => pm.expect(pm.response.responseTime).to.be.below(5000));",
 											"const body = pm.response.json();",
-											"pm.test('Response has success:true', () => pm.expect(body.success).to.eql(true));"
+											"pm.test('Response has success:true', () => pm.expect(body.success).to.eql(true));",
+											"pm.test('Has id', () => pm.expect(body.data.id).to.be.a('string'));",
+											"pm.test('Has model', () => pm.expect(body.data.model).to.be.a('string'));",
+											"pm.test('Has licensePlate', () => pm.expect(body.data.licensePlate).to.be.a('string'));"
 										]
 									}
 								}
@@ -3167,13 +4646,15 @@
 									"script": {
 										"type": "text/javascript",
 										"exec": [
-											"const id = pm.collectionVariables.get('vpCarId');",
-											"if (!id) { pm.test('SKIP - No vpCarId', () => true); return; }",
-											"pm.test('Status 200 - VP Car updated', () => pm.response.to.have.status(200));",
+											"const carId = pm.collectionVariables.get('vpCarId');",
+											"if (!carId) { pm.test('SKIP - No vpCarId', () => true); return; }",
+											"pm.test('Status 200', () => pm.response.to.have.status(200));",
 											"pm.test('Response is JSON', () => pm.response.to.be.json);",
 											"pm.test('Response time < 5s', () => pm.expect(pm.response.responseTime).to.be.below(5000));",
 											"const body = pm.response.json();",
-											"pm.test('Response has success:true', () => pm.expect(body.success).to.eql(true));"
+											"pm.test('Response has success:true', () => pm.expect(body.success).to.eql(true));",
+											"pm.test('model updated to Megane', () => pm.expect(body.data.model).to.eql('Megane'));",
+											"pm.test('licensePlate updated', () => pm.expect(body.data.licensePlate).to.eql('VP-456-CD'));"
 										]
 									}
 								}
@@ -3204,7 +4685,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n  \"kms\": 300,\n  \"trip_datetime\": \"2026-07-01T08:00:00Z\",\n  \"seats\": 3,\n  \"car_id\": \"{{vpCarId}}\",\n  \"person_id\": \"{{vpUserId}}\",\n  \"starting_address\": {\n    \"street_number\": \"1\",\n    \"street_name\": \"Rue de la Paix\",\n    \"postal_code\": \"75001\",\n    \"city_name\": \"Paris\"\n  },\n  \"arrival_address\": {\n    \"street_number\": \"10\",\n    \"street_name\": \"Place Bellecour\",\n    \"postal_code\": \"69002\",\n    \"city_name\": \"Lyon\"\n  }\n}"
+									"raw": "{\n  \"kms\": 300,\n  \"trip_datetime\": \"2026-07-01T08:00:00Z\",\n  \"available_seats\": 3,\n  \"car_id\": \"{{vpCarId}}\",\n  \"starting_address\": {\n    \"street_number\": \"1\",\n    \"street_name\": \"Rue de la Paix\",\n    \"postal_code\": \"75001\",\n    \"city_name\": \"Paris\"\n  },\n  \"arrival_address\": {\n    \"street_number\": \"10\",\n    \"street_name\": \"Place Bellecour\",\n    \"postal_code\": \"69002\",\n    \"city_name\": \"Lyon\"\n  }\n}"
 								},
 								"url": {
 									"raw": "{{baseUrlVp}}/trips",
@@ -3222,18 +4703,15 @@
 									"script": {
 										"type": "text/javascript",
 										"exec": [
-											"const carId = pm.collectionVariables.get('vpCarId');",
-											"if (!carId) { pm.test('SKIP - No vpCarId', () => true); return; }",
-											"const status = pm.response.code;",
-											"if (status === 201) {",
-											"    pm.test('Status 201 - VP Trip created', () => true);",
-											"    const body = pm.response.json();",
-											"    pm.test('Response has success:true', () => pm.expect(body.success).to.eql(true));",
-											"    if (body.data) { pm.collectionVariables.set('vpTripId', body.data.id); }",
-											"} else {",
-											"    pm.test(`Status ${status} - Trip creation`, () => true);",
-											"}",
-											"pm.test('Response time < 5s', () => pm.expect(pm.response.responseTime).to.be.below(5000));"
+											"pm.test('Status 201 - VP Trip created', () => pm.response.to.have.status(201));",
+											"pm.test('Response is JSON', () => pm.response.to.be.json);",
+											"pm.test('Response time < 5s', () => pm.expect(pm.response.responseTime).to.be.below(5000));",
+											"const body = pm.response.json();",
+											"pm.test('Response has success:true', () => pm.expect(body.success).to.eql(true));",
+											"pm.test('Has trip id', () => pm.expect(body.data.id).to.be.a('string'));",
+											"pm.test('kms matches', () => pm.expect(body.data.kms).to.eql(300));",
+											"pm.test('seats matches', () => pm.expect(body.data.seats).to.eql(3));",
+											"if (body.data) { pm.collectionVariables.set('vpTripId', body.data.id); }"
 										]
 									}
 								}
@@ -3364,13 +4842,16 @@
 									"script": {
 										"type": "text/javascript",
 										"exec": [
-											"const id = pm.collectionVariables.get('vpTripId');",
-											"if (!id) { pm.test('SKIP - No vpTripId', () => true); return; }",
+											"const tripId = pm.collectionVariables.get('vpTripId');",
+											"if (!tripId) { pm.test('SKIP - No vpTripId', () => true); return; }",
 											"pm.test('Status 200', () => pm.response.to.have.status(200));",
 											"pm.test('Response is JSON', () => pm.response.to.be.json);",
 											"pm.test('Response time < 5s', () => pm.expect(pm.response.responseTime).to.be.below(5000));",
 											"const body = pm.response.json();",
-											"pm.test('Response has success:true', () => pm.expect(body.success).to.eql(true));"
+											"pm.test('Response has success:true', () => pm.expect(body.success).to.eql(true));",
+											"pm.test('Has id', () => pm.expect(body.data.id).to.be.a('string'));",
+											"pm.test('Has kms', () => pm.expect(body.data.kms).to.be.a('number'));",
+											"pm.test('Has seats', () => pm.expect(body.data.seats).to.be.a('number'));"
 										]
 									}
 								}
@@ -3396,7 +4877,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n  \"seats\": 4\n}"
+									"raw": "{\n  \"available_seats\": 4\n}"
 								},
 								"url": {
 									"raw": "{{baseUrlVp}}/trips/{{vpTripId}}",
@@ -3415,13 +4896,14 @@
 									"script": {
 										"type": "text/javascript",
 										"exec": [
-											"const id = pm.collectionVariables.get('vpTripId');",
-											"if (!id) { pm.test('SKIP - No vpTripId', () => true); return; }",
-											"pm.test('Status 200 - VP Trip patched', () => pm.response.to.have.status(200));",
+											"const tripId = pm.collectionVariables.get('vpTripId');",
+											"if (!tripId) { pm.test('SKIP - No vpTripId', () => true); return; }",
+											"pm.test('Status 200', () => pm.response.to.have.status(200));",
 											"pm.test('Response is JSON', () => pm.response.to.be.json);",
 											"pm.test('Response time < 5s', () => pm.expect(pm.response.responseTime).to.be.below(5000));",
 											"const body = pm.response.json();",
-											"pm.test('Response has success:true', () => pm.expect(body.success).to.eql(true));"
+											"pm.test('Response has success:true', () => pm.expect(body.success).to.eql(true));",
+											"pm.test('seats updated to 4', () => pm.expect(body.data.seats).to.eql(4));"
 										]
 									}
 								}
@@ -3537,6 +5019,400 @@
 					]
 				},
 				{
+					"name": "04b - VP Not Found Tests (404)",
+					"item": [
+						{
+							"name": "VP Get non-existent Person (404)",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "x-auth-token",
+										"value": "{{vpToken}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrlVp}}/persons/00000000-0000-0000-0000-000000000000",
+									"host": [
+										"{{baseUrlVp}}"
+									],
+									"path": [
+										"persons",
+										"00000000-0000-0000-0000-000000000000"
+									]
+								}
+							},
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"pm.test('Status 404 - Not found', () => pm.response.to.have.status(404));",
+											"pm.test('Response is JSON', () => pm.response.to.be.json);",
+											"pm.test('Response time < 5s', () => pm.expect(pm.response.responseTime).to.be.below(5000));",
+											"const body = pm.response.json();",
+											"pm.test('success is false', () => pm.expect(body.success).to.eql(false));"
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "VP Get non-existent Car (404)",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "x-auth-token",
+										"value": "{{vpToken}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrlVp}}/cars/00000000-0000-0000-0000-000000000000",
+									"host": [
+										"{{baseUrlVp}}"
+									],
+									"path": [
+										"cars",
+										"00000000-0000-0000-0000-000000000000"
+									]
+								}
+							},
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"pm.test('Status 404 - Not found', () => pm.response.to.have.status(404));",
+											"pm.test('Response is JSON', () => pm.response.to.be.json);",
+											"pm.test('Response time < 5s', () => pm.expect(pm.response.responseTime).to.be.below(5000));",
+											"const body = pm.response.json();",
+											"pm.test('success is false', () => pm.expect(body.success).to.eql(false));"
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "VP Get non-existent Trip (404)",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "x-auth-token",
+										"value": "{{vpToken}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrlVp}}/trips/00000000-0000-0000-0000-000000000000",
+									"host": [
+										"{{baseUrlVp}}"
+									],
+									"path": [
+										"trips",
+										"00000000-0000-0000-0000-000000000000"
+									]
+								}
+							},
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"pm.test('Status 404 - Not found', () => pm.response.to.have.status(404));",
+											"pm.test('Response is JSON', () => pm.response.to.be.json);",
+											"pm.test('Response time < 5s', () => pm.expect(pm.response.responseTime).to.be.below(5000));",
+											"const body = pm.response.json();",
+											"pm.test('success is false', () => pm.expect(body.success).to.eql(false));"
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "VP Patch non-existent Trip (404)",
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "x-auth-token",
+										"value": "{{vpToken}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrlVp}}/trips/00000000-0000-0000-0000-000000000000",
+									"host": [
+										"{{baseUrlVp}}"
+									],
+									"path": [
+										"trips",
+										"00000000-0000-0000-0000-000000000000"
+									]
+								},
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"kms\": 100\n}"
+								}
+							},
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"pm.test('Status 404 - Not found', () => pm.response.to.have.status(404));",
+											"pm.test('Response is JSON', () => pm.response.to.be.json);",
+											"pm.test('Response time < 5s', () => pm.expect(pm.response.responseTime).to.be.below(5000));",
+											"const body = pm.response.json();",
+											"pm.test('success is false', () => pm.expect(body.success).to.eql(false));"
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "VP Delete non-existent Trip (404)",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "x-auth-token",
+										"value": "{{vpToken}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrlVp}}/trips/00000000-0000-0000-0000-000000000000",
+									"host": [
+										"{{baseUrlVp}}"
+									],
+									"path": [
+										"trips",
+										"00000000-0000-0000-0000-000000000000"
+									]
+								}
+							},
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"pm.test('Status 404 - Not found', () => pm.response.to.have.status(404));",
+											"pm.test('Response is JSON', () => pm.response.to.be.json);",
+											"pm.test('Response time < 5s', () => pm.expect(pm.response.responseTime).to.be.below(5000));",
+											"const body = pm.response.json();",
+											"pm.test('success is false', () => pm.expect(body.success).to.eql(false));"
+										]
+									}
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "04c - VP Authorization Tests (403)",
+					"item": [
+						{
+							"name": "VP List Persons (expect 403 - non-admin)",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "x-auth-token",
+										"value": "{{vpToken}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrlVp}}/persons",
+									"host": [
+										"{{baseUrlVp}}"
+									],
+									"path": [
+										"persons"
+									]
+								}
+							},
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"pm.test('Status 403 - Forbidden', () => pm.response.to.have.status(403));",
+											"pm.test('Response is JSON', () => pm.response.to.be.json);",
+											"const body = pm.response.json();",
+											"pm.test('success is false', () => pm.expect(body.success).to.eql(false));"
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "VP Delete Person (expect 403 - non-admin)",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "x-auth-token",
+										"value": "{{vpToken}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrlVp}}/persons/00000000-0000-0000-0000-000000000000",
+									"host": [
+										"{{baseUrlVp}}"
+									],
+									"path": [
+										"persons",
+										"00000000-0000-0000-0000-000000000000"
+									]
+								}
+							},
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"pm.test('Status 403 - Forbidden', () => pm.response.to.have.status(403));",
+											"pm.test('Response is JSON', () => pm.response.to.be.json);",
+											"const body = pm.response.json();",
+											"pm.test('success is false', () => pm.expect(body.success).to.eql(false));"
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "VP Update Brand (expect 403 - non-admin)",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "x-auth-token",
+										"value": "{{vpToken}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrlVp}}/brands/{{vpBrandId}}",
+									"host": [
+										"{{baseUrlVp}}"
+									],
+									"path": [
+										"brands",
+										"{{vpBrandId}}"
+									]
+								},
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"name\": \"ForbiddenBrand\"\n}"
+								}
+							},
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"const id = pm.collectionVariables.get('vpBrandId');",
+											"if (!id) { pm.test('SKIP - No vpBrandId', () => true); return; }",
+											"pm.test('Status 403 - Forbidden', () => pm.response.to.have.status(403));",
+											"pm.test('Response is JSON', () => pm.response.to.be.json);",
+											"const body = pm.response.json();",
+											"pm.test('success is false', () => pm.expect(body.success).to.eql(false));"
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "VP Delete Brand (expect 403 - non-admin)",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "x-auth-token",
+										"value": "{{vpToken}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrlVp}}/brands/{{vpBrandId}}",
+									"host": [
+										"{{baseUrlVp}}"
+									],
+									"path": [
+										"brands",
+										"{{vpBrandId}}"
+									]
+								}
+							},
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"const id = pm.collectionVariables.get('vpBrandId');",
+											"if (!id) { pm.test('SKIP - No vpBrandId', () => true); return; }",
+											"pm.test('Status 403 - Forbidden', () => pm.response.to.have.status(403));",
+											"pm.test('Response is JSON', () => pm.response.to.be.json);",
+											"const body = pm.response.json();",
+											"pm.test('success is false', () => pm.expect(body.success).to.eql(false));"
+										]
+									}
+								}
+							]
+						}
+					]
+				},
+				{
 					"name": "05 - VP Cleanup",
 					"item": [
 						{
@@ -3580,6 +5456,48 @@
 							]
 						},
 						{
+							"name": "VP Verify Trip Deleted (404)",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "x-auth-token",
+										"value": "{{vpToken}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrlVp}}/trips/{{vpTripId}}",
+									"host": [
+										"{{baseUrlVp}}"
+									],
+									"path": [
+										"trips",
+										"{{vpTripId}}"
+									]
+								}
+							},
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"const id = pm.collectionVariables.get('vpTripId');",
+											"if (!id) { pm.test('SKIP - No vpTripId', () => true); return; }",
+											"pm.test('Status 404 - Confirmed deleted', () => pm.response.to.have.status(404));",
+											"pm.test('Response is JSON', () => pm.response.to.be.json);",
+											"const body = pm.response.json();",
+											"pm.test('success is false', () => pm.expect(body.success).to.eql(false));"
+										]
+									}
+								}
+							]
+						},
+						{
 							"name": "VP Delete Car",
 							"request": {
 								"method": "DELETE",
@@ -3614,6 +5532,48 @@
 											"if (!id) { pm.test('SKIP - No vpCarId', () => true); return; }",
 											"pm.test('Status 204 - VP Car deleted', () => pm.response.to.have.status(204));",
 											"pm.test('Response time < 5s', () => pm.expect(pm.response.responseTime).to.be.below(5000));"
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "VP Verify Car Deleted (404)",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "x-auth-token",
+										"value": "{{vpToken}}"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrlVp}}/cars/{{vpCarId}}",
+									"host": [
+										"{{baseUrlVp}}"
+									],
+									"path": [
+										"cars",
+										"{{vpCarId}}"
+									]
+								}
+							},
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"const id = pm.collectionVariables.get('vpCarId');",
+											"if (!id) { pm.test('SKIP - No vpCarId', () => true); return; }",
+											"pm.test('Status 404 - Confirmed deleted', () => pm.response.to.have.status(404));",
+											"pm.test('Response is JSON', () => pm.response.to.be.json);",
+											"const body = pm.response.json();",
+											"pm.test('success is false', () => pm.expect(body.success).to.eql(false));"
 										]
 									}
 								}
