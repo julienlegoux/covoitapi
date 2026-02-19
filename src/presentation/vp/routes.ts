@@ -44,7 +44,7 @@ vpRoutes.delete('/cars/:id', authMiddleware, requireRole('USER'), vpDeleteCar);
 vpRoutes.get('/trips', authMiddleware, requireRole('USER'), vpListTrips);
 vpRoutes.get('/trips/:id', authMiddleware, requireRole('USER'), vpGetTrip);
 vpRoutes.get('/trips/:id/person', authMiddleware, requireRole('USER'), vpGetTripPassengers);
-vpRoutes.post('/trips', authMiddleware, requireRole('USER'), vpCreateTrip);
+vpRoutes.post('/trips', authMiddleware, requireRole('DRIVER'), vpCreateTrip);
 vpRoutes.patch('/trips/:id', authMiddleware, requireRole('USER'), vpPatchTrip);
 vpRoutes.delete('/trips/:id', authMiddleware, requireRole('USER'), vpDeleteTrip);
 vpRoutes.post('/trips/:id/person', authMiddleware, requireRole('USER'), vpCreateTripInscription);

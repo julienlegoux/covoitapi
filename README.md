@@ -1,3 +1,1 @@
-Finally works !
-
-In Progress
+[![Quality gate](https://sonarcloud.io/api/project_badges/quality_gate?project=julienlegoux_covoitapi)](https://sonarcloud.io/summary/new_code?id=julienlegoux_covoitapi)

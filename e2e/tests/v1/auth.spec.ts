@@ -47,8 +47,6 @@ test.describe('POST /api/v1/auth/register', () => {
 		expect(body.error.code).toBe('USER_ALREADY_EXISTS');
 	});
 
-	// TODO: These should return 400 (error handler maps ZodError → 400), but the
-	// E2E server returns 500. Investigate Hono middleware/sub-router interaction.
 	test('weak password returns error', async ({ request }) => {
 		const email = `weak-${Date.now()}@e2e.test`;
 
