@@ -102,16 +102,30 @@ export async function vpCreateTrip(c: Context): Promise<Response> {
 	return resultToResponse(c, result, 201);
 }
 
+function buildScalarUpdates(validated: { kms?: number; available_seats?: number; trip_datetime?: string }): Record<string, unknown> {
+	const data: Record<string, unknown> = {};
+	if (validated.kms !== undefined) data.kms = validated.kms;
+	if (validated.available_seats !== undefined) data.seats = validated.available_seats;
+	if (validated.trip_datetime !== undefined) data.dateTrip = new Date(validated.trip_datetime);
+	return data;
+}
+
+async function replaceCityTrip(prisma: PrismaClient, tripRefId: number, cityName: string, type: 'DEPARTURE' | 'ARRIVAL'): Promise<void> {
+	const cityRefId = await findOrCreateCityRefId(cityName);
+	await prisma.cityTrip.deleteMany({ where: { tripRefId, type } });
+	await prisma.cityTrip.create({ data: { tripRefId, cityRefId, type } });
+}
+
+function isPrismaNotFound(e: unknown): boolean {
+	return e !== null && typeof e === 'object' && 'code' in e && (e as Record<string, unknown>).code === 'P2025';
+}
+
 export async function vpPatchTrip(c: Context): Promise<Response> {
 	const id = uuidSchema.parse(c.req.param('id'));
 	const body = await c.req.json();
 	const validated = vpPatchTripSchema.parse(body);
 
-	const data: Record<string, unknown> = {};
-	if (validated.kms !== undefined) data.kms = validated.kms;
-	if (validated.available_seats !== undefined) data.seats = validated.available_seats;
-	if (validated.trip_datetime !== undefined) data.dateTrip = new Date(validated.trip_datetime);
-
+	const data = buildScalarUpdates(validated);
 	const hasScalarUpdates = Object.keys(data).length > 0;
 	const hasAddressUpdates = validated.starting_address !== undefined || validated.arrival_address !== undefined;
 
@@ -136,33 +150,17 @@ export async function vpPatchTrip(c: Context): Promise<Response> {
 		if (hasScalarUpdates) {
 			await prisma.trip.update({ where: { id }, data });
 		}
-
-		// Update departure city
 		if (validated.starting_address) {
-			const cityRefId = await findOrCreateCityRefId(validated.starting_address.city_name);
-			await prisma.cityTrip.deleteMany({
-				where: { tripRefId: trip.refId, type: 'DEPARTURE' },
-			});
-			await prisma.cityTrip.create({
-				data: { tripRefId: trip.refId, cityRefId, type: 'DEPARTURE' },
-			});
+			await replaceCityTrip(prisma, trip.refId, validated.starting_address.city_name, 'DEPARTURE');
 		}
-
-		// Update arrival city
 		if (validated.arrival_address) {
-			const cityRefId = await findOrCreateCityRefId(validated.arrival_address.city_name);
-			await prisma.cityTrip.deleteMany({
-				where: { tripRefId: trip.refId, type: 'ARRIVAL' },
-			});
-			await prisma.cityTrip.create({
-				data: { tripRefId: trip.refId, cityRefId, type: 'ARRIVAL' },
-			});
+			await replaceCityTrip(prisma, trip.refId, validated.arrival_address.city_name, 'ARRIVAL');
 		}
 
 		const updated = await prisma.trip.findUnique({ where: { id } });
 		return c.json({ success: true, data: updated });
 	} catch (e: unknown) {
-		if (e && typeof e === 'object' && 'code' in e && (e as Record<string, unknown>).code === 'P2025') {
+		if (isPrismaNotFound(e)) {
 			return c.json(
 				{ success: false, error: { code: 'TRIP_NOT_FOUND', message: `Trip not found: ${id}` } },
 				404,
