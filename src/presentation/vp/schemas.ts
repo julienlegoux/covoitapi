@@ -22,12 +22,14 @@ export const vpCreatePersonSchema = z.object({
 	firstname: z.string().min(1, 'First name is required'),
 	lastname: z.string().min(1, 'Last name is required'),
 	phone: z.string().min(10, 'Phone must be at least 10 characters'),
+	pseudo: z.string().optional(),
 });
 
 export const vpPatchPersonSchema = z.object({
 	firstname: z.string().min(1).optional(),
 	lastname: z.string().min(1).optional(),
 	phone: z.string().min(10).optional(),
+	pseudo: z.string().optional(),
 	status: z.string().optional(),
 });
 
@@ -61,5 +63,5 @@ export const vpPatchTripSchema = z.object({
 });
 
 export const vpTripInscriptionSchema = z.object({
-	person_id: z.number().int().positive('Person ID must be a positive integer'),
+	person_id: z.string().uuid('Person ID must be a valid UUID'),
 });

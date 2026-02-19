@@ -102,6 +102,19 @@ export class PrismaBrandRepository implements BrandRepository {
 	 */
 	async delete(id: string): Promise<Result<void, DatabaseError | RelationConstraintError>> {
 		try {
+			const brand = await this.prisma.brand.findUnique({ where: { id } });
+			if (!brand) {
+				return ok(undefined);
+			}
+
+			// Delete orphaned models (no cars referencing them) before deleting the brand
+			await this.prisma.model.deleteMany({
+				where: {
+					brandRefId: brand.refId,
+					cars: { none: {} },
+				},
+			});
+
 			await this.prisma.brand.delete({
 				where: { id },
 			});

@@ -15,7 +15,7 @@ import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import { DatabaseError } from '../../../lib/errors/repository.errors.js';
 import { createMockLogger } from '../../../../tests/setup.js';
 
-/** Creates a mock PrismaClient with stubbed brand model methods. */
+/** Creates a mock PrismaClient with stubbed brand and model methods. */
 function createMockPrisma() {
     return {
         brand: {
@@ -24,6 +24,9 @@ function createMockPrisma() {
             create: vi.fn(),
             delete: vi.fn(),
             count: vi.fn(),
+        },
+        model: {
+            deleteMany: vi.fn(),
         },
     };
 }
@@ -212,6 +215,8 @@ describe('PrismaBrandRepository', () => {
 
     describe('delete()', () => {
         it('should return ok(undefined) on successful deletion', async () => {
+            mockPrisma.brand.findUnique.mockResolvedValue(mockBrand);
+            mockPrisma.model.deleteMany.mockResolvedValue({ count: 0 });
             mockPrisma.brand.delete.mockResolvedValue({});
 
             const result = await repository.delete('brand-123');
@@ -220,12 +225,26 @@ describe('PrismaBrandRepository', () => {
             if (result.success) {
                 expect(result.value).toBeUndefined();
             }
+            expect(mockPrisma.model.deleteMany).toHaveBeenCalledWith({
+                where: { brandRefId: mockBrand.refId, cars: { none: {} } },
+            });
             expect(mockPrisma.brand.delete).toHaveBeenCalledWith({
                 where: { id: 'brand-123' },
             });
         });
 
+        it('should return ok(undefined) when brand not found', async () => {
+            mockPrisma.brand.findUnique.mockResolvedValue(null);
+
+            const result = await repository.delete('non-existent');
+
+            expect(result.success).toBe(true);
+            expect(mockPrisma.brand.delete).not.toHaveBeenCalled();
+        });
+
         it('should return err(DatabaseError) on Prisma error', async () => {
+            mockPrisma.brand.findUnique.mockResolvedValue(mockBrand);
+            mockPrisma.model.deleteMany.mockResolvedValue({ count: 0 });
             mockPrisma.brand.delete.mockRejectedValue(new Error('FK constraint violation'));
 
             const result = await repository.delete('brand-123');
@@ -234,17 +253,6 @@ describe('PrismaBrandRepository', () => {
             if (!result.success) {
                 expect(result.error).toBeInstanceOf(DatabaseError);
                 expect(result.error.message).toBe('Failed to delete brand');
-            }
-        });
-
-        it('should return err(DatabaseError) when record not found for deletion', async () => {
-            mockPrisma.brand.delete.mockRejectedValue(new Error('Record not found'));
-
-            const result = await repository.delete('non-existent');
-
-            expect(result.success).toBe(false);
-            if (!result.success) {
-                expect(result.error).toBeInstanceOf(DatabaseError);
             }
         });
     });

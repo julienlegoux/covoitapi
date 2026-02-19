@@ -15,6 +15,15 @@ import { uuidSchema } from '../../../application/schemas/common.schema.js';
 import { vpCreateCarSchema } from '../schemas.js';
 import type { PrismaClient } from '../../../infrastructure/database/generated/prisma/client.js';
 
+async function enrichCarWithModel(car: { id: string; refId: number; licensePlate: string; modelRefId: number; driverRefId: number }) {
+	const prisma = container.resolve<PrismaClient>(TOKENS.PrismaClient);
+	const model = await prisma.model.findUnique({
+		where: { refId: car.modelRefId },
+		select: { name: true },
+	});
+	return { ...car, model: model?.name ?? null };
+}
+
 async function resolveBrandByName(brandName: string, c: Context) {
 	const brandRepo = container.resolve<BrandRepository>(TOKENS.BrandRepository);
 	const brandsResult = await brandRepo.findAll();
@@ -58,7 +67,8 @@ export async function vpGetCar(c: Context): Promise<Response> {
 			404,
 		);
 	}
-	return c.json({ success: true, data: result.value });
+	const enriched = await enrichCarWithModel(result.value);
+	return c.json({ success: true, data: enriched });
 }
 
 export async function vpCreateCar(c: Context): Promise<Response> {
@@ -88,7 +98,8 @@ export async function vpCreateCar(c: Context): Promise<Response> {
 		});
 	}
 
-	return resultToResponse(c, result, 201);
+	const enriched = await enrichCarWithModel(result.value);
+	return c.json({ success: true, data: enriched }, 201);
 }
 
 export async function vpUpdateCar(c: Context): Promise<Response> {
@@ -116,7 +127,8 @@ export async function vpUpdateCar(c: Context): Promise<Response> {
 		});
 	}
 
-	return resultToResponse(c, result);
+	const enriched = await enrichCarWithModel(result.value);
+	return c.json({ success: true, data: enriched });
 }
 
 export async function vpDeleteCar(c: Context): Promise<Response> {

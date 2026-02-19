@@ -238,20 +238,9 @@ export async function vpCreateTripInscription(c: Context): Promise<Response> {
 	const authenticatedUserId = c.get('userId') as string;
 	const role = c.get('role') as string;
 
-	// Resolve integer person_id (refId) to UUID
-	const prisma = container.resolve<PrismaClient>(TOKENS.PrismaClient);
-	const user = await prisma.user.findUnique({
-		where: { refId: validated.person_id },
-		select: { id: true },
-	});
-	if (!user) {
-		return c.json(
-			{ success: false, error: { code: 'PERSON_NOT_FOUND', message: `Person not found with id: ${validated.person_id}` } },
-			404,
-		);
-	}
+	const personId = validated.person_id;
 
-	if (user.id !== authenticatedUserId && role !== 'ADMIN') {
+	if (personId !== authenticatedUserId && role !== 'ADMIN') {
 		return c.json(
 			{ success: false, error: { code: 'FORBIDDEN', message: 'person_id does not match authenticated user' } },
 			403,
@@ -260,7 +249,7 @@ export async function vpCreateTripInscription(c: Context): Promise<Response> {
 
 	const input: WithAuthContext<CreateInscriptionSchemaType> = {
 		tripId,
-		userId: user.id,
+		userId: personId,
 	};
 
 	const useCase = container.resolve(CreateInscriptionUseCase);

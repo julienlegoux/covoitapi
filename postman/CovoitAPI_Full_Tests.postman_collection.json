@@ -8,11 +8,11 @@
 	"variable": [
 		{
 			"key": "baseUrl",
-			"value": "https://covoitapi-git-develop-julien-legouxs-projects.vercel.app/api"
+			"value": "https://covoitapi.vercel.app/api"
 		},
 		{
 			"key": "baseUrlVp",
-			"value": "https://covoitapi-git-develop-julien-legouxs-projects.vercel.app/api/vp"
+			"value": "https://covoitapi.vercel.app/api/vp"
 		},
 		{
 			"key": "token",
@@ -68,11 +68,11 @@
 		},
 		{
 			"key": "adminEmail",
-			"value": "admin@covoitapi.com"
+			"value": "admin@covoitapi.test"
 		},
 		{
 			"key": "adminPassword",
-			"value": "Admin123!"
+			"value": "AdminPassword1"
 		},
 		{
 			"key": "vpToken",
@@ -645,7 +645,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n  \"licenseNumber\": \"DRV-TEST-12345\"\n}"
+									"raw": "{\n  \"driverLicense\": \"DRV-TEST-12345\"\n}"
 								},
 								"url": {
 									"raw": "{{baseUrl}}/v1/drivers",
@@ -670,7 +670,7 @@
 											"const body = pm.response.json();",
 											"pm.test('Response has success:true', () => pm.expect(body.success).to.eql(true));",
 											"pm.test('Has id (UUID)', () => pm.expect(body.data.id).to.be.a('string'));",
-											"pm.test('licenseNumber matches input', () => pm.expect(body.data.licenseNumber).to.eql('DRV-TEST-12345'));",
+											"pm.test('driverLicense matches input', () => pm.expect(body.data.driverLicense).to.eql('DRV-TEST-12345'));",
 											"if (body.data) {",
 											"    pm.collectionVariables.set('driverId', body.data.id);",
 											"}"
@@ -3761,6 +3761,52 @@
 									}
 								}
 							]
+						},
+						{
+							"name": "VP Admin Login",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "x-vercel-protection-bypass",
+										"value": "{{bypassToken}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrlVp}}/login",
+									"host": [
+										"{{baseUrlVp}}"
+									],
+									"path": [
+										"login"
+									]
+								}
+							},
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"pm.test('Status 200 - VP Admin login successful', () => pm.response.to.have.status(200));",
+											"pm.test('Response is JSON', () => pm.response.to.be.json);",
+											"pm.test('Response time < 5s', () => pm.expect(pm.response.responseTime).to.be.below(5000));",
+											"const body = pm.response.json();",
+											"pm.test('Response has success:true', () => pm.expect(body.success).to.eql(true));",
+											"pm.test('Response contains admin token', () => pm.expect(body.data.token).to.be.a('string'));",
+											"if (body.data) { pm.collectionVariables.set('adminToken', body.data.token); }"
+										]
+									}
+								}
+							]
 						}
 					]
 				},
@@ -3928,8 +3974,8 @@
 								"method": "GET",
 								"header": [
 									{
-										"key": "x-auth-token",
-										"value": "{{vpToken}}"
+										"key": "Authorization",
+										"value": "Bearer {{adminToken}}"
 									},
 									{
 										"key": "x-vercel-protection-bypass",
@@ -4389,7 +4435,7 @@
 								},
 								"body": {
 									"mode": "raw",
-									"raw": "{\n  \"licenseNumber\": \"VP-DRV-12345\"\n}"
+									"raw": "{\n  \"driverLicense\": \"VP-DRV-12345\"\n}"
 								}
 							},
 							"event": [
@@ -5027,8 +5073,8 @@
 								"method": "GET",
 								"header": [
 									{
-										"key": "x-auth-token",
-										"value": "{{vpToken}}"
+										"key": "Authorization",
+										"value": "Bearer {{adminToken}}"
 									},
 									{
 										"key": "x-vercel-protection-bypass",
@@ -5625,8 +5671,8 @@
 								"method": "DELETE",
 								"header": [
 									{
-										"key": "x-auth-token",
-										"value": "{{vpToken}}"
+										"key": "Authorization",
+										"value": "Bearer {{adminToken}}"
 									},
 									{
 										"key": "x-vercel-protection-bypass",
@@ -5663,8 +5709,8 @@
 								"method": "DELETE",
 								"header": [
 									{
-										"key": "x-auth-token",
-										"value": "{{vpInscriptionToken}}"
+										"key": "Authorization",
+										"value": "Bearer {{adminToken}}"
 									},
 									{
 										"key": "x-vercel-protection-bypass",
