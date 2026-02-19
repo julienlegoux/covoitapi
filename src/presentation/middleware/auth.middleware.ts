@@ -2,7 +2,7 @@
  * @module AuthMiddleware
  * JWT authentication middleware for the Hono request pipeline.
  *
- * Extracts the bearer token from the `x-auth-token` request header,
+ * Extracts the JWT from the `Authorization: Bearer <token>` or `x-auth-token` header,
  * verifies it via the injected JwtService, and sets `userId` and `role`
  * on the Hono context for downstream handlers.
  *
@@ -25,7 +25,7 @@ import { getHttpStatus } from '../../lib/errors/error-registry.js';
 /**
  * Creates a Hono middleware that authenticates requests via JWT.
  *
- * Reads the `x-auth-token` header, verifies it, and populates the context
+ * Reads the `Authorization: Bearer` or `x-auth-token` header, verifies it, and populates the context
  * with `userId` and `role`. Returns an error response if the token is
  * missing, expired, invalid, or malformed.
  *
@@ -35,7 +35,9 @@ import { getHttpStatus } from '../../lib/errors/error-registry.js';
  */
 export function createAuthMiddleware(jwtService: JwtService, logger: Logger) {
 	return async (c: Context, next: Next): Promise<Response | undefined> => {
-		const token = c.req.header('x-auth-token');
+		const authHeader = c.req.header('Authorization');
+		const token = (authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : undefined)
+			?? c.req.header('x-auth-token');
 
 		if (!token) {
 			logger.warn('Auth failed: missing token', {

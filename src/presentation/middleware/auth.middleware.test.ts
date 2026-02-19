@@ -11,12 +11,16 @@ import { ok, err } from '../../lib/shared/types/result.js';
 import { TokenExpiredError, TokenInvalidError, TokenMalformedError } from '../../lib/errors/jwt.errors.js';
 import { createMockLogger } from '../../../tests/setup.js';
 
-function createMockContext(token?: string) {
+function createMockContext(token?: string, via: 'x-auth-token' | 'bearer' = 'x-auth-token') {
 	const jsonMock = vi.fn((body, status) => ({ body, status }));
 	const setMock = vi.fn();
 	return {
 		req: {
-			header: vi.fn((name: string) => (name === 'x-auth-token' ? token : undefined)),
+			header: vi.fn((name: string) => {
+				if (via === 'bearer' && name === 'Authorization' && token) return `Bearer ${token}`;
+				if (via === 'x-auth-token' && name === 'x-auth-token') return token;
+				return undefined;
+			}),
 			path: '/test',
 			method: 'GET',
 		},
@@ -147,5 +151,39 @@ describe('authMiddleware', () => {
 			},
 		});
 		expect(mockNext).not.toHaveBeenCalled();
+	});
+
+	it('should accept Authorization Bearer header', async () => {
+		mockJwtService.verify.mockResolvedValue(ok({ userId: 'user-456', role: 'USER' }));
+		const ctx = createMockContext('bearer-token', 'bearer');
+
+		await authMiddleware(ctx, mockNext);
+
+		expect(mockJwtService.verify).toHaveBeenCalledWith('bearer-token');
+		expect(ctx._getSetCalls()).toContainEqual(['userId', 'user-456']);
+		expect(mockNext).toHaveBeenCalled();
+	});
+
+	it('should prefer Authorization Bearer over x-auth-token', async () => {
+		mockJwtService.verify.mockResolvedValue(ok({ userId: 'user-789', role: 'USER' }));
+		const jsonMock = vi.fn((body, status) => ({ body, status }));
+		const setMock = vi.fn();
+		const ctx = {
+			req: {
+				header: vi.fn((name: string) => {
+					if (name === 'Authorization') return 'Bearer bearer-token';
+					if (name === 'x-auth-token') return 'custom-token';
+					return undefined;
+				}),
+				path: '/test',
+				method: 'GET',
+			},
+			json: jsonMock,
+			set: setMock,
+		} as unknown as Context;
+
+		await authMiddleware(ctx, mockNext);
+
+		expect(mockJwtService.verify).toHaveBeenCalledWith('bearer-token');
 	});
 });
