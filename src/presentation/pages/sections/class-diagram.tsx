@@ -41,24 +41,24 @@ classDiagram
         +create(driverLicense) Driver
     }
 
-    class Travel {
+    class Trip {
         +UUID id
         +Int refId
-        +DateTime dateRoute
+        +DateTime dateTrip
         +Int kms
         +Int seats
         +Int driverRefId
         +Int carRefId
-        +create() Travel
+        +create() Trip
         +delete() void
-        +search(departure, arrival, date) Travel[]
+        +search(departure, arrival, date) Trip[]
     }
 
     class Inscription {
         +UUID id
         +Int refId
         +Int userRefId
-        +Int routeRefId
+        +Int tripRefId
         +InscriptionStatus status
         +DateTime createdAt
         +create() Inscription
@@ -74,17 +74,19 @@ classDiagram
         +delete() void
     }
 
-    class CityTravel {
-        +Int routeRefId
+    class CityTrip {
+        +Int tripRefId
         +Int cityRefId
-        +CityTravelType type
+        +CityTripType type
     }
 
     class Car {
         +UUID id
         +Int refId
         +String immat
+        +Int seats
         +Int modelRefId
+        +Int driverRefId
         +create() Car
         +update() Car
         +delete() void
@@ -118,11 +120,12 @@ classDiagram
     Auth "1" --> "1" User : authentifie
     User "1" --> "0..1" Driver : devient conducteur
     User "1" --> "*" Inscription : reserve
-    Driver "1" --> "*" Travel : publie
-    Travel "1" --> "*" Inscription : contient
-    Travel "1" --> "2" CityTravel : depart et arrivee
-    Travel "*" --> "1" Car : utilise
-    City "1" --> "*" CityTravel : reference
+    Driver "1" --> "*" Trip : publie
+    Driver "1" --> "*" Car : possede
+    Trip "1" --> "*" Inscription : contient
+    Trip "1" --> "2" CityTrip : depart et arrivee
+    Trip "*" --> "1" Car : utilise
+    City "1" --> "*" CityTrip : reference
     Car "*" --> "1" Model : est un modele
     Model "*" --> "1" Brand : est de marque
     Model "*" --> "*" Color : disponible en

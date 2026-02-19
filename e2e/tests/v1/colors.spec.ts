@@ -61,7 +61,7 @@ test.describe('POST /api/v1/colors', () => {
 		expect(body.data.hex).toBeDefined();
 	});
 
-	test('invalid hex returns 500 (unhandled ZodError)', async ({ request }) => {
+	test('invalid hex returns 400 validation error', async ({ request }) => {
 		const { token } = await loginAdmin(request);
 
 		const res = await request.post('/api/v1/colors', {
@@ -69,7 +69,7 @@ test.describe('POST /api/v1/colors', () => {
 			data: colorPayload('BadHex', 'not-a-hex'),
 		});
 
-		expect(res.status()).toBe(500);
+		expect(res.status()).toBe(400);
 	});
 });
 

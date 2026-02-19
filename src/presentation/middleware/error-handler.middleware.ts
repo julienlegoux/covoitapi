@@ -1,20 +1,19 @@
 /**
- * @module ErrorHandlerMiddleware
- * Global error-handling middleware for the Hono request pipeline.
+ * @module ErrorHandler
+ * Global error handler for the Hono application.
  *
- * Wraps the downstream handler chain in a try/catch and converts thrown
- * errors into structured JSON error responses. Handles three error categories:
+ * Registered via `app.onError()` (NOT as middleware) because Hono's internal
+ * compose function intercepts errors at each dispatch level before they can
+ * reach middleware try/catch blocks.
  *
+ * Handles three error categories:
  * 1. **ZodError** (validation) -- 400 with field-level details
  * 2. **DomainError** (business logic) -- mapped HTTP status from error registry
  * 3. **Unknown errors** -- 500 INTERNAL_ERROR (logged, message hidden from client)
  *
- * **Pipeline position:** Should be registered early (before route handlers)
- * so it catches errors from all downstream middleware and controllers.
- *
  * **Response shape:** `{ success: false, error: { code, message, details? } }`
  */
-import type { Context, Next } from 'hono';
+import type { Context } from 'hono';
 import type { ContentfulStatusCode } from 'hono/utils/http-status';
 import { DomainError } from '../../lib/errors/domain.errors.js';
 import { getHttpStatus, isErrorCode } from '../../lib/errors/error-registry.js';
@@ -23,8 +22,8 @@ import type { ErrorResponse } from '../../lib/errors/error.types.js';
 
 /**
  * Duck-type check for ZodError compatible with Zod v4.
- * Zod v4 builds ZodError via `$constructor` with `Object` as parent (not `Error`),
- * so neither `instanceof Error` nor `instanceof ZodError` work reliably.
+ * Zod v4 builds ZodError via `$constructor`, so `instanceof ZodError`
+ * is unreliable across ESM/CJS boundaries.
  */
 function isZodError(error: unknown): error is { issues: { path: (string | number)[]; message: string }[] } {
 	if (typeof error !== 'object' || error === null) return false;
@@ -33,33 +32,22 @@ function isZodError(error: unknown): error is { issues: { path: (string | number
 }
 
 /**
- * Creates a Hono middleware that catches errors thrown by downstream handlers
- * and converts them to standardized JSON error responses.
+ * Creates a Hono `onError` handler that converts thrown errors into
+ * structured JSON error responses.
  *
  * @param logger - Logger instance for logging unexpected errors
- * @returns Hono middleware function
+ * @returns Hono error handler function for use with `app.onError()`
  */
 export function createErrorHandler(logger: Logger) {
-	return async (c: Context, next: Next): Promise<Response | undefined> => {
-		try {
-			await next();
-		} catch (error) {
-			const response = buildErrorResponse(error, logger);
-			const status = getStatusCode(error);
-			return c.json(response, status as ContentfulStatusCode);
-		}
+	return (error: Error, c: Context): Response => {
+		const response = buildErrorResponse(error, logger);
+		const status = getStatusCode(error);
+		return c.json(response, status as ContentfulStatusCode);
 	};
 }
 
 /**
  * Builds a structured ErrorResponse from a caught error.
- * - ZodError: extracts per-field validation messages into a `details` map
- * - DomainError: uses the error's code and message directly
- * - Unknown: logs the error and returns a generic INTERNAL_ERROR
- *
- * @param error - The caught error (any type)
- * @param logger - Logger instance for logging unexpected errors
- * @returns Structured error response object
  */
 function buildErrorResponse(error: unknown, logger: Logger): ErrorResponse {
 	if (isZodError(error)) {
@@ -103,12 +91,6 @@ function buildErrorResponse(error: unknown, logger: Logger): ErrorResponse {
 
 /**
  * Determines the HTTP status code for a given error type.
- * - ZodError: 400 (Bad Request)
- * - DomainError: looked up from the error registry, or 400 if unknown
- * - Other: 500 (Internal Server Error)
- *
- * @param error - The caught error (any type)
- * @returns HTTP status code number
  */
 function getStatusCode(error: unknown): number {
 	if (isZodError(error)) {

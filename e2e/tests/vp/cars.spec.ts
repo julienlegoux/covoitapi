@@ -106,13 +106,13 @@ test.describe('POST /api/vp/cars', () => {
 		expect(body.success).toBe(false);
 	});
 
-	test('missing fields returns 500 (unhandled ZodError)', async ({ request }) => {
+	test('missing fields returns 400 validation error', async ({ request }) => {
 		const res = await request.post('/api/vp/cars', {
 			headers: authHeader(driverToken),
 			data: { model: 'OnlyModel' },
 		});
 
-		expect(res.status()).toBe(500);
+		expect(res.status()).toBe(400);
 	});
 });
 

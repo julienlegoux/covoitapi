@@ -46,7 +46,7 @@ test.describe('POST /api/vp/register', () => {
 		expect(body.success).toBe(false);
 	});
 
-	test('weak password returns 500 (unhandled ZodError)', async ({ request }) => {
+	test('weak password returns 400 validation error', async ({ request }) => {
 		const email = `vp-weak-${Date.now()}@e2e.test`;
 
 		const res = await request.post('/api/vp/register', {
@@ -54,16 +54,16 @@ test.describe('POST /api/vp/register', () => {
 			data: { email, password: '123' },
 		});
 
-		expect(res.status()).toBe(500);
+		expect(res.status()).toBe(400);
 	});
 
-	test('empty body returns 500 (unhandled ZodError)', async ({ request }) => {
+	test('empty body returns 400 validation error', async ({ request }) => {
 		const res = await request.post('/api/vp/register', {
 			headers: forwardedFor(),
 			data: {},
 		});
 
-		expect(res.status()).toBe(500);
+		expect(res.status()).toBe(400);
 	});
 });
 
@@ -99,12 +99,12 @@ test.describe('POST /api/vp/login', () => {
 		expect(body.success).toBe(false);
 	});
 
-	test('empty body returns 500 (unhandled ZodError)', async ({ request }) => {
+	test('empty body returns 400 validation error', async ({ request }) => {
 		const res = await request.post('/api/vp/login', {
 			headers: forwardedFor(),
 			data: {},
 		});
 
-		expect(res.status()).toBe(500);
+		expect(res.status()).toBe(400);
 	});
 });

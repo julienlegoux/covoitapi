@@ -79,11 +79,11 @@ export const EntitiesSection = () => (
         <EntityCard
           icon="T"
           iconStyle="background:rgba(52,211,153,0.15);color:var(--accent-3);"
-          title="Travel (Trajet)"
+          title="Trip (Trajet)"
           fields={[
             { type: 'UUID', name: 'id', badge: 'pk' },
             { type: 'Int', name: 'refId' },
-            { type: 'DateTime', name: 'dateRoute' },
+            { type: 'DateTime', name: 'dateTrip' },
             { type: 'Int', name: 'kms' },
             { type: 'Int', name: 'seats' },
             { type: 'Int', name: 'driverRefId', badge: 'fk' },
@@ -99,8 +99,8 @@ export const EntitiesSection = () => (
             { type: 'UUID', name: 'id', badge: 'pk' },
             { type: 'Int', name: 'refId' },
             { type: 'Int', name: 'userRefId', badge: 'fk' },
-            { type: 'Int', name: 'routeRefId', badge: 'fk' },
-            { type: 'Status', name: 'status' },
+            { type: 'Int', name: 'tripRefId', badge: 'fk' },
+            { type: 'InscriptionStatus', name: 'status' },
             { type: 'DateTime', name: 'createdAt' },
           ]}
         />
@@ -120,9 +120,9 @@ export const EntitiesSection = () => (
         <EntityCard
           icon="CT"
           iconStyle="background:rgba(59,130,246,0.15);color:var(--info);"
-          title="CityTravel (Ville-Trajet)"
+          title="CityTrip (Ville-Trajet)"
           fields={[
-            { type: 'Int', name: 'routeRefId', badge: 'pk-fk' },
+            { type: 'Int', name: 'tripRefId', badge: 'pk-fk' },
             { type: 'Int', name: 'cityRefId', badge: 'pk-fk' },
             { type: 'Enum', name: 'type' },
           ]}
@@ -136,7 +136,9 @@ export const EntitiesSection = () => (
             { type: 'UUID', name: 'id', badge: 'pk' },
             { type: 'Int', name: 'refId' },
             { type: 'String', name: 'immat' },
+            { type: 'Int?', name: 'seats' },
             { type: 'Int', name: 'modelRefId', badge: 'fk' },
+            { type: 'Int', name: 'driverRefId', badge: 'fk' },
           ]}
         />
 

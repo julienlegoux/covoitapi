@@ -85,7 +85,7 @@ test.describe('POST /api/v1/brands', () => {
 		expect(body.success).toBe(false);
 	});
 
-	test('empty name returns 500 (unhandled ZodError)', async ({ request }) => {
+	test('empty name returns 400 validation error', async ({ request }) => {
 		const { token } = await loginAdmin(request);
 
 		const res = await request.post('/api/v1/brands', {
@@ -93,7 +93,7 @@ test.describe('POST /api/v1/brands', () => {
 			data: { name: '' },
 		});
 
-		expect(res.status()).toBe(500);
+		expect(res.status()).toBe(400);
 	});
 });
 

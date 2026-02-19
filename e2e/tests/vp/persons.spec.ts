@@ -96,7 +96,7 @@ test.describe('POST /api/vp/persons', () => {
 		expect(res.status()).toBe(401);
 	});
 
-	test('missing fields returns 500 (unhandled ZodError)', async ({ request }) => {
+	test('missing fields returns 400 validation error', async ({ request }) => {
 		// Register first to get auth
 		const { token } = await registerUser(request);
 
@@ -105,7 +105,7 @@ test.describe('POST /api/vp/persons', () => {
 			data: { firstname: 'Only' },
 		});
 
-		expect(res.status()).toBe(500);
+		expect(res.status()).toBe(400);
 	});
 });
 

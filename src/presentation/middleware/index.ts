@@ -57,6 +57,6 @@ export const authMiddleware = (c: Context, next: Next) => resolve().authMiddlewa
 
 export const requireRole = (...roles: string[]) => resolve().requireRole(...roles);
 
-export const errorHandler = (c: Context, next: Next) => resolve().errorHandler(c, next);
+export const errorHandler = (err: Error, c: Context) => resolve().errorHandler(err, c);
 
 export const requestLogger = (c: Context, next: Next) => resolve().requestLogger(c, next);
