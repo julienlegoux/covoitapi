@@ -7,7 +7,7 @@ import { EntitiesSection } from './sections/entities.js';
 import { UseCasesSection } from './sections/use-cases.js';
 import { ClassDiagramSection } from './sections/class-diagram.js';
 import { SequencesSection } from './sections/sequences.js';
-import { ErdSection } from './sections/erd.js';
+import { McdSection } from './sections/mcd.js';
 import { RoutesSection } from './sections/routes-table.js';
 import { ArchitectureSection } from './sections/architecture.js';
 
@@ -30,7 +30,7 @@ const LandingPage = () => (
       <UseCasesSection />
       <ClassDiagramSection />
       <SequencesSection />
-      <ErdSection />
+      <McdSection />
       <RoutesSection />
       <ArchitectureSection />
 

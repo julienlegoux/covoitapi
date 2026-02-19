@@ -52,7 +52,7 @@ api.use('*', secureHeaders());
 api.use('*', cors({ origin: '*' }));
 api.use('*', requestLogger);
 api.use('*', bodyLimit({ maxSize: 1024 * 1024 }));
-api.use('*', errorHandler);
+api.onError(errorHandler);
 
 api.get("/health", (c) => {
 	return c.json({ status: "ok", timestamp: new Date().toISOString() });
