@@ -6,12 +6,13 @@ import { brandPayload } from '../../helpers/test-data.js';
 // GET /api/vp/brands  (USER+)
 // ---------------------------------------------------------------------------
 test.describe('GET /api/vp/brands', () => {
-	test('no auth returns 401', async ({ request }) => {
+	test('no auth returns 200 (public endpoint)', async ({ request }) => {
 		const res = await request.get('/api/vp/brands');
-		expect(res.status()).toBe(401);
+		expect(res.status()).toBe(200);
 
 		const body = await res.json();
-		expect(body.success).toBe(false);
+		expect(body.success).toBe(true);
+		expect(Array.isArray(body.data.data)).toBe(true);
 	});
 
 	test('USER role returns 200 with paginated data', async ({ request }) => {

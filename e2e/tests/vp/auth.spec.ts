@@ -19,7 +19,7 @@ test.describe('POST /api/vp/register', () => {
 
 		const res = await request.post('/api/vp/register', {
 			headers: forwardedFor(),
-			data: { email, password, confirmPassword: password },
+			data: { email, password },
 		});
 
 		expect(res.status()).toBe(201);
@@ -37,7 +37,7 @@ test.describe('POST /api/vp/register', () => {
 		// Attempt to register again with the same email via VP
 		const res = await request.post('/api/vp/register', {
 			headers: forwardedFor(),
-			data: { email, password, confirmPassword: password },
+			data: { email, password },
 		});
 
 		expect(res.status()).toBe(409);
@@ -51,18 +51,7 @@ test.describe('POST /api/vp/register', () => {
 
 		const res = await request.post('/api/vp/register', {
 			headers: forwardedFor(),
-			data: { email, password: '123', confirmPassword: '123' },
-		});
-
-		expect(res.status()).toBe(500);
-	});
-
-	test('mismatched passwords returns 500 (unhandled ZodError)', async ({ request }) => {
-		const email = `vp-mismatch-${Date.now()}@e2e.test`;
-
-		const res = await request.post('/api/vp/register', {
-			headers: forwardedFor(),
-			data: { email, password: 'StrongPass1', confirmPassword: 'Different1' },
+			data: { email, password: '123' },
 		});
 
 		expect(res.status()).toBe(500);

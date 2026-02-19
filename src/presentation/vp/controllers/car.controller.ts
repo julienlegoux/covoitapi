@@ -13,6 +13,7 @@ import type { WithAuthContext } from '../../../lib/shared/types/auth-context.js'
 import type { CreateCarSchemaType } from '../../../application/schemas/car.schema.js';
 import { uuidSchema } from '../../../application/schemas/common.schema.js';
 import { vpCreateCarSchema } from '../schemas.js';
+import type { PrismaClient } from '../../../infrastructure/database/generated/prisma/client.js';
 
 async function resolveBrandByName(brandName: string, c: Context) {
 	const brandRepo = container.resolve<BrandRepository>(TOKENS.BrandRepository);
@@ -60,7 +61,7 @@ export async function vpGetCar(c: Context): Promise<Response> {
 	return c.json({ success: true, data: result.value });
 }
 
-export async function vpCreateCar(c: Context): Promise<Response> { //TODO: missing seats
+export async function vpCreateCar(c: Context): Promise<Response> {
 	const body = await c.req.json();
 	const validated = vpCreateCarSchema.parse(body);
 
@@ -76,10 +77,21 @@ export async function vpCreateCar(c: Context): Promise<Response> { //TODO: missi
 
 	const useCase = container.resolve(CreateCarUseCase);
 	const result = await useCase.execute(input);
+	if (!result.success) return resultToResponse(c, result);
+
+	// Apply seats directly via Prisma (field not in use case)
+	if (validated.seats !== undefined) {
+		const prisma = container.resolve<PrismaClient>(TOKENS.PrismaClient);
+		await prisma.car.update({
+			where: { id: result.value.id },
+			data: { seats: validated.seats },
+		});
+	}
+
 	return resultToResponse(c, result, 201);
 }
 
-export async function vpUpdateCar(c: Context): Promise<Response> { //TODO: missing seats
+export async function vpUpdateCar(c: Context): Promise<Response> {
 	const id = uuidSchema.parse(c.req.param('id'));
 	const body = await c.req.json();
 	const validated = vpCreateCarSchema.parse(body);
@@ -93,6 +105,17 @@ export async function vpUpdateCar(c: Context): Promise<Response> { //TODO: missi
 		{ model: validated.model, brandId: resolved.brand.id, licensePlate: validated.carregistration },
 		c.get('userId'),
 	);
+	if (!result.success) return resultToResponse(c, result);
+
+	// Apply seats directly via Prisma (field not in use case)
+	if (validated.seats !== undefined) {
+		const prisma = container.resolve<PrismaClient>(TOKENS.PrismaClient);
+		await prisma.car.update({
+			where: { id },
+			data: { seats: validated.seats },
+		});
+	}
+
 	return resultToResponse(c, result);
 }
 

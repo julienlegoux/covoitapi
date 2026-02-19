@@ -62,6 +62,13 @@ export async function cleanDatabase(): Promise<void> {
 	await db.$executeRawUnsafe('DELETE FROM "cities"');
 }
 
+export async function getUserRefId(userId: string): Promise<number> {
+	const db = getClient();
+	const user = await db.user.findUnique({ where: { id: userId }, select: { refId: true } });
+	if (!user) throw new Error(`User not found: ${userId}`);
+	return user.refId;
+}
+
 export async function disconnect(): Promise<void> {
 	await prisma?.$disconnect();
 	await pool?.end();

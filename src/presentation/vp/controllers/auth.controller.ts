@@ -1,15 +1,20 @@
 import type { Context } from 'hono';
 import { RegisterUseCase } from '../../../application/use-cases/auth/register.use-case.js';
 import { LoginUseCase } from '../../../application/use-cases/auth/login.use-case.js';
-import { registerSchema, loginSchema } from '../../../application/schemas/auth.schema.js';
+import { loginSchema } from '../../../application/schemas/auth.schema.js';
 import { container } from '../../../lib/shared/di/container.js';
 import { resultToResponse } from '../../../lib/shared/utils/result-response.util.js';
+import { vpRegisterSchema } from '../schemas.js';
 
 export async function vpRegister(c: Context): Promise<Response> {
 	const body = await c.req.json();
-	const validated = registerSchema.parse(body);
+	const validated = vpRegisterSchema.parse(body);
 	const useCase = container.resolve(RegisterUseCase);
-	const result = await useCase.execute(validated);
+	const result = await useCase.execute({
+		email: validated.email,
+		password: validated.password,
+		confirmPassword: validated.password,
+	});
 	return resultToResponse(c, result, 201);
 }
 

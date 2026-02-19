@@ -95,11 +95,10 @@ export function vpCarPayload(brandName: string, overrides?: Partial<{
 
 export function vpTripPayload(
 	carId: string,
-	personId: string,
 	overrides?: Partial<{
 		kms: number;
 		trip_datetime: string;
-		seats: number;
+		available_seats: number;
 		startingCity: string;
 		arrivalCity: string;
 	}>,
@@ -109,9 +108,8 @@ export function vpTripPayload(
 		trip_datetime:
 			overrides?.trip_datetime ??
 			new Date(Date.now() + 86_400_000).toISOString(),
-		seats: overrides?.seats ?? 4,
+		available_seats: overrides?.available_seats ?? 4,
 		car_id: carId,
-		person_id: personId,
 		starting_address: {
 			city_name: overrides?.startingCity ?? `VpStart-${next()}`,
 		},

@@ -14,11 +14,12 @@ export function toVpPerson(user: PublicUserEntity): VpPersonResponse {
 	};
 }
 
-export function toVpCar(car: CarEntity): VpCarResponse {
+export function toVpCar(car: CarEntity & { seats?: number | null }): VpCarResponse {
 	return {
 		id: car.id,
 		carregistration: car.licensePlate,
 		model_ref_id: car.modelRefId,
 		driver_ref_id: car.driverRefId,
+		seats: car.seats ?? null,
 	};
 }
