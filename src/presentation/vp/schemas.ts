@@ -44,6 +44,7 @@ export const vpCreateBrandSchema = z.object({
 
 export const vpCreateTripSchema = z.object({
 	kms: z.number().int().positive('Kilometers must be positive'),
+	person_id: z.number().int().positive('Person ID must be a positive integer').optional(),
 	trip_datetime: z.string().min(1, 'Trip datetime is required'),
 	available_seats: z.number().int().positive('Seats must be positive'),
 	car_id: z.string().min(1, 'Car ID is required').optional(),
