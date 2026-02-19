@@ -6,7 +6,6 @@ import {
 	authHeader,
 } from '../../helpers/auth.helper.js';
 import { brandPayload, vpCarPayload, vpTripPayload } from '../../helpers/test-data.js';
-import { getUserRefId } from '../../helpers/db.js';
 
 // ---------------------------------------------------------------------------
 // Shared setup: admin creates a brand, driver creates a car via VP.
@@ -256,11 +255,10 @@ test.describe('POST /api/vp/trips/:id/person', () => {
 
 		// Register a second user (passenger)
 		const passenger = await registerUser(request);
-		const passengerRefId = await getUserRefId(passenger.userId);
 
 		const res = await request.post(`/api/vp/trips/${trip.id}/person`, {
 			headers: authHeader(passenger.token),
-			data: { person_id: passengerRefId },
+			data: { person_id: passenger.userId },
 		});
 
 		expect(res.status()).toBe(201);
@@ -278,13 +276,12 @@ test.describe('POST /api/vp/trips/:id/person', () => {
 		});
 		const { data: trip } = await createRes.json();
 
-		// Register a passenger but pass the driver's refId (different from passenger)
+		// Register a passenger but pass the driver's userId (different from passenger)
 		const passenger = await registerUser(request);
-		const driverRefId = await getUserRefId(driverUserId);
 
 		const res = await request.post(`/api/vp/trips/${trip.id}/person`, {
 			headers: authHeader(passenger.token),
-			data: { person_id: driverRefId },
+			data: { person_id: driverUserId },
 		});
 
 		expect(res.status()).toBe(403);
