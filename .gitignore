@@ -41,3 +41,6 @@ lerna-debug.log*
 .vercel
 .env*.local
 nul
+test-results/.last-run.json
+.gitignore
+9_Run E2E tests.txt

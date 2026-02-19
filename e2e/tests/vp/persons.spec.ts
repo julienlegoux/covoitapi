@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { registerUser, authHeader } from '../../helpers/auth.helper.js';
+import { registerUser, loginAdmin, authHeader } from '../../helpers/auth.helper.js';
 import { vpPersonPayload } from '../../helpers/test-data.js';
 
 /**
@@ -10,38 +10,71 @@ function forwardedFor(): Record<string, string> {
 }
 
 /**
- * Helper: create a VP person and return { id, token, ...personData }.
+ * Helper: register a user via VP, then update their profile via POST /api/vp/persons.
+ * Returns { id, firstname, lastname, phone, email, token }.
  */
 async function createVpPerson(request: import('@playwright/test').APIRequestContext) {
 	const payload = vpPersonPayload();
-	const res = await request.post('/api/vp/persons', {
+
+	// Step 1: Register via VP
+	const regRes = await request.post('/api/vp/register', {
 		headers: forwardedFor(),
-		data: payload,
+		data: { email: payload.email, password: payload.password },
 	});
-	const body = await res.json();
-	if (!body.success) {
-		throw new Error(`VP person creation failed: ${JSON.stringify(body)}`);
+	const regBody = await regRes.json();
+	if (!regBody.success) {
+		throw new Error(`VP registration failed: ${JSON.stringify(regBody)}`);
 	}
-	return body.data as {
-		id: string;
-		firstname: string;
-		lastname: string;
-		phone: string;
-		email: string;
-		token: string;
+	const token = regBody.data.token;
+	const userId = regBody.data.userId;
+
+	// Step 2: Update profile
+	const profileRes = await request.post('/api/vp/persons', {
+		headers: { ...forwardedFor(), ...authHeader(token) },
+		data: {
+			firstname: payload.firstname,
+			lastname: payload.lastname,
+			phone: payload.phone,
+		},
+	});
+	const profileBody = await profileRes.json();
+	if (!profileBody.success) {
+		throw new Error(`VP person profile update failed: ${JSON.stringify(profileBody)}`);
+	}
+
+	return {
+		id: userId,
+		firstname: payload.firstname,
+		lastname: payload.lastname,
+		phone: payload.phone,
+		email: payload.email,
+		token,
 	};
 }
 
 // ---------------------------------------------------------------------------
-// POST /api/vp/persons  (PUBLIC)
+// POST /api/vp/persons  (USER+ — updates profile for authenticated user)
 // ---------------------------------------------------------------------------
 test.describe('POST /api/vp/persons', () => {
 	test('creates a person with auth+user+profile (201)', async ({ request }) => {
 		const payload = vpPersonPayload();
 
-		const res = await request.post('/api/vp/persons', {
+		// Register first
+		const regRes = await request.post('/api/vp/register', {
 			headers: forwardedFor(),
-			data: payload,
+			data: { email: payload.email, password: payload.password },
+		});
+		const regBody = await regRes.json();
+		expect(regBody.success).toBe(true);
+
+		// Update profile with auth
+		const res = await request.post('/api/vp/persons', {
+			headers: { ...forwardedFor(), ...authHeader(regBody.data.token) },
+			data: {
+				firstname: payload.firstname,
+				lastname: payload.lastname,
+				phone: payload.phone,
+			},
 		});
 
 		expect(res.status()).toBe(201);
@@ -52,33 +85,23 @@ test.describe('POST /api/vp/persons', () => {
 		expect(body.data.firstname).toBe(payload.firstname);
 		expect(body.data.lastname).toBe(payload.lastname);
 		expect(body.data.email).toBe(payload.email);
-		expect(typeof body.data.token).toBe('string');
 	});
 
-	test('duplicate email returns 409', async ({ request }) => {
-		const payload = vpPersonPayload();
-
-		// Create once
-		await request.post('/api/vp/persons', {
-			headers: forwardedFor(),
-			data: payload,
-		});
-
-		// Create again with same email
+	test('no auth returns 401', async ({ request }) => {
 		const res = await request.post('/api/vp/persons', {
 			headers: forwardedFor(),
-			data: vpPersonPayload({ email: payload.email }),
+			data: { firstname: 'Test', lastname: 'User', phone: '0612345678' },
 		});
 
-		expect(res.status()).toBe(409);
-
-		const body = await res.json();
-		expect(body.success).toBe(false);
+		expect(res.status()).toBe(401);
 	});
 
 	test('missing fields returns 500 (unhandled ZodError)', async ({ request }) => {
+		// Register first to get auth
+		const { token } = await registerUser(request);
+
 		const res = await request.post('/api/vp/persons', {
-			headers: forwardedFor(),
+			headers: { ...forwardedFor(), ...authHeader(token) },
 			data: { firstname: 'Only' },
 		});
 
@@ -87,7 +110,7 @@ test.describe('POST /api/vp/persons', () => {
 });
 
 // ---------------------------------------------------------------------------
-// GET /api/vp/persons  (USER+)
+// GET /api/vp/persons  (ADMIN)
 // ---------------------------------------------------------------------------
 test.describe('GET /api/vp/persons', () => {
 	test('no auth returns 401', async ({ request }) => {
@@ -95,11 +118,12 @@ test.describe('GET /api/vp/persons', () => {
 		expect(res.status()).toBe(401);
 	});
 
-	test('authenticated user gets list (200)', async ({ request }) => {
-		const person = await createVpPerson(request);
+	test('admin gets list (200)', async ({ request }) => {
+		await createVpPerson(request);
+		const { token } = await loginAdmin(request);
 
 		const res = await request.get('/api/vp/persons', {
-			headers: authHeader(person.token),
+			headers: authHeader(token),
 		});
 
 		expect(res.status()).toBe(200);
@@ -130,11 +154,11 @@ test.describe('GET /api/vp/persons/:id', () => {
 	});
 
 	test('nonexistent person returns 404', async ({ request }) => {
-		const person = await createVpPerson(request);
+		const { token } = await loginAdmin(request);
 
 		const res = await request.get(
 			'/api/vp/persons/00000000-0000-0000-0000-000000000000',
-			{ headers: authHeader(person.token) },
+			{ headers: authHeader(token) },
 		);
 
 		expect(res.status()).toBe(404);
@@ -181,14 +205,15 @@ test.describe('PATCH /api/vp/persons/:id', () => {
 });
 
 // ---------------------------------------------------------------------------
-// DELETE /api/vp/persons/:id  (USER+)
+// DELETE /api/vp/persons/:id  (ADMIN)
 // ---------------------------------------------------------------------------
 test.describe('DELETE /api/vp/persons/:id', () => {
-	test('deletes (anonymizes) a person (204)', async ({ request }) => {
+	test('admin deletes (anonymizes) a person (204)', async ({ request }) => {
 		const person = await createVpPerson(request);
+		const { token } = await loginAdmin(request);
 
 		const res = await request.delete(`/api/vp/persons/${person.id}`, {
-			headers: authHeader(person.token),
+			headers: authHeader(token),
 		});
 
 		expect(res.status()).toBe(204);
