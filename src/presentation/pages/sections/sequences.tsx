@@ -21,7 +21,7 @@ sequenceDiagram
     participant DB as Neon PostgreSQL
 
     U->>App: Saisit email + password
-    App->>API: POST /api/auth/login {email, password}
+    App->>API: POST /api/v1/auth/login {email, password}
     API->>DB: SELECT auth WHERE email = ?
     DB-->>API: Auth trouve
     alt Password correct (Argon2)
@@ -43,7 +43,7 @@ sequenceDiagram
     participant DB as Neon PostgreSQL
 
     U->>App: Saisit email, password, confirmPassword
-    App->>API: POST /api/auth/register {email, password, confirmPassword}
+    App->>API: POST /api/v1/auth/register {email, password, confirmPassword}
     API->>API: Validation Zod (email, password min 8 chars)
     alt Validation echouee
         API-->>App: 400 {error VALIDATION_ERROR}
@@ -72,11 +72,11 @@ sequenceDiagram
     participant DB as Neon PostgreSQL
 
     U->>App: Accede a la liste des trajets
-    App->>API: GET /api/travels?page=1&limit=10 (x-auth-token)
+    App->>API: GET /api/v1/trips?page=1&limit=10 (x-auth-token)
     API->>API: authMiddleware verifie JWT
     alt Token valide
         API->>API: requireRole USER
-        API->>DB: SELECT travels + JOIN driver, car, cities
+        API->>DB: SELECT trips + JOIN driver, car, cities
         DB-->>API: Liste paginee des trajets
         API-->>App: 200 {items, total, page, limit}
         App-->>U: Affiche liste des trajets
@@ -94,11 +94,11 @@ sequenceDiagram
     participant DB as Neon PostgreSQL
 
     U->>App: Clic sur un trajet
-    App->>API: GET /api/travels/:id (x-auth-token)
+    App->>API: GET /api/v1/trips/:id (x-auth-token)
     API->>API: authMiddleware + requireRole USER
-    API->>DB: SELECT travel WHERE id + JOIN driver, car, cities
+    API->>DB: SELECT trip WHERE id + JOIN driver, car, cities
     DB-->>API: Detail du trajet complet
-    API-->>App: 200 {travel + driver + car + cities}
+    API-->>App: 200 {trip + driver + car + cities}
     App-->>U: Affiche detail du trajet
       `} />
 
@@ -111,11 +111,11 @@ sequenceDiagram
     participant DB as Neon PostgreSQL
 
     U->>App: Clic Reserver
-    App->>API: POST /api/inscriptions {travelId} (x-auth-token)
+    App->>API: POST /api/v1/inscriptions {tripId} (x-auth-token)
     API->>API: authMiddleware + requireRole USER
-    API->>DB: SELECT travel WHERE id = travelId
-    DB-->>API: Travel trouve
-    API->>DB: COUNT inscriptions WHERE routeRefId = ?
+    API->>DB: SELECT trip WHERE id = tripId
+    DB-->>API: Trip trouve
+    API->>DB: COUNT inscriptions WHERE tripRefId = ?
     DB-->>API: Nombre de reservations
 
     alt Places disponibles et pas deja inscrit
@@ -141,11 +141,11 @@ sequenceDiagram
     participant DB as Neon PostgreSQL
 
     U->>App: Saisit ville depart, ville arrivee, date
-    App->>API: GET /api/travels/search?departureCity=X&arrivalCity=Y&date=Z
+    App->>API: GET /api/v1/trips/search?departureCity=X&arrivalCity=Y&date=Z
     API->>API: authMiddleware + requireRole USER
-    API->>DB: SELECT travels WHERE cities match AND date
+    API->>DB: SELECT trips WHERE cities match AND date
     DB-->>API: Resultats
-    API-->>App: 200 [{travel1}, {travel2}, ...]
+    API-->>App: 200 [{trip1}, {trip2}, ...]
     App-->>U: Affiche resultats de recherche
       `} />
 
@@ -158,12 +158,12 @@ sequenceDiagram
     participant DB as Neon PostgreSQL
 
     D->>App: Saisit depart, arrivee, date, kms, seats, carId
-    App->>API: POST /api/travels {kms, date, departureCity, arrivalCity, seats, carId}
+    App->>API: POST /api/v1/trips {kms, date, departureCity, arrivalCity, seats, carId}
     API->>API: authMiddleware + requireRole DRIVER
     API->>API: Validation Zod
-    API->>DB: INSERT INTO routes + city_routes
-    DB-->>API: Travel cree
-    API-->>App: 201 {travel + driver + car + cities}
+    API->>DB: INSERT INTO trips + city_trips
+    DB-->>API: Trip cree
+    API-->>App: 201 {trip + driver + car + cities}
     App-->>D: Redirection vers Mes Trajets
       `} />
 
@@ -176,9 +176,9 @@ sequenceDiagram
     participant DB as Neon PostgreSQL
 
     D->>App: Clic Supprimer le trajet
-    App->>API: DELETE /api/travels/:id (x-auth-token)
+    App->>API: DELETE /api/v1/trips/:id (x-auth-token)
     API->>API: authMiddleware + requireRole DRIVER
-    API->>DB: DELETE FROM routes WHERE id (CASCADE inscriptions + city_routes)
+    API->>DB: DELETE FROM trips WHERE id (CASCADE inscriptions + city_trips)
     DB-->>API: OK
     API-->>App: 204 No Content
     App-->>D: Redirection vers Mes Trajets
@@ -193,7 +193,7 @@ sequenceDiagram
     participant DB as Neon PostgreSQL
 
     U->>App: Saisit numero de permis
-    App->>API: POST /api/drivers {driverLicense} (x-auth-token)
+    App->>API: POST /api/v1/drivers {driverLicense} (x-auth-token)
     API->>API: authMiddleware + requireRole USER
     alt Deja conducteur
         API-->>App: 409 {error DRIVER_ALREADY_EXISTS}
@@ -216,7 +216,7 @@ sequenceDiagram
     participant DB as Neon PostgreSQL
 
     U->>App: Demande suppression de compte
-    App->>API: DELETE /api/users/me (x-auth-token)
+    App->>API: DELETE /api/v1/users/me (x-auth-token)
     API->>API: authMiddleware + requireRole USER
     API->>DB: UPDATE user SET anonymizedAt, clear personal data
     DB-->>API: OK
