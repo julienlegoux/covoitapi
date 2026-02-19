@@ -13,7 +13,7 @@ export async function vpRegister(c: Context): Promise<Response> {
 	const result = await useCase.execute({
 		email: validated.email,
 		password: validated.password,
-		confirmPassword: validated.password,
+		confirmPassword: validated.confirmPassword,
 	});
 	return resultToResponse(c, result, 201);
 }

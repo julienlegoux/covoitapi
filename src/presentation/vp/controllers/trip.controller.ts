@@ -60,6 +60,15 @@ export async function vpCreateTrip(c: Context): Promise<Response> {
 	const body = await c.req.json();
 	const validated = vpCreateTripSchema.parse(body);
 	const userId = c.get('userId') as string;
+	const role = c.get('role') as string;
+
+	// Validate person_id matches authenticated user
+	if (validated.person_id !== userId && role !== 'ADMIN') {
+		return c.json(
+			{ success: false, error: { code: 'FORBIDDEN', message: 'person_id does not match authenticated user' } },
+			403,
+		);
+	}
 
 	let carId = validated.car_id;
 
@@ -92,7 +101,7 @@ export async function vpCreateTrip(c: Context): Promise<Response> {
 		date: validated.trip_datetime,
 		departureCity: validated.starting_address.city_name,
 		arrivalCity: validated.arrival_address.city_name,
-		seats: validated.available_seats,
+		seats: validated.seats,
 		carId,
 		userId,
 	};
@@ -102,10 +111,10 @@ export async function vpCreateTrip(c: Context): Promise<Response> {
 	return resultToResponse(c, result, 201);
 }
 
-function buildScalarUpdates(validated: { kms?: number; available_seats?: number; trip_datetime?: string }): Record<string, unknown> {
+function buildScalarUpdates(validated: { kms?: number; seats?: number; trip_datetime?: string }): Record<string, unknown> {
 	const data: Record<string, unknown> = {};
 	if (validated.kms !== undefined) data.kms = validated.kms;
-	if (validated.available_seats !== undefined) data.seats = validated.available_seats;
+	if (validated.seats !== undefined) data.seats = validated.seats;
 	if (validated.trip_datetime !== undefined) data.dateTrip = new Date(validated.trip_datetime);
 	return data;
 }
@@ -238,20 +247,8 @@ export async function vpCreateTripInscription(c: Context): Promise<Response> {
 	const authenticatedUserId = c.get('userId') as string;
 	const role = c.get('role') as string;
 
-	// Resolve integer person_id (refId) to UUID
-	const prisma = container.resolve<PrismaClient>(TOKENS.PrismaClient);
-	const user = await prisma.user.findUnique({
-		where: { refId: validated.person_id },
-		select: { id: true },
-	});
-	if (!user) {
-		return c.json(
-			{ success: false, error: { code: 'PERSON_NOT_FOUND', message: `Person not found with id: ${validated.person_id}` } },
-			404,
-		);
-	}
-
-	if (user.id !== authenticatedUserId && role !== 'ADMIN') {
+	// Check person_id matches authenticated user before any DB lookup
+	if (validated.person_id !== authenticatedUserId && role !== 'ADMIN') {
 		return c.json(
 			{ success: false, error: { code: 'FORBIDDEN', message: 'person_id does not match authenticated user' } },
 			403,
@@ -260,7 +257,7 @@ export async function vpCreateTripInscription(c: Context): Promise<Response> {
 
 	const input: WithAuthContext<CreateInscriptionSchemaType> = {
 		tripId,
-		userId: user.id,
+		userId: validated.person_id,
 	};
 
 	const useCase = container.resolve(CreateInscriptionUseCase);
