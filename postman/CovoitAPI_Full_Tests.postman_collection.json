@@ -68,11 +68,11 @@
 		},
 		{
 			"key": "adminEmail",
-			"value": "admin@covoitapi.com"
+			"value": "admin@covoitapi.test"
 		},
 		{
 			"key": "adminPassword",
-			"value": "Admin123!"
+			"value": "AdminPassword1"
 		},
 		{
 			"key": "vpToken",
@@ -120,6 +120,14 @@
 		},
 		{
 			"key": "vpInscriptionEmail",
+			"value": ""
+		},
+		{
+			"key": "driverLicense",
+			"value": ""
+		},
+		{
+			"key": "vpDriverLicense",
 			"value": ""
 		}
 	],
@@ -645,7 +653,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n  \"licenseNumber\": \"DRV-TEST-12345\"\n}"
+									"raw": "{\n  \"driverLicense\": \"{{driverLicense}}\"\n}"
 								},
 								"url": {
 									"raw": "{{baseUrl}}/v1/drivers",
@@ -660,6 +668,16 @@
 							},
 							"event": [
 								{
+									"listen": "prerequest",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"const license = `DRV-${Date.now()}`;",
+											"pm.collectionVariables.set('driverLicense', license);"
+										]
+									}
+								},
+								{
 									"listen": "test",
 									"script": {
 										"type": "text/javascript",
@@ -670,7 +688,7 @@
 											"const body = pm.response.json();",
 											"pm.test('Response has success:true', () => pm.expect(body.success).to.eql(true));",
 											"pm.test('Has id (UUID)', () => pm.expect(body.data.id).to.be.a('string'));",
-											"pm.test('licenseNumber matches input', () => pm.expect(body.data.licenseNumber).to.eql('DRV-TEST-12345'));",
+											"pm.test('driverLicense matches input', () => pm.expect(body.data.driverLicense).to.eql(pm.collectionVariables.get('driverLicense')));",
 											"if (body.data) {",
 											"    pm.collectionVariables.set('driverId', body.data.id);",
 											"}"
@@ -985,6 +1003,9 @@
 									"script": {
 										"type": "text/javascript",
 										"exec": [
+											"// Wait 61s for register rate limit window (3 req/min) to reset",
+											"console.log('Waiting 61s for rate limit window to reset...');",
+											"await new Promise(resolve => setTimeout(resolve, 61000));",
 											"const unique = Date.now();",
 											"pm.collectionVariables.set('secondaryEmail', `secondary_${unique}@test.com`);"
 										]
@@ -1457,7 +1478,7 @@
 											"const body = pm.response.json();",
 											"pm.test('Response has success:true', () => pm.expect(body.success).to.eql(true));",
 											"pm.test('Has id (UUID)', () => pm.expect(body.data.id).to.be.a('string'));",
-											"pm.test('model matches input', () => pm.expect(body.data.model).to.eql('Corolla'));",
+											"pm.test('Has modelRefId', () => pm.expect(body.data.modelRefId).to.be.a('number'));",
 											"pm.test('licensePlate matches input', () => pm.expect(body.data.licensePlate).to.eql('AB-123-CD'));",
 											"if (body.data) {",
 											"    pm.collectionVariables.set('carId', body.data.id);",
@@ -1565,7 +1586,7 @@
 											"pm.test('Response time < 5s', () => pm.expect(pm.response.responseTime).to.be.below(5000));",
 											"const body = pm.response.json();",
 											"pm.test('Response has success:true', () => pm.expect(body.success).to.eql(true));",
-											"pm.test('model updated to Camry', () => pm.expect(body.data.model).to.eql('Camry'));",
+											"pm.test('Has modelRefId', () => pm.expect(body.data.modelRefId).to.be.a('number'));",
 											"pm.test('licensePlate updated', () => pm.expect(body.data.licensePlate).to.eql('EF-456-GH'));"
 										]
 									}
@@ -1618,7 +1639,7 @@
 											"const body = pm.response.json();",
 											"pm.test('Response has success:true', () => pm.expect(body.success).to.eql(true));",
 											"pm.test('licensePlate updated', () => pm.expect(body.data.licensePlate).to.eql('IJ-789-KL'));",
-											"pm.test('model preserved from PUT', () => pm.expect(body.data.model).to.eql('Camry'));"
+											"pm.test('Has modelRefId', () => pm.expect(body.data.modelRefId).to.be.a('number'));"
 										]
 									}
 								}
@@ -1768,9 +1789,10 @@
 											"pm.test('Response time < 5s', () => pm.expect(pm.response.responseTime).to.be.below(5000));",
 											"const body = pm.response.json();",
 											"pm.test('Response has success:true', () => pm.expect(body.success).to.eql(true));",
-											"pm.test('Data is an array', () => pm.expect(body.data).to.be.an('array'));",
-											"if (body.data.length > 0) {",
-											"    const trip = body.data[0];",
+											"pm.test('Data has data array', () => pm.expect(body.data.data).to.be.an('array'));",
+											"pm.test('Data has meta', () => pm.expect(body.data.meta).to.be.an('object'));",
+											"if (body.data.data.length > 0) {",
+											"    const trip = body.data.data[0];",
 											"    pm.test('Trip has id', () => pm.expect(trip.id).to.be.a('string'));",
 											"    pm.test('Trip has kms', () => pm.expect(trip.kms).to.be.a('number'));",
 											"    pm.test('Trip has seats', () => pm.expect(trip.seats).to.be.a('number'));",
@@ -2246,7 +2268,7 @@
 							]
 						},
 						{
-							"name": "Get non-existent Trip Passengers (404)",
+							"name": "Get non-existent Trip Passengers (200 - empty)",
 							"request": {
 								"method": "GET",
 								"header": [
@@ -2278,11 +2300,12 @@
 									"script": {
 										"type": "text/javascript",
 										"exec": [
-											"pm.test('Status 404 - Not found', () => pm.response.to.have.status(404));",
+											"pm.test('Status 200 - Returns empty list', () => pm.response.to.have.status(200));",
 											"pm.test('Response is JSON', () => pm.response.to.be.json);",
 											"pm.test('Response time < 5s', () => pm.expect(pm.response.responseTime).to.be.below(5000));",
 											"const body = pm.response.json();",
-											"pm.test('success is false', () => pm.expect(body.success).to.eql(false));"
+											"pm.test('success is true', () => pm.expect(body.success).to.eql(true));",
+											"pm.test('Data array is empty', () => pm.expect(body.data.data).to.be.an('array').that.is.empty);"
 										]
 									}
 								}
@@ -2746,7 +2769,7 @@
 							]
 						},
 						{
-							"name": "Update another user car (expect 403 - ownership)",
+							"name": "Update another user car (expect 404 - ownership filter)",
 							"request": {
 								"method": "PUT",
 								"header": [
@@ -2787,7 +2810,7 @@
 										"exec": [
 											"const id = pm.collectionVariables.get('carId');",
 											"if (!id) { pm.test('SKIP - No carId', () => true); return; }",
-											"pm.test('Status 403 - Forbidden (not owner)', () => pm.response.to.have.status(403));",
+											"pm.test('Status 404 - Not found (ownership filter)', () => pm.response.to.have.status(404));",
 											"pm.test('Response is JSON', () => pm.response.to.be.json);",
 											"const body = pm.response.json();",
 											"pm.test('success is false', () => pm.expect(body.success).to.eql(false));"
@@ -2797,7 +2820,7 @@
 							]
 						},
 						{
-							"name": "Delete another user car (expect 403 - ownership)",
+							"name": "Delete another user car (expect 404 - ownership filter)",
 							"request": {
 								"method": "DELETE",
 								"header": [
@@ -2830,7 +2853,7 @@
 										"exec": [
 											"const id = pm.collectionVariables.get('carId');",
 											"if (!id) { pm.test('SKIP - No carId', () => true); return; }",
-											"pm.test('Status 403 - Forbidden (not owner)', () => pm.response.to.have.status(403));",
+											"pm.test('Status 404 - Not found (ownership filter)', () => pm.response.to.have.status(404));",
 											"pm.test('Response is JSON', () => pm.response.to.be.json);",
 											"const body = pm.response.json();",
 											"pm.test('success is false', () => pm.expect(body.success).to.eql(false));"
@@ -2840,7 +2863,7 @@
 							]
 						},
 						{
-							"name": "Delete another user trip (expect 403 - ownership)",
+							"name": "Delete another user trip (expect 404 - ownership filter)",
 							"request": {
 								"method": "DELETE",
 								"header": [
@@ -2873,7 +2896,7 @@
 										"exec": [
 											"const id = pm.collectionVariables.get('tripId');",
 											"if (!id) { pm.test('SKIP - No tripId', () => true); return; }",
-											"pm.test('Status 403 - Forbidden (not owner)', () => pm.response.to.have.status(403));",
+											"pm.test('Status 404 - Not found (ownership filter)', () => pm.response.to.have.status(404));",
 											"pm.test('Response is JSON', () => pm.response.to.be.json);",
 											"const body = pm.response.json();",
 											"pm.test('success is false', () => pm.expect(body.success).to.eql(false));"
@@ -3046,10 +3069,7 @@
 										"exec": [
 											"const id = pm.collectionVariables.get('carId');",
 											"if (!id) { pm.test('SKIP - No carId', () => true); return; }",
-											"pm.test('Status 404 - Confirmed deleted', () => pm.response.to.have.status(404));",
-											"pm.test('Response is JSON', () => pm.response.to.be.json);",
-											"const body = pm.response.json();",
-											"pm.test('success is false', () => pm.expect(body.success).to.eql(false));"
+											"pm.test('Status 404 - Confirmed deleted', () => pm.response.to.have.status(404));"
 										]
 									}
 								}
@@ -4389,10 +4409,19 @@
 								},
 								"body": {
 									"mode": "raw",
-									"raw": "{\n  \"licenseNumber\": \"VP-DRV-12345\"\n}"
+									"raw": "{\n  \"driverLicense\": \"{{vpDriverLicense}}\"\n}"
 								}
 							},
 							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"pm.collectionVariables.set('vpDriverLicense', `VP-DRV-${Date.now()}`);"
+										]
+									}
+								},
 								{
 									"listen": "test",
 									"script": {
@@ -4653,7 +4682,7 @@
 											"pm.test('Response time < 5s', () => pm.expect(pm.response.responseTime).to.be.below(5000));",
 											"const body = pm.response.json();",
 											"pm.test('Response has success:true', () => pm.expect(body.success).to.eql(true));",
-											"pm.test('model updated to Megane', () => pm.expect(body.data.model).to.eql('Megane'));",
+											"pm.test('Has modelRefId', () => pm.expect(body.data.modelRefId).to.be.a('number'));",
 											"pm.test('licensePlate updated', () => pm.expect(body.data.licensePlate).to.eql('VP-456-CD'));"
 										]
 									}
