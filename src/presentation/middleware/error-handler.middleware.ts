@@ -22,16 +22,14 @@ import type { Logger } from '../../lib/logging/logger.types.js';
 import type { ErrorResponse } from '../../lib/errors/error.types.js';
 
 /**
- * Duck-type check for ZodError that works across ESM/CJS boundaries.
- * Using `instanceof ZodError` fails when Zod is loaded via both module
- * systems (dual-package hazard), producing two distinct class identities.
+ * Duck-type check for ZodError compatible with Zod v4.
+ * Zod v4 builds ZodError via `$constructor` with `Object` as parent (not `Error`),
+ * so neither `instanceof Error` nor `instanceof ZodError` work reliably.
  */
 function isZodError(error: unknown): error is { issues: { path: (string | number)[]; message: string }[] } {
-	return (
-		error instanceof Error &&
-		error.name === 'ZodError' &&
-		Array.isArray((error as unknown as Record<string, unknown>).issues)
-	);
+	if (typeof error !== 'object' || error === null) return false;
+	const candidate = error as Record<string, unknown>;
+	return candidate.name === 'ZodError' && Array.isArray(candidate.issues);
 }
 
 /**
