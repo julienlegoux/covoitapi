@@ -19,16 +19,16 @@ vpRoutes.post('/register', vpRegister);
 vpRoutes.post('/login', vpLogin);
 
 // Persons
-vpRoutes.post('/persons', vpCreatePerson);
-vpRoutes.get('/persons', authMiddleware, requireRole('USER'), vpListPersons);
+vpRoutes.post('/persons', authMiddleware, requireRole('USER'), vpCreatePerson);
+vpRoutes.get('/persons', authMiddleware, requireRole('ADMIN'), vpListPersons);
 vpRoutes.get('/persons/:id', authMiddleware, requireRole('USER'), vpGetPerson);
 vpRoutes.patch('/persons/:id', authMiddleware, requireRole('USER'), vpPatchPerson);
-vpRoutes.delete('/persons/:id', authMiddleware, requireRole('USER'), vpDeletePerson);
+vpRoutes.delete('/persons/:id', authMiddleware, requireRole('ADMIN'), vpDeletePerson);
 vpRoutes.get('/persons/:id/trips-driver', authMiddleware, requireRole('USER'), vpGetPersonTripsDriver);
 vpRoutes.get('/persons/:id/trips-passenger', authMiddleware, requireRole('USER'), vpGetPersonTripsPassenger);
 
 // Brands
-vpRoutes.get('/brands', authMiddleware, requireRole('USER'), vpListBrands);
+vpRoutes.get('/brands', vpListBrands);
 vpRoutes.post('/brands', authMiddleware, requireRole('ADMIN'), vpCreateBrand);
 vpRoutes.put('/brands/:id', authMiddleware, requireRole('ADMIN'), vpUpdateBrand);
 vpRoutes.delete('/brands/:id', authMiddleware, requireRole('ADMIN'), vpDeleteBrand);

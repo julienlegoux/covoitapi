@@ -3,7 +3,6 @@ import { container } from '../../../lib/shared/di/container.js';
 import { TOKENS } from '../../../lib/shared/di/tokens.js';
 import { resultToResponse } from '../../../lib/shared/utils/result-response.util.js';
 import { paginationSchema } from '../../../lib/shared/utils/pagination.util.js';
-import { RegisterUseCase } from '../../../application/use-cases/auth/register.use-case.js';
 import { ListUsersUseCase } from '../../../application/use-cases/user/list-users.use-case.js';
 import { GetUserUseCase } from '../../../application/use-cases/user/get-user.use-case.js';
 import { UpdateUserUseCase } from '../../../application/use-cases/user/update-user.use-case.js';
@@ -43,35 +42,16 @@ export async function vpGetPerson(c: Context): Promise<Response> {
 export async function vpCreatePerson(c: Context): Promise<Response> {
 	const body = await c.req.json();
 	const validated = vpCreatePersonSchema.parse(body);
+	const userId = c.get('userId') as string;
 
-	// 1. Register (create auth + user)
-	const registerUseCase = container.resolve(RegisterUseCase);
-	const registerResult = await registerUseCase.execute({
-		email: validated.email,
-		password: validated.password,
-		confirmPassword: validated.password,
-	});
-	if (!registerResult.success) return resultToResponse(c, registerResult);
-
-	const { userId, token } = registerResult.value;
-
-	// 2. Update profile (firstName, lastName, phone)
-	const updateUseCase = container.resolve(UpdateUserUseCase);
-	const updateResult = await updateUseCase.execute(userId, {
+	const useCase = container.resolve(UpdateUserUseCase);
+	const result = await useCase.execute(userId, {
 		firstName: validated.firstname,
 		lastName: validated.lastname,
 		phone: validated.phone,
 	});
-	if (!updateResult.success) return resultToResponse(c, updateResult);
-
-	// 3. Return person data + token
-	return c.json({
-		success: true,
-		data: {
-			...toVpPerson(updateResult.value),
-			token,
-		},
-	}, 201);
+	if (!result.success) return resultToResponse(c, result);
+	return c.json({ success: true, data: toVpPerson(result.value) }, 201);
 }
 
 export async function vpPatchPerson(c: Context): Promise<Response> {
