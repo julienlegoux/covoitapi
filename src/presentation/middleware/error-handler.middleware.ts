@@ -16,11 +16,23 @@
  */
 import type { Context, Next } from 'hono';
 import type { ContentfulStatusCode } from 'hono/utils/http-status';
-import { ZodError } from 'zod';
 import { DomainError } from '../../lib/errors/domain.errors.js';
 import { getHttpStatus, isErrorCode } from '../../lib/errors/error-registry.js';
 import type { Logger } from '../../lib/logging/logger.types.js';
 import type { ErrorResponse } from '../../lib/errors/error.types.js';
+
+/**
+ * Duck-type check for ZodError that works across ESM/CJS boundaries.
+ * Using `instanceof ZodError` fails when Zod is loaded via both module
+ * systems (dual-package hazard), producing two distinct class identities.
+ */
+function isZodError(error: unknown): error is { issues: { path: (string | number)[]; message: string }[] } {
+	return (
+		error instanceof Error &&
+		error.name === 'ZodError' &&
+		Array.isArray((error as unknown as Record<string, unknown>).issues)
+	);
+}
 
 /**
  * Creates a Hono middleware that catches errors thrown by downstream handlers
@@ -52,7 +64,7 @@ export function createErrorHandler(logger: Logger) {
  * @returns Structured error response object
  */
 function buildErrorResponse(error: unknown, logger: Logger): ErrorResponse {
-	if (error instanceof ZodError) {
+	if (isZodError(error)) {
 		const details: Record<string, string[]> = {};
 		for (const issue of error.issues) {
 			const path = issue.path.join('.');
@@ -101,7 +113,7 @@ function buildErrorResponse(error: unknown, logger: Logger): ErrorResponse {
  * @returns HTTP status code number
  */
 function getStatusCode(error: unknown): number {
-	if (error instanceof ZodError) {
+	if (isZodError(error)) {
 		return 400;
 	}
 
